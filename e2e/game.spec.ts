@@ -44,7 +44,7 @@ test("plays a whole game and announces the winner", async ({ page }) => {
     await ride(page, { durationSec: 20, pedal: true });
     expect(await resultPoints(page)).toBeGreaterThan(400);
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
-    await page.getByRole("button", { name: "Au suivant", exact: true }).click();
+    await page.getByRole("button", { name: "Au suivant : Tom" }).click();
 
     await expect(page.getByText(`Au tour de Tom`)).toBeVisible();
     await ride(page, { durationSec: 20, pedal: false });
@@ -52,13 +52,13 @@ test("plays a whole game and announces the winner", async ({ page }) => {
     if (round < 3) {
       await expect(page.getByText("Au suivant : Léa")).toBeVisible();
       await expect(page.getByText(`Tour ${round + 1}/3`)).toBeVisible();
-      await page.getByRole("button", { name: "Au suivant", exact: true }).click();
+      await page.getByRole("button", { name: "Au suivant : Léa" }).click();
     }
   }
 
   await expect(page.getByText("Léa sonne la cloche !")).toBeVisible();
   await expect(page.getByText("Partie terminée, bravo à tous !")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Au suivant", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Au suivant/ })).toHaveCount(0);
   const ranking = page.getByRole("list").last().getByRole("listitem");
   await expect(ranking.first()).toContainText("Léa");
   await expect(ranking.last()).toContainText("Tom");

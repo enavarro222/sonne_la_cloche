@@ -131,3 +131,17 @@
   color: var(--pink);
   font-weight: 900;
 }
+
+.nextButton {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.nextName {
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: 0.7em;
+  opacity: 0.9;
+}

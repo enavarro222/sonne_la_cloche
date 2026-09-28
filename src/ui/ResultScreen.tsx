@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { currentPlayer, type Game, isGameOver, lastRide, standings, upNext } from "../core/game";
 import { cx } from "./cx";
+import { FixedDigits } from "./FixedDigits";
 import styles from "./ResultScreen.module.css";
 
 interface Props {
@@ -29,7 +30,9 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           {ride?.personalBest ? t("result.personalBest", { name: player.name }) : player.name}
         </p>
         <p className={styles.score}>
-          <span data-testid="result-points">{ride?.points ?? 0}</span>
+          <span data-testid="result-points">
+            <FixedDigits>{ride?.points ?? 0}</FixedDigits>
+          </span>
           <span className={styles.unit}>{t("result.points")}</span>
         </p>
 
@@ -63,8 +66,15 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
               {t("result.playAgain")}
             </button>
           ) : (
-            <button type="button" className="primary" onClick={onNext} disabled={!bikeReady}>
+            <button
+              type="button"
+              className={cx("primary", styles.nextButton)}
+              onClick={onNext}
+              disabled={!bikeReady}
+              aria-label={next ? t("result.upNext", { name: next.player.name }) : undefined}
+            >
               {t("result.next")}
+              {next && <span className={styles.nextName}>{next.player.name}</span>}
             </button>
           )}
           <button type="button" className="secondary" onClick={onRetry} disabled={!bikeReady}>

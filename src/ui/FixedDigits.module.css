@@ -1,0 +1,6 @@
+/* 1ch is the width of "0", the widest digit in Bungee. */
+.digit {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}

@@ -15,6 +15,7 @@ import { elisionContext } from "../i18n/elision";
 import { DemoSensor } from "../sensors/demo/demoSensor";
 import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types";
 import { cx } from "./cx";
+import { FixedDigits } from "./FixedDigits";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
@@ -203,10 +204,10 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
       ) : (
         <>
           <p className={styles.score} data-testid="ride-score">
-            {Math.round(progress.points)}
+            <FixedDigits>{Math.round(progress.points)}</FixedDigits>
           </p>
           <p className={cx(styles.timer, secondsLeft <= TICK_FROM_SEC && styles.urgent)}>
-            {seconds}
+            <FixedDigits>{seconds}</FixedDigits>
           </p>
         </>
       )}
@@ -235,10 +236,16 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
       <div className={styles.bottom}>
         <p className={styles.sensors}>
           <span>
-            <b>{Math.round(reading.cadence)}</b> {t("ride.cadenceUnit")}
+            <b>
+              <FixedDigits>{Math.round(reading.cadence)}</FixedDigits>
+            </b>{" "}
+            {t("ride.cadenceUnit")}
           </span>
           <span>
-            <b>{Math.round(reading.power)}</b> {t("ride.powerUnit")}
+            <b>
+              <FixedDigits>{Math.round(reading.power)}</FixedDigits>
+            </b>{" "}
+            {t("ride.powerUnit")}
           </span>
         </p>
         {sensor instanceof DemoSensor && <HoldToPedal sensor={sensor} />}
