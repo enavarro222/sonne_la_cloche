@@ -1,0 +1,53 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  padding: 0.6rem clamp(1rem, 2vw, 1.6rem);
+  border-bottom: 3px solid rgb(255 255 255 / 0.12);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.4em;
+  color: var(--yellow);
+}
+
+.status {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.95em;
+  color: var(--cream-faint);
+}
+
+.ok {
+  color: var(--mint);
+}
+
+.ko {
+  color: var(--pink);
+}
+
+.languages {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--surface-dark);
+  padding: 0.25rem;
+  border-radius: 12px;
+}
+
+.languages a {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: 40px;
+  border-radius: 9px;
+  color: var(--cream-dim);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.languages a[aria-current="page"] {
+  background: var(--yellow);
+  color: var(--night);
+}

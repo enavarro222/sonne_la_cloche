@@ -1,0 +1,92 @@
+// Source language: every other locale must provide exactly these keys.
+export const en = {
+  app: {
+    title: "Ring the Bell!",
+  },
+  language: {
+    label: "Language",
+  },
+  status: {
+    idle: "Bike not connected",
+    connecting: "Searching…",
+    connected: "{{name}} connected ({{protocol}})",
+    demo: "Demo mode, no bike",
+    lost: "Bike disconnected",
+    reconnect: "Reconnect",
+    unnamed: "Home trainer",
+  },
+  home: {
+    tagline: "Who pedals the hardest?",
+    players: {
+      title: "Players",
+      placeholder: "First name",
+      add: "Add",
+      remove: "Remove {{name}}",
+      duplicate: "{{name}} is already playing",
+    },
+    bike: {
+      title: "The bike",
+      connect: "Connect the bike",
+      demo: "Try without a bike",
+      help: "The home trainer must be switched on and closed in every other app (Zwift, Garmin…).",
+      unsupported: "This browser can't use Bluetooth: open the game in Chrome or Edge.",
+    },
+    errors: {
+      cancelled: "No bike selected",
+      noData: "Connected, but the bike sends no usable data",
+      failed: "Connection failed: {{message}}",
+    },
+    start: "Let's go!",
+    needPlayers: "Add at least 2 players",
+    needBike: "Connect the bike, or try without one",
+    settings: "Settings",
+  },
+  settings: {
+    title: "Settings",
+    done: "Done",
+    metric: {
+      label: "What counts",
+      cadence: "Leg speed",
+      power: "Strength (watts)",
+      help: "Leg speed counts pedal turns: fairer between children of different sizes. Strength counts watts: the biggest ones win.",
+    },
+    duration: {
+      label: "Ride length",
+      value: "{{count}} s",
+    },
+    rounds: {
+      label: "Rounds",
+      value_one: "{{count}} round",
+      value_other: "{{count}} rounds",
+      help: "One round = everyone rides once. The ranking adds up every round.",
+    },
+  },
+  ride: {
+    turn: "{{name}}'s turn",
+    turn_elided: "{{name}}'s turn",
+    round: "Round {{round}}/{{rounds}}",
+    go: "Pedal!",
+    record: "Record: {{name}}",
+    record_elided: "Record: {{name}}",
+    cadenceUnit: "rpm",
+    powerUnit: "W",
+    hold: "Hold to pedal",
+  },
+  result: {
+    personalBest: "{{name}}, new personal best!",
+    points: "points",
+    upNext: "Next: {{name}}",
+    gameOver: "Game over, well done everyone!",
+    winner_one: "{{names}} rings the bell!",
+    winner_other: "{{names}} ring the bell!",
+    ranking: "Ranking",
+    bikeLost: "Reconnect the bike to go on",
+    next: "Next rider",
+    retry: "Ride again",
+    playAgain: "New game",
+    home: "Home",
+  },
+} as const;
+
+type Widen<T> = { [K in keyof T]: T[K] extends string ? string : Widen<T[K]> };
+export type Translation = Widen<typeof en>;

@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: prettier
+      glob: "*.{ts,tsx,js,json,css,md,html,yml}"
+      run: pnpm exec prettier --check {staged_files}
+    - name: eslint
+      glob: "*.{ts,tsx,js}"
+      run: pnpm exec eslint {staged_files}
+    - name: typecheck
+      glob: "*.{ts,tsx}"
+      run: pnpm exec tsc -b

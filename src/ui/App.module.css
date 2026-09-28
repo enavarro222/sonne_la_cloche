@@ -1,0 +1,14 @@
+.app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+}
+
+.main {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(1rem, 3vmin, 2rem) clamp(1rem, 3vw, 2.5rem);
+}

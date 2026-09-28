@@ -1,0 +1,122 @@
+/* Fairground theme: deep indigo, garland yellow, pink. */
+:root {
+  --night: #1b1464;
+  --night-light: #2c217e;
+  --yellow: #ffc93c;
+  --pink: #ff3b77;
+  --pink-dark: #b3234f;
+  --mint: #2ee6a8;
+  --cream: #fff3e0;
+  --cream-dim: rgb(255 243 224 / 0.72);
+  --cream-faint: rgb(255 243 224 / 0.5);
+  --surface: rgb(255 255 255 / 0.08);
+  --surface-dark: rgb(0 0 0 / 0.28);
+  --line: rgb(255 255 255 / 0.18);
+
+  --font-display: "Bungee", "Impact", "Haettenschweiler", sans-serif;
+  --font-text: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+
+  /* One layout for a landscape tablet (≈1280×800) and a PC/TV (1920×1080). */
+  --gap: clamp(0.75rem, 2vmin, 1.5rem);
+  --radius: 18px;
+  --tap: 48px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background:
+    repeating-linear-gradient(115deg, rgb(255 255 255 / 0.035) 0 34px, transparent 34px 68px),
+    radial-gradient(120% 90% at 50% 0%, var(--night-light), var(--night) 70%);
+  background-color: var(--night);
+  color: var(--cream);
+  font-family: var(--font-text);
+  font-size: clamp(16px, 0.9vw + 0.6vh, 22px);
+  line-height: 1.4;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 4px solid var(--mint);
+  outline-offset: 3px;
+}
+
+.primary,
+.secondary {
+  min-height: var(--tap);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+.primary {
+  background: var(--pink);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3em;
+  padding: 0.7em 1.6em;
+  box-shadow: 0 6px 0 var(--pink-dark);
+}
+
+.primary:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--pink-dark);
+}
+
+.primary:disabled {
+  background: #5a5a7a;
+  box-shadow: 0 6px 0 #3f3f57;
+}
+
+.secondary {
+  border: 3px solid rgb(255 255 255 / 0.25);
+  padding: 0.55em 1.1em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

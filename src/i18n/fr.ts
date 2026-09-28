@@ -1,0 +1,90 @@
+import type { Translation } from "./en";
+
+export const fr: Translation = {
+  app: {
+    title: "Sonne la cloche !",
+  },
+  language: {
+    label: "Langue",
+  },
+  status: {
+    idle: "Home-trainer non connecté",
+    connecting: "Recherche…",
+    connected: "{{name}} connecté ({{protocol}})",
+    demo: "Mode démo, sans vélo",
+    lost: "Home-trainer déconnecté",
+    reconnect: "Reconnecter",
+    unnamed: "Home-trainer",
+  },
+  home: {
+    tagline: "Qui pédale le plus fort ?",
+    players: {
+      title: "Les joueurs",
+      placeholder: "Prénom",
+      add: "Ajouter",
+      remove: "Retirer {{name}}",
+      duplicate: "{{name}} joue déjà",
+    },
+    bike: {
+      title: "Le vélo",
+      connect: "Connecter le vélo",
+      demo: "Essayer sans vélo",
+      help: "Le home-trainer doit être allumé et fermé dans toutes les autres applis (Zwift, Garmin…).",
+      unsupported: "Ce navigateur ne gère pas le Bluetooth : ouvre le jeu dans Chrome ou Edge.",
+    },
+    errors: {
+      cancelled: "Aucun vélo choisi",
+      noData: "Connecté, mais le vélo n'envoie aucune donnée exploitable",
+      failed: "La connexion a échoué : {{message}}",
+    },
+    start: "C'est parti !",
+    needPlayers: "Ajoute au moins 2 joueurs",
+    needBike: "Connecte le vélo, ou essaie sans",
+    settings: "Réglages",
+  },
+  settings: {
+    title: "Réglages",
+    done: "Terminé",
+    metric: {
+      label: "Ce qui compte",
+      cadence: "Vitesse des jambes",
+      power: "Force (watts)",
+      help: "« Vitesse des jambes » compte les tours de pédale : plus juste entre enfants de gabarits différents. « Force » compte les watts : l'avantage va aux plus costauds.",
+    },
+    duration: {
+      label: "Durée d'un passage",
+      value: "{{count}} s",
+    },
+    rounds: {
+      label: "Nombre de tours",
+      value_one: "{{count}} tour",
+      value_other: "{{count}} tours",
+      help: "Un tour = tout le monde pédale une fois. Le classement additionne tous les tours.",
+    },
+  },
+  ride: {
+    turn: "Au tour de {{name}}",
+    turn_elided: "Au tour d'{{name}}",
+    round: "Tour {{round}}/{{rounds}}",
+    go: "Pédale !",
+    record: "Record de {{name}}",
+    record_elided: "Record d'{{name}}",
+    cadenceUnit: "tr/min",
+    powerUnit: "W",
+    hold: "Maintiens pour pédaler",
+  },
+  result: {
+    personalBest: "{{name}}, nouveau record perso !",
+    points: "points",
+    upNext: "Au suivant : {{name}}",
+    gameOver: "Partie terminée, bravo à tous !",
+    winner_one: "{{names}} sonne la cloche !",
+    winner_other: "{{names}} sonnent la cloche !",
+    ranking: "Classement",
+    bikeLost: "Reconnecte le vélo pour continuer",
+    next: "Au suivant",
+    retry: "Refaire le passage",
+    playAgain: "Nouvelle partie",
+    home: "Accueil",
+  },
+};

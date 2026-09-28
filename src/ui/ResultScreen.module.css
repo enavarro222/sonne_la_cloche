@@ -1,0 +1,133 @@
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: calc(var(--gap) * 2);
+  height: 100%;
+  min-height: 0;
+}
+
+@media (orientation: portrait) {
+  .result {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vmin, 2.4rem);
+  color: var(--yellow);
+}
+
+.score {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 18vmin, 10rem);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  display: block;
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cream-faint);
+}
+
+.announce {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-weight: 700;
+  color: var(--cream-dim);
+}
+
+.next,
+.winner {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3.4vmin, 2rem);
+  color: var(--mint);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: var(--gap);
+}
+
+.rankingBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.rankingBox h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--yellow);
+  margin-bottom: 0.6rem;
+}
+
+.ranking {
+  list-style: none;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.ranking li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 1.1rem;
+  margin-bottom: 0.45rem;
+  border-radius: 16px;
+  background: var(--surface);
+  font-weight: 900;
+  font-size: 1.2em;
+}
+
+.ranking li.me {
+  background: var(--pink);
+  color: #fff;
+}
+
+.rank {
+  min-width: 2rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--yellow);
+}
+
+.me .rank {
+  color: #fff;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.total {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.warning {
+  color: var(--pink);
+  font-weight: 900;
+}

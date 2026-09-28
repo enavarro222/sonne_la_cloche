@@ -1,0 +1,52 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gap) * 1.2);
+  max-width: 60rem;
+}
+
+.settings h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.field {
+  border: 0;
+}
+
+.field legend {
+  font-family: var(--font-display);
+  color: var(--yellow);
+  margin-bottom: 0.6rem;
+}
+
+.choice {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  background: var(--surface-dark);
+  padding: 0.35rem;
+  border-radius: 16px;
+}
+
+.choice button {
+  min-height: var(--tap);
+  padding: 0.5rem 1.1rem;
+  border-radius: 12px;
+  color: var(--cream-dim);
+  font-weight: 900;
+}
+
+.choice button[aria-pressed="true"] {
+  background: var(--yellow);
+  color: var(--night);
+}
+
+.help {
+  margin-top: 0.5rem;
+  max-width: 60ch;
+  font-size: 0.9em;
+  color: var(--cream-faint);
+}
