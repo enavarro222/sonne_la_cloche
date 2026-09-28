@@ -79,7 +79,8 @@
   line-height: 1;
   /* The emoji faces left; the race goes right. */
   transform: translate(-50%, -50%) scaleX(-1);
-  transition: left 0.12s linear;
+  /* No CSS transition: the position is updated on every frame already, and
+     restarting a transition each frame freezes the bike. */
 }
 
 .bell {
