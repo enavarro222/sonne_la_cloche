@@ -72,3 +72,7 @@ the architecture and the constraints to keep in mind.
 | The trainer is not in the list   | Still connected to another app, or asleep                        |
 | Connected but cadence stays at 0 | Power meter without crank data: switch the metric to "Strength"  |
 | Values look doubled or empty     | FTMS parsing: see the note on bit 0 in `CLAUDE.md`               |
+
+## License
+
+[MIT](LICENSE), by [enavarro222](https://github.com/enavarro222).

@@ -40,6 +40,8 @@ export const en = {
     needPlayers: "Add at least 2 players",
     needBike: "Connect the bike, or try without one",
     settings: "Settings",
+    madeBy: "Made by {{author}}",
+    source: "Source code on GitHub",
   },
   settings: {
     title: "Settings",

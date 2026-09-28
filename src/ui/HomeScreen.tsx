@@ -8,6 +8,7 @@ import {
   validateName,
 } from "../core/players";
 import type { Settings } from "../core/settings";
+import { AUTHOR, REPOSITORY_URL } from "./credits";
 import styles from "./HomeScreen.module.css";
 import type { SensorState } from "./useSensor";
 
@@ -151,6 +152,13 @@ export function HomeScreen({
           <span className="visually-hidden">{t("home.settings")}</span>
           <span>{settingsSummary}</span>
         </button>
+
+        <p className={styles.credits}>
+          <span>{t("home.madeBy", { author: AUTHOR })}</span>
+          <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
+            {t("home.source")}
+          </a>
+        </p>
       </section>
     </div>
   );

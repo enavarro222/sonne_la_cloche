@@ -41,6 +41,8 @@ export const fr: Translation = {
     needPlayers: "Ajoute au moins 2 joueurs",
     needBike: "Connecte le vélo, ou essaie sans",
     settings: "Réglages",
+    madeBy: "Fait par {{author}}",
+    source: "Code source sur GitHub",
   },
   settings: {
     title: "Réglages",
