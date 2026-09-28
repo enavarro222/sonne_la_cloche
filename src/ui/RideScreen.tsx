@@ -21,6 +21,8 @@ import { elisionContext } from "../i18n/elision";
 import { DemoSensor } from "../sensors/demo/demoSensor";
 import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types";
 import { cx } from "./cx";
+import { Cyclist } from "./cyclist/Cyclist";
+import { advanceCrank } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
@@ -82,6 +84,8 @@ interface Frame {
   track: Track;
   /** The bell's mark (record or first-ride goal) was passed during this ride. */
   rung: boolean;
+  /** Radians, turning with the measured cadence. */
+  crankAngle: number;
 }
 
 function useRideLoop(
@@ -96,6 +100,7 @@ function useRideLoop(
     reading: ZERO_READING,
     track: startTrack(bellMark(recordPoints, settings), settings),
     rung: false,
+    crankAngle: 0,
   }));
   const finish = useLatest(onFinish);
   // Read through a ref: reconnecting the bike mid-ride must not restart the ride.
@@ -108,6 +113,7 @@ function useRideLoop(
     const mark = bellMark(recordPoints, settings);
     let track = startTrack(mark, settings);
     let rung = false;
+    let crankAngle = 0;
     let last = performance.now();
     let lastTick = TICK_FROM_SEC + 1;
     let raf = 0;
@@ -117,12 +123,13 @@ function useRideLoop(
       const dtSec = (now - last) / 1000;
       progress = stepRide(progress, reading, metric, dtSec, durationSec);
       track = stepTrack(track, progress.points, dtSec);
+      crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
       last = now;
       if (!rung && ringsBell(progress.points, mark)) {
         rung = true;
         sounds.bell();
       }
-      setFrame({ progress, reading, track, rung });
+      setFrame({ progress, reading, track, rung, crankAngle });
 
       const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
       if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
@@ -202,7 +209,7 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
   const stage = useCountdown(() => {
     sensor.reset();
   });
-  const { progress, reading, track, rung } = useRideLoop(
+  const { progress, reading, track, rung, crankAngle } = useRideLoop(
     stage.name === "racing",
     sensor,
     settings,
@@ -264,9 +271,8 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
         <div
           className={styles.bike}
           style={{ left: lane(trackPosition(progress.points, track.target)) }}
-          aria-hidden="true"
         >
-          🚴
+          <Cyclist crankAngle={crankAngle} />
         </div>
       </div>
 

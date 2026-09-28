@@ -1,0 +1,79 @@
+.cyclist {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.wheel circle {
+  stroke: var(--cream);
+  stroke-width: 3;
+}
+
+.spoke {
+  stroke: var(--cream);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.frame {
+  stroke: var(--yellow);
+  stroke-width: 3.5;
+}
+
+.saddle {
+  stroke: var(--night);
+  stroke-width: 4;
+}
+
+.chainring {
+  stroke: var(--cream-dim);
+  stroke-width: 2;
+}
+
+.torso {
+  stroke: var(--pink);
+  stroke-width: 9;
+}
+
+.arm {
+  stroke: var(--pink);
+  stroke-width: 4.5;
+}
+
+.head {
+  fill: var(--cream);
+}
+
+.helmet {
+  fill: var(--mint);
+}
+
+.leg {
+  stroke: var(--cream);
+  stroke-width: 5;
+}
+
+/* Cycling shorts, a bit wider than the bare leg. */
+.shorts {
+  stroke: var(--pink-dark);
+  stroke-width: 7;
+}
+
+.crank {
+  stroke: var(--cream-dim);
+  stroke-width: 2.5;
+}
+
+.shoe {
+  stroke: var(--mint);
+  stroke-width: 4;
+}
+
+/* The leg on the other side of the bike. */
+.far {
+  opacity: 0.5;
+}
