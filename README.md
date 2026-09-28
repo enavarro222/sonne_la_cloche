@@ -1,39 +1,65 @@
 # Sonne la cloche !
 
-A kid's bike on a smart home trainer, one screen, and children taking turns to
-pedal as hard as they can. Each round everyone rides once; the ranking adds up
-every round, and the bell on the track marks the best single ride to beat.
+A pedaling game made for a kids' birthday party: a child's bike on a smart
+home trainer, one tablet or TV, and each kid gets 20 to 45 seconds to pedal as
+fast as they can. The score counts pedal turns rather than watts, so the
+smallest kids have as much of a chance as the tallest.
+
+It runs in the browser, reads the trainer over Bluetooth, and works in French
+(`/fr/`) and English (`/en/`).
+
+![A ride: Tom has just passed Léa's record and rung the bell](docs/screenshots/ride.png)
+
+## How a game goes
+
+Everyone rides once per round, for 3 to 5 rounds. The bell on the track marks
+the best ride so far; pass it and it rings. On the very first ride there is no
+record yet, so the bell marks a goal instead (80 rpm held for the whole ride).
+
+After each ride you get the points, the average and peak cadence and power,
+and a table of every round so far. At the end, the winner rings the bell, and
+three awards go to the best single ride, the fastest legs and the strongest
+rider.
+
+| Before the game                           | After a ride                                 | End of the game                                  |
+| ----------------------------------------- | -------------------------------------------- | ------------------------------------------------ |
+| ![Home screen](docs/screenshots/home.png) | ![Ride results](docs/screenshots/result.png) | ![Final ranking](docs/screenshots/game-over.png) |
+
+Players and settings are remembered: for the next game, connect the bike and
+hit _Let's go!_
+
+## What you need
+
+- A home trainer or sensor that speaks Bluetooth **FTMS**, **Cycling Power**
+  or **CSC** (speed/cadence). Close every other app that could hold it (Zwift,
+  the vendor app, a Garmin watch): only one connection at a time.
+- **Chrome or Edge**, on a computer or an Android tablet. Safari, Firefox and
+  iOS don't support Web Bluetooth.
+- **HTTPS** (or `localhost`): browsers only allow Bluetooth on secure pages.
+- For young kids: put the bike in its smallest gear and the trainer at minimum
+  resistance, or their legs give up after ten seconds.
+
+No trainer at hand? _Try without a bike_, then hold the on-screen button (or
+Space) to pedal.
 
 ## Run it
 
 ```sh
 pnpm install
-pnpm dev          # http://localhost:5173 → redirects to /fr/ or /en/
+pnpm dev          # http://localhost:5173, redirects to /fr/ or /en/
+pnpm build        # static site in dist/ (/, /fr/, /en/), no server needed
 ```
-
-Open it in **Chrome or Edge** (Web Bluetooth). On an Android tablet it must be
-served over HTTPS.
-
-## Play
-
-1. **Connect the bike**: the trainer must be on and closed in every other app
-   (Zwift, vendor app, Garmin watch).
-2. Add at least two players (remembered for next time).
-3. **Let's go!** Defaults: leg speed, 30 s, 4 rounds — change them behind ⚙.
-
-No bike at hand? **Try without a bike**, then hold the on-screen button (or
-Space) to pedal.
 
 ## Develop
 
 ```sh
 pnpm check        # format check + lint + typecheck + unit tests + e2e
 pnpm test         # unit tests (Vitest)
-pnpm e2e          # end-to-end tests (Playwright, tablet + desktop)
-pnpm build        # static site in dist/ (/, /fr/, /en/)
+pnpm e2e          # end-to-end tests (Playwright, tablet and desktop screens)
 ```
 
-First e2e run: `pnpm exec playwright install chromium`.
+First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes
+the architecture and the constraints to keep in mind.
 
 ## Troubleshooting
 
@@ -42,4 +68,4 @@ First e2e run: `pnpm exec playwright install chromium`.
 | "Connect the bike" is greyed out | Browser without Web Bluetooth (Safari, Firefox, iOS) or no HTTPS |
 | The trainer is not in the list   | Still connected to another app, or asleep                        |
 | Connected but cadence stays at 0 | Power meter without crank data: switch the metric to "Strength"  |
-| Values look doubled or empty     | FTMS parsing — see the note on bit 0 in `CLAUDE.md`              |
+| Values look doubled or empty     | FTMS parsing: see the note on bit 0 in `CLAUDE.md`               |
