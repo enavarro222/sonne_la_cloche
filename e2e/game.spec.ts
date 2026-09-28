@@ -44,6 +44,9 @@ test("plays a whole game and announces the winner", async ({ page }) => {
     await ride(page, { durationSec: 20, pedal: true });
     expect(await resultPoints(page)).toBeGreaterThan(400);
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
+    // Ride details: the demo pedals at 95 rpm and 152 W.
+    await expect(page.getByText("en moyenne · max 95")).toBeVisible();
+    await expect(page.getByText("en moyenne · max 152")).toBeVisible();
     await page.getByRole("button", { name: "Au suivant : Tom" }).click();
 
     await expect(page.getByText(`Au tour de Tom`)).toBeVisible();
@@ -59,13 +62,19 @@ test("plays a whole game and announces the winner", async ({ page }) => {
   await expect(page.getByText("Léa sonne la cloche !")).toBeVisible();
   await expect(page.getByText("Partie terminée, bravo à tous !")).toBeVisible();
   await expect(page.getByRole("button", { name: /^Au suivant/ })).toHaveCount(0);
-  const ranking = page.getByRole("list").last().getByRole("listitem");
+  const ranking = page.locator("tbody tr");
   await expect(ranking.first()).toContainText("Léa");
   await expect(ranking.last()).toContainText("Tom");
 
   // Cumulative total: three rides of Léa.
-  const leaTotal = Number(await ranking.first().locator("span").last().textContent());
+  const leaTotal = Number(await ranking.first().locator("td").last().textContent());
   expect(leaTotal).toBeGreaterThan(1200);
+
+  // Per-round detail and end-of-game awards.
+  await expect(ranking.first().locator("td")).toHaveText([/1/, /\d{3}/, /\d{3}/, /\d{3}/, /\d{4}/]);
+  await expect(ranking.last().locator("td")).toHaveText(["2", "0", "0", "0", "0"]);
+  await expect(page.getByText("Meilleur passage")).toBeVisible();
+  await expect(page.getByText("Jambes les plus rapides")).toBeVisible();
 
   await page.getByRole("button", { name: "Nouvelle partie" }).click();
   await expect(page.getByText("Au tour de Léa")).toBeVisible();
@@ -84,8 +93,8 @@ test("a retried ride replaces the previous one", async ({ page }) => {
   await page.getByRole("button", { name: "Refaire le passage" }).click();
   await ride(page, { durationSec: 20, pedal: false });
   expect(await resultPoints(page)).toBe(0);
-  const lea = page.getByRole("listitem").filter({ hasText: "Léa" });
-  await expect(lea.locator("span").last()).toHaveText("0");
+  const lea = page.locator("tbody tr").filter({ hasText: "Léa" });
+  await expect(lea.locator("td").last()).toHaveText("0");
 });
 
 test("remembers players and settings after a reload", async ({ page }) => {

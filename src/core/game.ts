@@ -3,12 +3,14 @@
 // ride over all rounds.
 
 import { canStart, normalizeName, type Player, validateName } from "./players";
+import { cleanStats, type RideStats } from "./ride";
 import type { Settings } from "./settings";
 
 export interface RideResult {
   playerId: string;
   round: number;
   points: number;
+  stats: RideStats;
 }
 
 export interface Game {
@@ -35,7 +37,7 @@ export type Action =
   | { type: "playerRemoved"; id: string }
   | { type: "settingsChanged"; settings: Partial<Settings> }
   | { type: "gameStarted" }
-  | { type: "rideFinished"; points: number }
+  | { type: "rideFinished"; points: number; stats: RideStats }
   | { type: "rideRetried" }
   | { type: "nextTurn" }
   | { type: "gameQuit" };
@@ -87,7 +89,10 @@ export function reducer(state: AppState, action: Action): AppState {
         game: {
           ...game,
           phase: "result",
-          rides: [...rides, { playerId: player.id, round: game.round, points }],
+          rides: [
+            ...rides,
+            { playerId: player.id, round: game.round, points, stats: cleanStats(action.stats) },
+          ],
         },
       };
     }
@@ -137,15 +142,24 @@ export function upNext(game: Game): { player: Player; round: number } | null {
 export interface Standing {
   player: Player;
   total: number;
+  /** Points of each round, in order; null for a round not ridden yet. */
+  rounds: (number | null)[];
   /** Competition ranking: equal totals share a rank (1, 1, 3). */
   rank: number;
 }
 
 export function standings(game: Game): Standing[] {
-  const totals = game.players.map((player) => ({
-    player,
-    total: game.rides.filter((r) => r.playerId === player.id).reduce((s, r) => s + r.points, 0),
-  }));
+  const totals = game.players.map((player) => {
+    const own = game.rides.filter((r) => r.playerId === player.id);
+    return {
+      player,
+      total: own.reduce((s, r) => s + r.points, 0),
+      rounds: Array.from(
+        { length: game.settings.rounds },
+        (_, i) => own.find((r) => r.round === i + 1)?.points ?? null,
+      ),
+    };
+  });
   // Array.prototype.sort is stable: ties keep the playing order.
   const sorted = totals.sort((a, b) => b.total - a.total);
   return sorted.map((s) => ({ ...s, rank: sorted.findIndex((o) => o.total === s.total) + 1 }));
@@ -168,7 +182,9 @@ export function bestRide(game: Game): { player: Player; points: number } | null 
 }
 
 /** The ride just finished by the current player, for the result screen. */
-export function lastRide(game: Game): { points: number; personalBest: boolean } | null {
+export function lastRide(
+  game: Game,
+): { points: number; stats: RideStats; personalBest: boolean } | null {
   if (game.phase !== "result") return null;
   const player = currentPlayer(game);
   const own = game.rides.filter((r) => r.playerId === player.id);
@@ -177,5 +193,37 @@ export function lastRide(game: Game): { points: number; personalBest: boolean } 
   const earlier = own.filter((r) => r.round !== game.round).map((r) => r.points);
   // No "personal best" on a first ride: there is nothing to beat yet.
   const personalBest = earlier.length > 0 && ride.points > Math.max(...earlier);
-  return { points: ride.points, personalBest };
+  return { points: ride.points, stats: ride.stats, personalBest };
+}
+
+export interface Feat {
+  player: Player;
+  value: number;
+}
+
+export interface Highlights {
+  /** Best single ride, in points. */
+  bestRide: Feat | null;
+  /** Highest cadence peak, in rpm. */
+  fastest: Feat | null;
+  /** Highest power peak, in watts. */
+  strongest: Feat | null;
+}
+
+/** End-of-game awards, so more than the winner gets a moment. */
+export function highlights(game: Game): Highlights {
+  const top = (value: (ride: RideResult) => number): Feat | null => {
+    let best: Feat | null = null;
+    for (const ride of game.rides) {
+      if (value(ride) <= (best?.value ?? 0)) continue;
+      const player = game.players.find((p) => p.id === ride.playerId);
+      if (player) best = { player, value: value(ride) };
+    }
+    return best;
+  };
+  return {
+    bestRide: top((r) => r.points),
+    fastest: top((r) => r.stats.maxCadence),
+    strongest: top((r) => r.stats.maxPower),
+  };
 }

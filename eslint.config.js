@@ -43,7 +43,7 @@ export default defineConfig(
           mode: "jsx-only",
           "jsx-attributes": { include: ["alt", "aria-label", "title", "placeholder"] },
           // Decorative symbols only; never words.
-          words: { exclude: ["^(⚙|🔔|🚴|×)$"] },
+          words: { exclude: ["^(⚙|🔔|🚴|×|–)$"] },
         },
       ],
     },

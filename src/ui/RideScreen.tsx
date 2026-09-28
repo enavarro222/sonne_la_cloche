@@ -6,6 +6,8 @@ import {
   isRideOver,
   remainingSec,
   type RideProgress,
+  type RideStats,
+  rideStats,
   ringsBell,
   startRide,
   startTrack,
@@ -34,7 +36,7 @@ interface Props {
   settings: Settings;
   record: { player: Player; points: number } | null;
   sensor: Sensor;
-  onFinish: (points: number) => void;
+  onFinish: (points: number, stats: RideStats) => void;
 }
 
 type Stage = { name: "countdown"; count: number } | { name: "go" } | { name: "racing" };
@@ -87,7 +89,7 @@ function useRideLoop(
   sensor: Sensor,
   settings: Settings,
   recordPoints: number | null,
-  onFinish: (points: number) => void,
+  onFinish: (points: number, stats: RideStats) => void,
 ): Frame {
   const [frame, setFrame] = useState<Frame>(() => ({
     progress: startRide(),
@@ -112,9 +114,8 @@ function useRideLoop(
 
     const step = (now: number) => {
       const reading = currentSensor.current.read(now);
-      const value = metric === "cadence" ? reading.cadence : reading.power;
       const dtSec = (now - last) / 1000;
-      progress = stepRide(progress, value, dtSec, durationSec);
+      progress = stepRide(progress, reading, metric, dtSec, durationSec);
       track = stepTrack(track, progress.points, dtSec);
       last = now;
       if (!rung && ringsBell(progress.points, mark)) {
@@ -128,7 +129,7 @@ function useRideLoop(
         lastTick = secondsLeft;
         sounds.tick();
       }
-      if (isRideOver(progress, durationSec)) finish.current(progress.points);
+      if (isRideOver(progress, durationSec)) finish.current(progress.points, rideStats(progress));
       else raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);

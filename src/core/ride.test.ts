@@ -7,6 +7,7 @@ import {
   stepRide,
   bellMark,
   REFERENCE_PACE,
+  rideStats,
   ringsBell,
   startTrack,
   STRETCH_FROM,
@@ -16,9 +17,13 @@ import {
 } from "./ride";
 import { DEFAULT_SETTINGS } from "./settings";
 
+const effort = (cadence: number, power = 0) => ({ cadence, power });
+
 const steps = (value: number, dt: number, count: number, duration = 30) => {
   let progress = startRide();
-  for (let i = 0; i < count; i++) progress = stepRide(progress, value, dt, duration);
+  for (let i = 0; i < count; i++) {
+    progress = stepRide(progress, effort(value), "cadence", dt, duration);
+  }
   return progress;
 };
 
@@ -38,14 +43,32 @@ describe("stepRide", () => {
   });
 
   it("caps long frames so a backgrounded tab pauses the ride", () => {
-    const progress = stepRide(startRide(), 90, 10, 30);
+    const progress = stepRide(startRide(), effort(90), "cadence", 10, 30);
     expect(progress.elapsedSec).toBe(MAX_STEP_SEC);
   });
 
   it("ignores negative or invalid values and time steps", () => {
-    expect(stepRide(startRide(), -50, 0.1, 30).points).toBe(0);
-    expect(stepRide(startRide(), Number.NaN, 0.1, 30).points).toBe(0);
-    expect(stepRide(startRide(), 90, -1, 30)).toEqual(startRide());
+    expect(stepRide(startRide(), effort(-50), "cadence", 0.1, 30).points).toBe(0);
+    expect(stepRide(startRide(), effort(Number.NaN), "cadence", 0.1, 30).points).toBe(0);
+    expect(stepRide(startRide(), effort(90), "cadence", -1, 30)).toEqual(startRide());
+  });
+
+  it("scores the chosen metric", () => {
+    const ride = stepRide(startRide(), effort(90, 150), "power", 0.2, 30);
+    expect(ride.points).toBeCloseTo(10);
+  });
+
+  it("averages cadence and power over the time ridden, and keeps the peaks", () => {
+    let progress = startRide();
+    progress = stepRide(progress, effort(60, 100), "cadence", 0.2, 30);
+    progress = stepRide(progress, effort(120, 200), "cadence", 0.2, 30);
+    expect(rideStats(progress)).toEqual({
+      avgCadence: 90,
+      avgPower: 150,
+      maxCadence: 120,
+      maxPower: 200,
+    });
+    expect(rideStats(startRide()).avgCadence).toBe(0);
   });
 });
 

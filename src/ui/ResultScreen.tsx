@@ -1,8 +1,71 @@
 import { useTranslation } from "react-i18next";
-import { currentPlayer, type Game, isGameOver, lastRide, standings, upNext } from "../core/game";
+import {
+  currentPlayer,
+  type Feat,
+  type Game,
+  highlights,
+  isGameOver,
+  lastRide,
+  standings,
+  upNext,
+} from "../core/game";
+import type { RideStats } from "../core/ride";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
 import styles from "./ResultScreen.module.css";
+
+/** Average and peak of the ride; hidden when the sensor does not measure it. */
+function RideDetails({ stats }: { stats: RideStats }) {
+  const { t } = useTranslation();
+  const tiles = [
+    { avg: stats.avgCadence, max: stats.maxCadence, unit: t("ride.cadenceUnit") },
+    { avg: stats.avgPower, max: stats.maxPower, unit: t("ride.powerUnit") },
+  ].filter((tile) => tile.max > 0);
+  if (tiles.length === 0) return null;
+  return (
+    <ul className={styles.details}>
+      {tiles.map((tile) => (
+        <li key={tile.unit}>
+          <span className={styles.detailValue}>
+            <FixedDigits>{Math.round(tile.avg)}</FixedDigits> <small>{tile.unit}</small>
+          </span>
+          <span className={styles.detailLabel}>
+            {t("result.average", { peak: Math.round(tile.max) })}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Awards({ game }: { game: Game }) {
+  const { t } = useTranslation();
+  const { bestRide, fastest, strongest } = highlights(game);
+  const awards: { label: string; feat: Feat | null; unit: string }[] = [
+    { label: t("result.awards.bestRide"), feat: bestRide, unit: t("result.points") },
+    { label: t("result.awards.fastest"), feat: fastest, unit: t("ride.cadenceUnit") },
+    { label: t("result.awards.strongest"), feat: strongest, unit: t("ride.powerUnit") },
+  ];
+  return (
+    <dl className={styles.awards}>
+      {awards.map(
+        ({ label, feat, unit }) =>
+          feat && (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>
+                {t("result.awards.value", {
+                  name: feat.player.name,
+                  value: Math.round(feat.value),
+                  unit,
+                })}
+              </dd>
+            </div>
+          ),
+      )}
+    </dl>
+  );
+}
 
 interface Props {
   game: Game;
@@ -36,6 +99,8 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           <span className={styles.unit}>{t("result.points")}</span>
         </p>
 
+        {!over && ride && <RideDetails stats={ride.stats} />}
+
         {over ? (
           <div className={styles.announce}>
             <p className={styles.winner}>
@@ -45,6 +110,7 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
               })}
             </p>
             <p>{t("result.gameOver")}</p>
+            <Awards game={game} />
           </div>
         ) : (
           next && (
@@ -88,19 +154,57 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
 
       <section className={styles.rankingBox} aria-labelledby="ranking-title">
         <h2 id="ranking-title">{t("result.ranking")}</h2>
-        <ol className={styles.ranking}>
-          {ranking.map((s) => (
-            <li
-              key={s.player.id}
-              className={cx(s.player.id === player.id && styles.me)}
-              aria-current={s.player.id === player.id ? "true" : undefined}
-            >
-              <span className={styles.rank}>{s.rank}</span>
-              <span className={styles.name}>{s.player.name}</span>
-              <span className={styles.total}>{s.total}</span>
-            </li>
-          ))}
-        </ol>
+        <div className={styles.tableScroll}>
+          <table className={styles.ranking}>
+            <thead>
+              <tr>
+                <th scope="col">
+                  <span className="visually-hidden">{t("result.rank")}</span>
+                </th>
+                <th scope="col">
+                  <span className="visually-hidden">{t("result.player")}</span>
+                </th>
+                {Array.from({ length: game.settings.rounds }, (_, i) => (
+                  <th
+                    key={i}
+                    scope="col"
+                    className={cx(styles.roundCol, i + 1 === game.round && styles.nowCol)}
+                  >
+                    <abbr title={t("result.roundLong", { round: i + 1 })}>
+                      {t("result.roundShort", { round: i + 1 })}
+                    </abbr>
+                  </th>
+                ))}
+                <th scope="col" className={styles.totalCol}>
+                  {t("result.total")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {ranking.map((s) => (
+                <tr
+                  key={s.player.id}
+                  className={cx(s.player.id === player.id && styles.me)}
+                  aria-current={s.player.id === player.id ? "true" : undefined}
+                >
+                  <td className={styles.rank}>{s.rank}</td>
+                  <th scope="row" className={styles.name}>
+                    {s.player.name}
+                  </th>
+                  {s.rounds.map((points, i) => (
+                    <td
+                      key={i}
+                      className={cx(styles.roundCol, i + 1 === game.round && styles.nowCol)}
+                    >
+                      {points ?? "–"}
+                    </td>
+                  ))}
+                  <td className={styles.totalCol}>{s.total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

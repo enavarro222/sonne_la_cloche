@@ -82,31 +82,57 @@
   margin-bottom: 0.6rem;
 }
 
-.ranking {
-  list-style: none;
-  overflow-y: auto;
+.tableScroll {
   min-height: 0;
+  overflow-y: auto;
 }
 
-.ranking li {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.55rem 1.1rem;
-  margin-bottom: 0.45rem;
-  border-radius: 16px;
-  background: var(--surface);
+.ranking {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.4rem;
   font-weight: 900;
-  font-size: 1.2em;
+  font-variant-numeric: tabular-nums;
 }
 
-.ranking li.me {
+.ranking thead th {
+  font-size: 0.8em;
+  color: var(--cream-faint);
+  font-weight: 900;
+}
+
+.ranking abbr {
+  text-decoration: none;
+}
+
+.ranking td,
+.ranking tbody th {
+  padding: 0.5rem 0.6rem;
+  background: var(--surface);
+  font-size: 1.1em;
+  text-align: center;
+}
+
+.ranking tbody tr > :first-child {
+  border-radius: 14px 0 0 14px;
+}
+
+.ranking tbody tr > :last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.ranking tr.me > * {
   background: var(--pink);
   color: #fff;
 }
 
+/* Overlap each cell onto the next one: fractional cell widths leave thin
+   seams in an opaque row otherwise. */
+.ranking tr.me > :not(:last-child) {
+  box-shadow: 1px 0 0 var(--pink);
+}
+
 .rank {
-  min-width: 2rem;
   font-family: var(--font-display);
   font-weight: 400;
   color: var(--yellow);
@@ -116,15 +142,89 @@
   color: #fff;
 }
 
-.name {
+.ranking .name {
+  max-width: 10rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 
-.total {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
+.roundCol {
+  color: var(--cream-dim);
+}
+
+.ranking td.roundCol {
+  font-size: 0.95em;
+}
+
+.nowCol {
+  color: var(--cream);
+}
+
+.totalCol {
+  text-align: right;
+}
+
+.ranking td.totalCol {
+  font-size: 1.25em;
+}
+
+.details {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+}
+
+.details li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.detailValue {
+  font-family: var(--font-display);
+  font-size: 1.5em;
+}
+
+.detailValue small {
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: 0.55em;
+  color: var(--cream-dim);
+}
+
+.detailLabel {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--cream-faint);
+}
+
+.awards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.awards div {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.awards dt {
+  color: var(--yellow);
+  font-weight: 900;
+}
+
+.awards dd {
+  color: var(--cream);
+  font-weight: 900;
 }
 
 .warning {

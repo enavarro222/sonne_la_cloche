@@ -16,24 +16,85 @@ export const MAX_STEP_SEC = 0.25;
 /** The end of the track is never closer than this. */
 export const MIN_TARGET = 100;
 
+/** What the sensor measures at a given instant. */
+export interface Effort {
+  /** Pedal turns per minute. */
+  cadence: number;
+  /** Watts. */
+  power: number;
+}
+
 export interface RideProgress {
   elapsedSec: number;
   points: number;
+  /** Time integrals, for the averages. */
+  cadenceSum: number;
+  powerSum: number;
+  maxCadence: number;
+  maxPower: number;
 }
 
-export const startRide = (): RideProgress => ({ elapsedSec: 0, points: 0 });
+export interface RideStats {
+  avgCadence: number;
+  avgPower: number;
+  maxCadence: number;
+  maxPower: number;
+}
+
+export const startRide = (): RideProgress => ({
+  elapsedSec: 0,
+  points: 0,
+  cadenceSum: 0,
+  powerSum: 0,
+  maxCadence: 0,
+  maxPower: 0,
+});
+
+const clean = (value: number): number => (Number.isFinite(value) ? Math.max(0, value) : 0);
 
 export function stepRide(
   progress: RideProgress,
-  value: number,
+  effort: Effort,
+  metric: Metric,
   dtSec: number,
   durationSec: number,
 ): RideProgress {
   const remaining = durationSec - progress.elapsedSec;
   const dt = Math.min(Math.max(0, dtSec), MAX_STEP_SEC, Math.max(0, remaining));
-  const rate = Number.isFinite(value) ? Math.max(0, value) / POINTS_DIVISOR : 0;
-  return { elapsedSec: progress.elapsedSec + dt, points: progress.points + rate * dt };
+  if (dt === 0) return progress;
+  const cadence = clean(effort.cadence);
+  const power = clean(effort.power);
+  const value = metric === "cadence" ? cadence : power;
+  return {
+    elapsedSec: progress.elapsedSec + dt,
+    points: progress.points + (value / POINTS_DIVISOR) * dt,
+    cadenceSum: progress.cadenceSum + cadence * dt,
+    powerSum: progress.powerSum + power * dt,
+    maxCadence: Math.max(progress.maxCadence, cadence),
+    maxPower: Math.max(progress.maxPower, power),
+  };
 }
+
+/** Averages over the time actually ridden. */
+export function rideStats(progress: RideProgress): RideStats {
+  const t = progress.elapsedSec;
+  return {
+    avgCadence: t > 0 ? progress.cadenceSum / t : 0,
+    avgPower: t > 0 ? progress.powerSum / t : 0,
+    maxCadence: progress.maxCadence,
+    maxPower: progress.maxPower,
+  };
+}
+
+export const NO_STATS: RideStats = { avgCadence: 0, avgPower: 0, maxCadence: 0, maxPower: 0 };
+
+/** Stats from outside the core (UI), made safe to store and display. */
+export const cleanStats = (stats: RideStats): RideStats => ({
+  avgCadence: clean(stats.avgCadence),
+  avgPower: clean(stats.avgPower),
+  maxCadence: clean(stats.maxCadence),
+  maxPower: clean(stats.maxPower),
+});
 
 export const remainingSec = (progress: RideProgress, durationSec: number): number =>
   Math.max(0, durationSec - progress.elapsedSec);
