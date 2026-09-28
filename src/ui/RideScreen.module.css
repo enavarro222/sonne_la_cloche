@@ -63,15 +63,6 @@
   overflow: hidden;
 }
 
-/* Checkered finish line. */
-.track::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 26px;
-  background: repeating-conic-gradient(#fff 0 25%, #111 0 50%) 0 0 / 26px 26px;
-}
-
 .bike {
   position: absolute;
   top: 55%;
@@ -99,7 +90,7 @@
   font-size: 1.6em;
 }
 
-/* The record usually sits near the finish: label on the left of the line. */
+/* The bell usually sits near the end: label on the left of the line. */
 .bellLabel {
   position: absolute;
   top: 6px;
@@ -155,4 +146,37 @@
 .held {
   background: var(--mint);
   color: var(--night);
+}
+
+/* The bell swings when the record is beaten. */
+.rung > span:first-child {
+  transform-origin: 50% 10%;
+  animation: swing 0.9s ease-in-out 3;
+}
+
+@keyframes swing {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-50%) rotate(28deg);
+  }
+  75% {
+    transform: translateX(-50%) rotate(-28deg);
+  }
+}
+
+.beaten {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.1em;
+  animation: pop 0.4s ease-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
 }

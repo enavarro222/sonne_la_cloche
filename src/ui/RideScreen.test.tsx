@@ -86,4 +86,41 @@ describe("RideScreen", () => {
     expect(onFinish).toHaveBeenCalledTimes(1);
     expect(onFinish.mock.calls[0]?.[0]).toBeCloseTo(600, -1);
   });
+
+  it("rings the bell once the record is beaten", () => {
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={{ player: { id: "tom", name: "Tom" }, points: 100 }}
+        sensor={steadySensor(90)}
+        onFinish={vi.fn()}
+      />,
+    );
+    advance(COUNTDOWN_MS + 2_000);
+    expect(screen.getByText("Record: Tom")).toBeInTheDocument();
+    // 90 rpm = 30 pts/s: 100 points after ~3.3 s.
+    advance(2_000);
+    expect(screen.getByText("Record beaten!")).toBeInTheDocument();
+    expect(screen.queryByText("Record: Tom")).not.toBeInTheDocument();
+  });
+
+  it("gives the first ride a goal to ring", () => {
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={null}
+        sensor={steadySensor(90)}
+        onFinish={vi.fn()}
+      />,
+    );
+    advance(COUNTDOWN_MS + 1_000);
+    expect(screen.getByText("Goal")).toBeInTheDocument();
+    // Goal for 20 s = 80 rpm × 20 s / 3 ≈ 533 points; 90 rpm gets there in ~18 s.
+    advance(18_000);
+    expect(screen.getByText("Goal reached!")).toBeInTheDocument();
+  });
 });

@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Player } from "../core/players";
 import {
+  bellMark,
   isRideOver,
   remainingSec,
   type RideProgress,
+  ringsBell,
   startRide,
+  startTrack,
   stepRide,
+  stepTrack,
+  type Track,
   trackPosition,
-  trackTarget,
 } from "../core/ride";
 import type { Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
@@ -73,15 +77,24 @@ function useCountdown(onStart: () => void): Stage {
 interface Frame {
   progress: RideProgress;
   reading: SensorReading;
+  track: Track;
+  /** The bell's mark (record or first-ride goal) was passed during this ride. */
+  rung: boolean;
 }
 
 function useRideLoop(
   running: boolean,
   sensor: Sensor,
   settings: Settings,
+  recordPoints: number | null,
   onFinish: (points: number) => void,
 ): Frame {
-  const [frame, setFrame] = useState<Frame>({ progress: startRide(), reading: ZERO_READING });
+  const [frame, setFrame] = useState<Frame>(() => ({
+    progress: startRide(),
+    reading: ZERO_READING,
+    track: startTrack(bellMark(recordPoints, settings), settings),
+    rung: false,
+  }));
   const finish = useLatest(onFinish);
   // Read through a ref: reconnecting the bike mid-ride must not restart the ride.
   const currentSensor = useLatest(sensor);
@@ -90,6 +103,9 @@ function useRideLoop(
     if (!running) return;
     const { durationSec, metric } = settings;
     let progress = startRide();
+    const mark = bellMark(recordPoints, settings);
+    let track = startTrack(mark, settings);
+    let rung = false;
     let last = performance.now();
     let lastTick = TICK_FROM_SEC + 1;
     let raf = 0;
@@ -97,9 +113,15 @@ function useRideLoop(
     const step = (now: number) => {
       const reading = currentSensor.current.read(now);
       const value = metric === "cadence" ? reading.cadence : reading.power;
-      progress = stepRide(progress, value, (now - last) / 1000, durationSec);
+      const dtSec = (now - last) / 1000;
+      progress = stepRide(progress, value, dtSec, durationSec);
+      track = stepTrack(track, progress.points, dtSec);
       last = now;
-      setFrame({ progress, reading });
+      if (!rung && ringsBell(progress.points, mark)) {
+        rung = true;
+        sounds.bell();
+      }
+      setFrame({ progress, reading, track, rung });
 
       const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
       if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
@@ -113,7 +135,7 @@ function useRideLoop(
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, [running, settings, currentSensor, finish]);
+  }, [running, settings, recordPoints, currentSensor, finish]);
 
   return frame;
 }
@@ -179,10 +201,23 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
   const stage = useCountdown(() => {
     sensor.reset();
   });
-  const { progress, reading } = useRideLoop(stage.name === "racing", sensor, settings, onFinish);
+  const { progress, reading, track, rung } = useRideLoop(
+    stage.name === "racing",
+    sensor,
+    settings,
+    record?.points ?? null,
+    onFinish,
+  );
 
-  const target = trackTarget(record?.points ?? 0);
-  const recordPosition = trackPosition(record?.points ?? 0, target);
+  const mark = bellMark(record?.points ?? null, settings);
+  const bellPosition = trackPosition(mark.points, track.target);
+  // A "record" mark always comes from `record`.
+  const recordName = record?.player.name ?? "";
+  const recordLabel = rung
+    ? t("ride.recordBeaten")
+    : t("ride.record", { name: recordName, context: elisionContext(recordName) });
+  const goalLabel = rung ? t("ride.goalReached") : t("ride.goal");
+  const bellLabel = mark.kind === "goal" ? goalLabel : recordLabel;
   const seconds = new Intl.NumberFormat(i18n.language, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
@@ -213,20 +248,21 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
       )}
 
       <div className={styles.track}>
-        {record && (
-          <div className={styles.bell} style={{ left: lane(recordPosition) }}>
-            <span aria-hidden="true">🔔</span>
-            <span className={cx(styles.bellLabel, recordPosition < 0.5 && styles.bellLabelAfter)}>
-              {t("ride.record", {
-                name: record.player.name,
-                context: elisionContext(record.player.name),
-              })}
-            </span>
-          </div>
-        )}
+        <div className={cx(styles.bell, rung && styles.rung)} style={{ left: lane(bellPosition) }}>
+          <span aria-hidden="true">🔔</span>
+          <span
+            className={cx(
+              styles.bellLabel,
+              bellPosition < 0.5 && styles.bellLabelAfter,
+              rung && styles.beaten,
+            )}
+          >
+            {bellLabel}
+          </span>
+        </div>
         <div
           className={styles.bike}
-          style={{ left: lane(trackPosition(progress.points, target)) }}
+          style={{ left: lane(trackPosition(progress.points, track.target)) }}
           aria-hidden="true"
         >
           🚴

@@ -43,6 +43,26 @@ function beep(frequency: number, durationMs = 160, delayMs = 0): void {
   oscillator.stop(end);
 }
 
+/** A bell: a few inharmonic partials with a long decay. */
+function ding(): void {
+  if (!context) return;
+  const start = context.currentTime;
+  for (const [ratio, level, decay] of [
+    [1, 0.25, 1.6],
+    [2.76, 0.12, 0.9],
+    [5.4, 0.06, 0.5],
+  ] as const) {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.frequency.value = 880 * ratio;
+    gain.gain.setValueAtTime(level, start);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + decay);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + decay);
+  }
+}
+
 export const sounds = {
   countdown: () => {
     beep(440);
@@ -53,6 +73,7 @@ export const sounds = {
   tick: () => {
     beep(660, 90);
   },
+  bell: ding,
   fanfare: () => {
     [523, 659, 784, 1046].forEach((frequency, i) => {
       beep(frequency, 200, i * 130);

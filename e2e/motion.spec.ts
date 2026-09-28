@@ -27,7 +27,8 @@ test("the bike moves smoothly, on every frame", async ({ page }) => {
   await page.keyboard.up("Space");
 
   const steps = xs.slice(1).map((x, i) => x - (xs[i] ?? x));
-  expect(xs.at(-1)).toBeGreaterThan((xs[0] ?? 0) + 50);
+  // The track is sized for a whole ride: one second moves the bike a few %.
+  expect(xs.at(-1)).toBeGreaterThan((xs[0] ?? 0) + 20);
   expect(steps.every((dx) => dx >= 0)).toBe(true);
   // A busy machine may skip a few frames; a stuck bike stays still for long.
   let still = 0;
