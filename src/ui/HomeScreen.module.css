@@ -137,3 +137,18 @@
 .credits a {
   color: var(--cream-dim);
 }
+
+.state {
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  font-weight: 900;
+  background: var(--surface);
+}
+
+.stateOk {
+  color: var(--mint);
+}
+
+.stateKo {
+  color: var(--pink);
+}

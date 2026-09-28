@@ -29,6 +29,10 @@ export const fr: Translation = {
       title: "Le vélo",
       connect: "Connecter le vélo",
       demo: "Essayer sans vélo",
+      demoOn:
+        "Mode démo : pendant la course, maintiens le bouton (ou la barre d'espace) pour pédaler.",
+      connected: "✓ {{name}} connecté ({{protocol}})",
+      change: "Changer de vélo",
       help: "Le home-trainer doit être allumé et fermé dans toutes les autres applis (Zwift, Garmin…).",
       unsupported: "Ce navigateur ne gère pas le Bluetooth : ouvre le jeu dans Chrome ou Edge.",
     },

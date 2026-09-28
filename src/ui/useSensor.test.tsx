@@ -74,7 +74,7 @@ describe("useSensor", () => {
     expect(result.current.ready).toBe(true);
   });
 
-  it("keeps the current sensor when a new pick is cancelled", async () => {
+  it("leaves demo mode before opening the picker", async () => {
     const trainer = fakeTrainer();
     const { result } = renderHook(() => useSensor());
     act(() => {
@@ -83,7 +83,18 @@ describe("useSensor", () => {
     trainer.requestDevice.mockRejectedValueOnce(new DOMException("cancelled", "NotFoundError"));
     await act(() => result.current.connect());
     expect(result.current.error?.code).toBe("cancelled");
-    expect(result.current.connection.kind).toBe("demo");
+    expect(result.current.connection.kind).toBe("none");
+    expect(result.current.ready).toBe(false);
+  });
+
+  it("keeps a connected trainer when picking another one is cancelled", async () => {
+    const trainer = fakeTrainer();
+    const { result } = renderHook(() => useSensor());
+    await act(() => result.current.connect());
+    trainer.requestDevice.mockRejectedValueOnce(new DOMException("cancelled", "NotFoundError"));
+    await act(() => result.current.connect());
+    expect(result.current.error?.code).toBe("cancelled");
+    expect(result.current.connection).toMatchObject({ kind: "bluetooth", lost: false });
     expect(result.current.ready).toBe(true);
   });
 

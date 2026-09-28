@@ -9,16 +9,111 @@ import {
 } from "../core/players";
 import type { Settings } from "../core/settings";
 import { AUTHOR, REPOSITORY_URL } from "./credits";
+import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import type { SensorState } from "./useSensor";
+
+type BikeCardSensor = Pick<
+  SensorState,
+  "connection" | "connecting" | "error" | "ready" | "connect" | "reconnect" | "startDemo"
+>;
+
+/** The bike block always says which state we are in, and offers the way out of it. */
+function BikeCard({
+  sensor,
+  bluetoothSupported,
+}: {
+  sensor: BikeCardSensor;
+  bluetoothSupported: boolean;
+}) {
+  const { t } = useTranslation();
+  const { connection } = sensor;
+
+  const connectButton = (primary: boolean) => (
+    <button
+      type="button"
+      className={primary ? "primary" : "secondary"}
+      onClick={() => void sensor.connect()}
+      disabled={!bluetoothSupported || sensor.connecting}
+    >
+      {connection.kind === "bluetooth" ? t("home.bike.change") : t("home.bike.connect")}
+    </button>
+  );
+
+  let state: { text: string; ok: boolean } | null = null;
+  let actions;
+  switch (connection.kind) {
+    case "none":
+      actions = (
+        <>
+          {connectButton(true)}
+          <button type="button" className="secondary" onClick={sensor.startDemo}>
+            {t("home.bike.demo")}
+          </button>
+        </>
+      );
+      break;
+    case "demo":
+      state = { text: t("home.bike.demoOn"), ok: true };
+      // Connecting the bike is the only way out of demo mode worth offering.
+      actions = connectButton(false);
+      break;
+    case "bluetooth":
+      if (connection.lost) {
+        state = { text: t("status.lost"), ok: false };
+        actions = (
+          <>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => void sensor.reconnect()}
+              disabled={sensor.connecting}
+            >
+              {t("status.reconnect")}
+            </button>
+            {connectButton(false)}
+          </>
+        );
+      } else {
+        state = {
+          text: t("home.bike.connected", {
+            name: connection.deviceName || t("status.unnamed"),
+            protocol: connection.protocol,
+          }),
+          ok: true,
+        };
+        actions = connectButton(false);
+      }
+      break;
+  }
+
+  return (
+    <div className={styles.bike}>
+      <h2>{t("home.bike.title")}</h2>
+      {state && (
+        <p className={cx(styles.state, state.ok ? styles.stateOk : styles.stateKo)} role="status">
+          {state.text}
+        </p>
+      )}
+      <div className={styles.row}>{actions}</div>
+      {sensor.error && (
+        <p className={styles.error} role="alert">
+          {t(`home.errors.${sensor.error.code}`, { message: sensor.error.message })}
+        </p>
+      )}
+      {!bluetoothSupported ? (
+        <p className={styles.help}>{t("home.bike.unsupported")}</p>
+      ) : (
+        connection.kind === "none" && <p className={styles.help}>{t("home.bike.help")}</p>
+      )}
+    </div>
+  );
+}
 
 interface Props {
   roster: readonly Player[];
   settings: Settings;
-  sensor: Pick<
-    SensorState,
-    "connection" | "connecting" | "error" | "ready" | "connect" | "startDemo"
-  >;
+  sensor: BikeCardSensor;
   bluetoothSupported: boolean;
   onAddPlayer: (name: string) => void;
   onRemovePlayer: (id: string) => void;
@@ -105,30 +200,7 @@ export function HomeScreen({
       </section>
 
       <section className={styles.side}>
-        <div className={styles.bike}>
-          <h2>{t("home.bike.title")}</h2>
-          <div className={styles.row}>
-            <button
-              type="button"
-              className={sensor.ready ? "secondary" : "primary"}
-              onClick={() => void sensor.connect()}
-              disabled={!bluetoothSupported || sensor.connecting}
-            >
-              {t("home.bike.connect")}
-            </button>
-            <button type="button" className="secondary" onClick={sensor.startDemo}>
-              {t("home.bike.demo")}
-            </button>
-          </div>
-          {sensor.error && (
-            <p className={styles.error} role="alert">
-              {t(`home.errors.${sensor.error.code}`, { message: sensor.error.message })}
-            </p>
-          )}
-          <p className={styles.help}>
-            {bluetoothSupported ? t("home.bike.help") : t("home.bike.unsupported")}
-          </p>
-        </div>
+        <BikeCard sensor={sensor} bluetoothSupported={bluetoothSupported} />
 
         <div className={styles.start}>
           <button

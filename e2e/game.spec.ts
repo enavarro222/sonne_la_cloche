@@ -18,6 +18,8 @@ test("needs two players and a bike before starting", async ({ page }) => {
 
   await page.getByRole("button", { name: "Essayer sans vélo" }).click();
   await expect(start(page)).toBeEnabled();
+  await expect(page.getByText(/^Mode démo : pendant la course/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Essayer sans vélo" })).toHaveCount(0);
 });
 
 test("refuses the same name twice", async ({ page }) => {

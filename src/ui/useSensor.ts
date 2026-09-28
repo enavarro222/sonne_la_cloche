@@ -86,7 +86,18 @@ export function useSensor(): SensorState {
     [replace],
   );
 
-  const connect = useCallback(() => attach(requestTrainer), [attach]);
+  const connect = useCallback(() => {
+    // Leave the demo first: cancelling the picker then means "no bike" rather
+    // than a demo still running unnoticed. Stays synchronous so the picker
+    // still opens from the user's gesture.
+    if (current.current?.kind === "demo") {
+      current.current.disconnect();
+      current.current = null;
+      setSensor(null);
+      setConnection({ kind: "none" });
+    }
+    return attach(requestTrainer);
+  }, [attach]);
 
   const reconnect = useCallback(() => {
     const previous = current.current;
@@ -108,5 +119,14 @@ export function useSensor(): SensorState {
     sensor !== null &&
     (connection.kind === "demo" || (connection.kind === "bluetooth" && !connection.lost));
 
-  return { sensor, connection, connecting, error, ready, connect, reconnect, startDemo };
+  return {
+    sensor,
+    connection,
+    connecting,
+    error,
+    ready,
+    connect,
+    reconnect,
+    startDemo,
+  };
 }
