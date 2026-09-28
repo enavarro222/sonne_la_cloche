@@ -8,6 +8,9 @@ smallest kids have as much of a chance as the tallest.
 It runs in the browser, reads the trainer over Bluetooth, and works in French
 (`/fr/`) and English (`/en/`).
 
+**Play it at <https://sonnelacloche.enavarro.eu/>** (Chrome or Edge; no bike
+needed to try it, see _Try without a bike_ below).
+
 ![A ride: Tom has just passed Léa's record and rung the bell](docs/screenshots/ride.png)
 
 ## How a game goes
