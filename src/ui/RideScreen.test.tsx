@@ -123,4 +123,19 @@ describe("RideScreen", () => {
     advance(18_000);
     expect(screen.getByText("Goal reached!")).toBeInTheDocument();
   });
+
+  it("sets the trainer's resistance at the start of each ride", () => {
+    const sensor = { ...steadySensor(90), setResistance: vi.fn(() => Promise.resolve(true)) };
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={{ ...settings, resistance: "hard" }}
+        record={null}
+        sensor={sensor}
+        onFinish={vi.fn()}
+      />,
+    );
+    expect(sensor.setResistance).toHaveBeenCalledWith("hard");
+  });
 });

@@ -75,11 +75,14 @@ function BikeCard({
           </>
         );
       } else {
+        const connected = {
+          name: connection.deviceName || t("status.unnamed"),
+          protocol: connection.protocol,
+        };
         state = {
-          text: t("home.bike.connected", {
-            name: connection.deviceName || t("status.unnamed"),
-            protocol: connection.protocol,
-          }),
+          text: connection.controllable
+            ? t("home.bike.connectedControlled", connected)
+            : t("home.bike.connected", connected),
           ok: true,
         };
         actions = connectButton(false);
@@ -151,6 +154,7 @@ export function HomeScreen({
     t(`settings.metric.${settings.metric}`),
     t("settings.duration.value", { count: settings.durationSec }),
     t("settings.rounds.value", { count: settings.rounds }),
+    t(`settings.resistance.short.${settings.resistance}`),
   ].join(" · ");
 
   return (

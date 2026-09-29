@@ -30,6 +30,7 @@ export const en = {
       demo: "Try without a bike",
       demoOn: "Demo mode: during the ride, hold the on-screen button (or Space) to pedal.",
       connected: "✓ {{name}} connected ({{protocol}})",
+      connectedControlled: "✓ {{name}} connected ({{protocol}}), resistance set by the game",
       change: "Change bike",
       help: "The home trainer must be switched on and closed in every other app (Zwift, Garmin…).",
       unsupported: "This browser can't use Bluetooth: open the game in Chrome or Edge.",
@@ -58,6 +59,20 @@ export const en = {
     duration: {
       label: "Ride length",
       value: "{{count}} s",
+    },
+    resistance: {
+      label: "Trainer resistance",
+      light: "Light",
+      normal: "Normal",
+      hard: "Hard",
+      megaHard: "Mega hard",
+      short: {
+        light: "light resistance",
+        normal: "normal resistance",
+        hard: "hard resistance",
+        megaHard: "mega hard resistance",
+      },
+      help: "Set by the game on smart trainers it can control (FTMS). With another sensor, use the bike's gears.",
     },
     rounds: {
       label: "Rounds",

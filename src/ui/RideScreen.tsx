@@ -209,6 +209,11 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
   const stage = useCountdown(() => {
     sensor.reset();
   });
+  // Again before each ride: another app may have changed it since.
+  const resistanceSensor = useLatest(sensor);
+  useEffect(() => {
+    void resistanceSensor.current.setResistance?.(settings.resistance);
+  }, [resistanceSensor, settings.resistance]);
   const { progress, reading, track, rung, crankAngle } = useRideLoop(
     stage.name === "racing",
     sensor,

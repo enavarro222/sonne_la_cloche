@@ -29,6 +29,11 @@ export function App() {
     saveSettings(state.settings);
   }, [state.settings]);
   useWakeLock(sensor !== null);
+  // Right away on connection (the trainer may still be set up for an adult,
+  // or in ERG mode after another app), and whenever the setting changes.
+  useEffect(() => {
+    void sensor?.setResistance?.(state.settings.resistance);
+  }, [sensor, state.settings.resistance]);
   useHistoryGuard(game !== null);
 
   let screen;

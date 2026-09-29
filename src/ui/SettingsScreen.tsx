@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { DURATIONS_SEC, METRICS, ROUND_COUNTS, type Settings } from "../core/settings";
+import { DURATIONS_SEC, METRICS, RESISTANCES, ROUND_COUNTS, type Settings } from "../core/settings";
 import styles from "./SettingsScreen.module.css";
 
 interface Props {
@@ -80,6 +80,16 @@ export function SettingsScreen({ settings, onChange, onDone }: Props) {
           onChange({ rounds });
         }}
         help={t("settings.rounds.help")}
+      />
+      <Choice
+        label={t("settings.resistance.label")}
+        options={RESISTANCES}
+        value={settings.resistance}
+        format={(resistance) => t(`settings.resistance.${resistance}`)}
+        onSelect={(resistance) => {
+          onChange({ resistance });
+        }}
+        help={t("settings.resistance.help")}
       />
       <button type="button" className="primary" onClick={onDone}>
         {t("settings.done")}

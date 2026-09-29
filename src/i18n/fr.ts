@@ -32,6 +32,7 @@ export const fr: Translation = {
       demoOn:
         "Mode démo : pendant la course, maintiens le bouton (ou la barre d'espace) pour pédaler.",
       connected: "✓ {{name}} connecté ({{protocol}})",
+      connectedControlled: "✓ {{name}} connecté ({{protocol}}), résistance pilotée par le jeu",
       change: "Changer de vélo",
       help: "Le home-trainer doit être allumé et fermé dans toutes les autres applis (Zwift, Garmin…).",
       unsupported: "Ce navigateur ne gère pas le Bluetooth : ouvre le jeu dans Chrome ou Edge.",
@@ -60,6 +61,20 @@ export const fr: Translation = {
     duration: {
       label: "Durée d'un passage",
       value: "{{count}} s",
+    },
+    resistance: {
+      label: "Résistance du home-trainer",
+      light: "Légère",
+      normal: "Normale",
+      hard: "Dure",
+      megaHard: "Méga dure",
+      short: {
+        light: "résistance légère",
+        normal: "résistance normale",
+        hard: "résistance dure",
+        megaHard: "résistance méga dure",
+      },
+      help: "Réglée par le jeu sur les home-trainers pilotables (FTMS). Avec un autre capteur, joue sur les vitesses du vélo.",
     },
     rounds: {
       label: "Nombre de tours",

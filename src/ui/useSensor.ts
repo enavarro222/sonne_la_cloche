@@ -13,7 +13,14 @@ import type { Sensor } from "../sensors/types";
 export type Connection =
   | { kind: "none" }
   | { kind: "demo" }
-  | { kind: "bluetooth"; deviceName: string; protocol: Protocol; lost: boolean };
+  | {
+      kind: "bluetooth";
+      deviceName: string;
+      protocol: Protocol;
+      /** The game sets the trainer's resistance. */
+      controllable: boolean;
+      lost: boolean;
+    };
 
 export interface ConnectionError {
   code: Exclude<BluetoothErrorCode, "unsupported">;
@@ -73,6 +80,7 @@ export function useSensor(): SensorState {
           kind: "bluetooth",
           deviceName: result.deviceName,
           protocol: result.protocol,
+          controllable: result.controllable,
           lost: false,
         });
       } catch (e) {

@@ -51,9 +51,28 @@ describe("HomeScreen bike block", () => {
   });
 
   it("with a bike: shows which one, and lets you change it", () => {
-    renderHome({ kind: "bluetooth", deviceName: "KICKR", protocol: "FTMS", lost: false });
+    renderHome({
+      kind: "bluetooth",
+      deviceName: "KICKR",
+      protocol: "FTMS",
+      controllable: false,
+      lost: false,
+    });
     expect(screen.getByRole("status")).toHaveTextContent("✓ KICKR connected (FTMS)");
     expect(screen.getByRole("button", { name: "Change bike" })).toBeInTheDocument();
+  });
+
+  it("says when the game sets the trainer's resistance", () => {
+    renderHome({
+      kind: "bluetooth",
+      deviceName: "SUITO",
+      protocol: "FTMS",
+      controllable: true,
+      lost: false,
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "✓ SUITO connected (FTMS), resistance set by the game",
+    );
   });
 
   it("with a lost bike: offers to reconnect it", async () => {
@@ -61,6 +80,7 @@ describe("HomeScreen bike block", () => {
       kind: "bluetooth",
       deviceName: "KICKR",
       protocol: "FTMS",
+      controllable: true,
       lost: true,
     });
     expect(screen.getByRole("status")).toHaveTextContent("Bike disconnected");

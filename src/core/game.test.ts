@@ -107,7 +107,12 @@ describe("starting a game", () => {
       { type: "settingsChanged", settings: { durationSec: 20, metric: "power" } },
       { type: "gameStarted" },
     );
-    expect(state.game?.settings).toEqual({ metric: "power", durationSec: 20, rounds: 4 });
+    expect(state.game?.settings).toEqual({
+      metric: "power",
+      durationSec: 20,
+      rounds: 4,
+      resistance: "normal",
+    });
   });
 });
 

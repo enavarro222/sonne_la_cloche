@@ -1,9 +1,22 @@
+/* Two columns in landscape so every setting fits without scrolling. */
 .settings {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: calc(var(--gap) * 1.2);
-  max-width: 60rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: calc(var(--gap) * 1.2) calc(var(--gap) * 2);
+  max-width: 72rem;
+}
+
+.settings > h1,
+.settings > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+@media (orientation: portrait) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .settings h1 {

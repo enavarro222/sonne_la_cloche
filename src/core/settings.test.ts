@@ -8,10 +8,20 @@ describe("parseSettings", () => {
   });
 
   it("keeps valid fields and replaces invalid ones", () => {
-    expect(parseSettings({ metric: "power", durationSec: 31, rounds: 5 })).toEqual({
+    expect(
+      parseSettings({ metric: "power", durationSec: 31, rounds: 5, resistance: "brutal" }),
+    ).toEqual({
       metric: "power",
       durationSec: DEFAULT_SETTINGS.durationSec,
       rounds: 5,
+      resistance: DEFAULT_SETTINGS.resistance,
     });
+    expect(parseSettings({ resistance: "hard" }).resistance).toBe("hard");
+  });
+
+  it("defaults to a normal resistance (settings saved before it existed)", () => {
+    expect(parseSettings({ metric: "cadence", durationSec: 30, rounds: 4 }).resistance).toBe(
+      "normal",
+    );
   });
 });

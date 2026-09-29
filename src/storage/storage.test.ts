@@ -9,9 +9,14 @@ describe("storage", () => {
 
   it("round-trips roster and settings", () => {
     saveRoster([{ id: "1", name: "Léa" }]);
-    saveSettings({ metric: "power", durationSec: 45, rounds: 3 });
+    saveSettings({ metric: "power", durationSec: 45, rounds: 3, resistance: "hard" });
     expect(loadRoster()).toEqual([{ id: "1", name: "Léa" }]);
-    expect(loadSettings()).toEqual({ metric: "power", durationSec: 45, rounds: 3 });
+    expect(loadSettings()).toEqual({
+      metric: "power",
+      durationSec: 45,
+      rounds: 3,
+      resistance: "hard",
+    });
   });
 
   it("falls back to defaults when nothing or garbage is stored", () => {

@@ -1,5 +1,11 @@
 import type { Sensor } from "../types";
 import {
+  DEFAULT_RANGE,
+  FtmsControl,
+  parseResistanceRange,
+  supportsResistance,
+} from "./ftmsControl";
+import {
   type ParsedData,
   parseCscMeasurement,
   parseCyclingPower,
@@ -46,6 +52,32 @@ export interface BluetoothConnection {
   sensor: BluetoothSensor;
   deviceName: string;
   protocol: Protocol;
+  /** The game can set the trainer's resistance. */
+  controllable: boolean;
+}
+
+const FTMS_FEATURE = 0x2acc;
+const FTMS_RESISTANCE_RANGE = 0x2ad6;
+const FTMS_CONTROL_POINT = 0x2ad9;
+
+/** Resistance control, if this FTMS trainer offers it. */
+async function setUpControl(service: BluetoothRemoteGATTService): Promise<FtmsControl | null> {
+  try {
+    const feature = await (await service.getCharacteristic(FTMS_FEATURE)).readValue();
+    if (!supportsResistance(feature)) return null;
+    const controlPoint = await service.getCharacteristic(FTMS_CONTROL_POINT);
+    await controlPoint.startNotifications(); // its answers come as indications
+    let range = DEFAULT_RANGE;
+    try {
+      const raw = await (await service.getCharacteristic(FTMS_RESISTANCE_RANGE)).readValue();
+      range = parseResistanceRange(raw) ?? DEFAULT_RANGE;
+    } catch {
+      // Optional characteristic: keep the default range.
+    }
+    return new FtmsControl(controlPoint, range);
+  } catch {
+    return null;
+  }
 }
 
 /** Opens the browser device picker. Must run from a user gesture. */
@@ -79,9 +111,10 @@ export async function connectTrainer(
   });
 
   for (const profile of PROFILES) {
+    let service: BluetoothRemoteGATTService;
     let characteristic: BluetoothRemoteGATTCharacteristic;
     try {
-      const service = await server.getPrimaryService(profile.service);
+      service = await server.getPrimaryService(profile.service);
       characteristic = await service.getCharacteristic(profile.characteristic);
       await characteristic.startNotifications();
     } catch {
@@ -105,6 +138,7 @@ export async function connectTrainer(
       characteristic.removeEventListener("characteristicvaluechanged", onValue);
       device.removeEventListener("gattserverdisconnected", onDisconnected);
     };
+    const control = profile.protocol === "FTMS" ? await setUpControl(service) : null;
     const sensor: BluetoothSensor = {
       kind: "bluetooth",
       device,
@@ -113,12 +147,18 @@ export async function connectTrainer(
         tracker.reset();
       },
       detach,
+      ...(control && { setResistance: (resistance) => control.setResistance(resistance) }),
       disconnect: () => {
         detach();
         gatt.disconnect();
       },
     };
-    return { sensor, deviceName: device.name ?? "", protocol: profile.protocol };
+    return {
+      sensor,
+      deviceName: device.name ?? "",
+      protocol: profile.protocol,
+      controllable: control !== null,
+    };
   }
 
   gatt.disconnect();
