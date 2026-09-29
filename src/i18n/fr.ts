@@ -118,6 +118,12 @@ export const fr: Translation = {
       value: "{{name}} : {{value}} {{unit}}",
     },
     bikeLost: "Reconnecte le vélo pour continuer",
+    quit: {
+      title: "Quitter la partie ?",
+      message: "Les scores de cette partie seront perdus.",
+      confirm: "Quitter",
+      cancel: "Continuer la partie",
+    },
     next: "Au suivant",
     retry: "Refaire le passage",
     playAgain: "Nouvelle partie",

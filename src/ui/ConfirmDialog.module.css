@@ -1,0 +1,37 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: var(--gap);
+  background: rgb(10 6 40 / 0.72);
+}
+
+.dialog {
+  max-width: 34rem;
+  padding: calc(var(--gap) * 1.5);
+  border-radius: var(--radius);
+  background: var(--night-light);
+  border: 3px solid var(--line);
+  text-align: center;
+}
+
+.dialog h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--yellow);
+  margin-bottom: 0.5rem;
+}
+
+.dialog p {
+  color: var(--cream-dim);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: calc(var(--gap) * 1.2);
+}

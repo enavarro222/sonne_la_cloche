@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
-import { bestRide, currentPlayer, initialState, reducer } from "../core/game";
+import { bestRide, currentPlayer, initialState, isGameOver, reducer } from "../core/game";
 import { isBluetoothSupported } from "../sensors/ble/bluetoothSensor";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
 import styles from "./App.module.css";
@@ -10,6 +10,7 @@ import { RideScreen } from "./RideScreen";
 import { SettingsScreen } from "./SettingsScreen";
 import { sounds } from "./sound";
 import { useHistoryGuard } from "./useHistoryGuard";
+import { useLeaveWarning } from "./useLeaveWarning";
 import { useSensor } from "./useSensor";
 import { useWakeLock } from "./useWakeLock";
 
@@ -35,6 +36,7 @@ export function App() {
     void sensor?.setResistance?.(state.settings.resistance);
   }, [sensor, state.settings.resistance]);
   useHistoryGuard(game !== null);
+  useLeaveWarning(game !== null && !isGameOver(game));
 
   let screen;
   if (!game) {

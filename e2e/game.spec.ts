@@ -121,3 +121,32 @@ test("the back button does not leave a game in progress", async ({ page }) => {
   await expect(page).toHaveURL("/fr/");
   await expect(page.getByText("Au tour de Léa")).toBeVisible();
 });
+
+test("asks before leaving a game in progress", async ({ page }) => {
+  await openGame(page);
+  await chooseSettings(page, { duration: "20 s", rounds: "3 tours" });
+  await addPlayers(page, "Léa", "Tom");
+  await startDemoGame(page);
+  await ride(page, { durationSec: 20, pedal: true });
+
+  await page.getByRole("button", { name: "Accueil" }).click();
+  await expect(page.getByRole("alertdialog", { name: "Quitter la partie ?" })).toBeVisible();
+  await page.getByRole("button", { name: "Continuer la partie" }).click();
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Au suivant : Tom" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Accueil" }).click();
+  await page.getByRole("button", { name: "Quitter", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C'est parti !" })).toBeVisible();
+});
+
+test("warns before closing the tab during a game", async ({ page }) => {
+  await openGame(page);
+  await addPlayers(page, "Léa", "Tom");
+  await startDemoGame(page);
+  const dialog = page.waitForEvent("dialog");
+  await page.close({ runBeforeUnload: true });
+  const shown = await dialog;
+  expect(shown.type()).toBe("beforeunload");
+  await shown.dismiss();
+});

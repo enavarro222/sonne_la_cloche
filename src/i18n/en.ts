@@ -116,6 +116,12 @@ export const en = {
       value: "{{name}}: {{value}} {{unit}}",
     },
     bikeLost: "Reconnect the bike to go on",
+    quit: {
+      title: "Leave the game?",
+      message: "The scores of this game will be lost.",
+      confirm: "Leave",
+      cancel: "Keep playing",
+    },
     next: "Next rider",
     retry: "Ride again",
     playAgain: "New game",

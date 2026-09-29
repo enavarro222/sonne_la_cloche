@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { type Game, initialState, reducer } from "../core/game";
 import type { RideStats } from "../core/ride";
 import { DEFAULT_SETTINGS } from "../core/settings";
@@ -17,7 +18,7 @@ function gameAfterOneRide(stats: RideStats): Game {
   return state.game;
 }
 
-const renderResult = (game: Game) =>
+const renderResult = (game: Game, onHome: () => void = () => undefined) =>
   render(
     <ResultScreen
       game={game}
@@ -25,9 +26,11 @@ const renderResult = (game: Game) =>
       onNext={() => undefined}
       onRetry={() => undefined}
       onPlayAgain={() => undefined}
-      onHome={() => undefined}
+      onHome={onHome}
     />,
   );
+
+const STATS = { avgCadence: 88, avgPower: 70, maxCadence: 104, maxPower: 95 };
 
 describe("ResultScreen", () => {
   it("shows the ride's averages and peaks", () => {
@@ -46,5 +49,44 @@ describe("ResultScreen", () => {
     renderResult(gameAfterOneRide({ avgCadence: 88, avgPower: 70, maxCadence: 104, maxPower: 95 }));
     const lea = screen.getByRole("row", { name: /Léa/ });
     expect(lea).toHaveTextContent(/^1Léa500–––500$/);
+  });
+
+  it("asks before leaving a game in progress", async () => {
+    const onHome = vi.fn();
+    renderResult(gameAfterOneRide(STATS), onHome);
+    await userEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(onHome).not.toHaveBeenCalled();
+    const dialog = screen.getByRole("alertdialog", { name: "Leave the game?" });
+    expect(dialog).toHaveTextContent("The scores of this game will be lost.");
+    // The safe choice has the focus.
+    expect(screen.getByRole("button", { name: "Keep playing" })).toHaveFocus();
+
+    await userEvent.click(screen.getByRole("button", { name: "Keep playing" }));
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(onHome).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Home" }));
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Home" }));
+    await userEvent.click(screen.getByRole("button", { name: "Leave" }));
+    expect(onHome).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a finished game without asking", async () => {
+    let state = reducer(initialState(players, { ...DEFAULT_SETTINGS, rounds: 3 }), {
+      type: "gameStarted",
+    });
+    for (let i = 0; i < 6; i++) {
+      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS });
+      if (i < 5) state = reducer(state, { type: "nextTurn" });
+    }
+    if (!state.game) throw new Error("no game");
+    const onHome = vi.fn();
+    renderResult(state.game, onHome);
+    await userEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(onHome).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 });

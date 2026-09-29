@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   currentPlayer,
@@ -10,6 +11,7 @@ import {
   upNext,
 } from "../core/game";
 import type { RideStats } from "../core/ride";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
 import styles from "./ResultScreen.module.css";
@@ -85,6 +87,7 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
   const next = upNext(game);
   const over = isGameOver(game);
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
 
   return (
     <div className={styles.result}>
@@ -146,7 +149,18 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           <button type="button" className="secondary" onClick={onRetry} disabled={!bikeReady}>
             {t("result.retry")}
           </button>
-          <button type="button" className="secondary" onClick={onHome}>
+          <button
+            type="button"
+            className="secondary"
+            // Once the game is over there is nothing left to lose.
+            onClick={
+              over
+                ? onHome
+                : () => {
+                    setConfirmingQuit(true);
+                  }
+            }
+          >
             {t("result.home")}
           </button>
         </div>
@@ -206,6 +220,18 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           </table>
         </div>
       </section>
+      {confirmingQuit && (
+        <ConfirmDialog
+          title={t("result.quit.title")}
+          message={t("result.quit.message")}
+          confirmLabel={t("result.quit.confirm")}
+          cancelLabel={t("result.quit.cancel")}
+          onConfirm={onHome}
+          onCancel={() => {
+            setConfirmingQuit(false);
+          }}
+        />
+      )}
     </div>
   );
 }
