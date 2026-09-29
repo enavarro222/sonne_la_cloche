@@ -14,6 +14,9 @@ import type { RideStats } from "../core/ride";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
+import { renderResultCard } from "./share/resultCard";
+import { shareContent } from "./share/shareContent";
+import { shareResults } from "./share/shareResults";
 import styles from "./ResultScreen.module.css";
 
 /** Average and peak of the ride; hidden when the sensor does not measure it. */
@@ -88,6 +91,18 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
   const over = isGameOver(game);
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareNote, setShareNote] = useState<string | null>(null);
+
+  const share = async () => {
+    setSharing(true);
+    setShareNote(null);
+    const content = shareContent(game, t, i18n.language, location.origin + location.pathname);
+    const outcome = await shareResults(content, await renderResultCard(content));
+    if (outcome === "downloaded") setShareNote(t("share.fallback"));
+    if (outcome === "failed") setShareNote(t("share.failed"));
+    setSharing(false);
+  };
 
   return (
     <div className={styles.result}>
@@ -124,6 +139,11 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           )
         )}
 
+        {shareNote && (
+          <p className={styles.shareNote} role="status">
+            {shareNote}
+          </p>
+        )}
         {!bikeReady && (
           <p className={styles.warning} role="alert">
             {t("result.bikeLost")}
@@ -131,9 +151,19 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
         )}
         <div className={styles.actions}>
           {over ? (
-            <button type="button" className="primary" onClick={onPlayAgain} disabled={!bikeReady}>
-              {t("result.playAgain")}
-            </button>
+            <>
+              <button type="button" className="primary" onClick={onPlayAgain} disabled={!bikeReady}>
+                {t("result.playAgain")}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => void share()}
+                disabled={sharing}
+              >
+                {t("share.button")}
+              </button>
+            </>
           ) : (
             <button
               type="button"

@@ -83,6 +83,12 @@ export const fr: Translation = {
       help: "Un tour = tout le monde pédale une fois. Le classement additionne tous les tours.",
     },
   },
+  share: {
+    button: "Partager",
+    playedOn: "Partie du {{date}}",
+    fallback: "Image téléchargée et texte copié : colle-les où tu veux !",
+    failed: "Le partage n'a pas marché",
+  },
   ride: {
     turn: "Au tour de {{name}}",
     turn_elided: "Au tour d'{{name}}",

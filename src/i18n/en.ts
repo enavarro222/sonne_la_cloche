@@ -81,6 +81,12 @@ export const en = {
       help: "One round = everyone rides once. The ranking adds up every round.",
     },
   },
+  share: {
+    button: "Share",
+    playedOn: "Game of {{date}}",
+    fallback: "Image downloaded and text copied: paste them wherever you like!",
+    failed: "Sharing did not work",
+  },
   ride: {
     turn: "{{name}}'s turn",
     turn_elided: "{{name}}'s turn",

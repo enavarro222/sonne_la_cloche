@@ -34,6 +34,21 @@ test("refuses the same name twice", async ({ page }) => {
 test("plays a whole game and announces the winner", async ({ page }) => {
   // Six simulated rides: each one runs ~1200 animation frames.
   test.setTimeout(120_000);
+  // Stand-in for the device's share menu: records what it is given.
+  await page.addInitScript(() => {
+    const w = window as unknown as { shared: unknown };
+    w.shared = null;
+    navigator.canShare = () => true;
+    navigator.share = async (data?: ShareData) => {
+      const file = data?.files?.[0];
+      const bitmap = file ? await createImageBitmap(file) : null;
+      w.shared = {
+        text: data?.text,
+        type: file?.type,
+        size: [bitmap?.width, bitmap?.height],
+      };
+    };
+  });
   await openGame(page);
   await chooseSettings(page, { duration: "20 s", rounds: "3 tours" });
   await addPlayers(page, "Léa", "Tom");
@@ -77,6 +92,16 @@ test("plays a whole game and announces the winner", async ({ page }) => {
   await expect(ranking.last().locator("td")).toHaveText(["2", "0", "0", "0", "0"]);
   await expect(page.getByText("Meilleur passage")).toBeVisible();
   await expect(page.getByText("Jambes les plus rapides")).toBeVisible();
+
+  await page.getByRole("button", { name: "Partager" }).click();
+  const shared = await page.waitForFunction(
+    () => (window as unknown as { shared: unknown }).shared,
+  );
+  expect(await shared.jsonValue()).toEqual({
+    text: expect.stringMatching(/^🔔 Léa sonne la cloche !\n1\. Léa \(\d+\)\n2\. Tom \(0\)/),
+    type: "image/png",
+    size: [1080, 1350],
+  });
 
   await page.getByRole("button", { name: "Nouvelle partie" }).click();
   await expect(page.getByText("Au tour de Léa")).toBeVisible();

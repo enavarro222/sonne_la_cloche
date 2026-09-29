@@ -245,3 +245,8 @@
   font-size: 0.7em;
   opacity: 0.9;
 }
+
+.shareNote {
+  color: var(--mint);
+  font-weight: 700;
+}
