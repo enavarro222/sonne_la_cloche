@@ -1,10 +1,12 @@
 export const METRICS = ["cadence", "power"] as const;
 export type Metric = (typeof METRICS)[number];
 
-export const DURATIONS_SEC = [20, 30, 45] as const;
+export const DURATIONS_SEC = [5, 20, 30, 45] as const;
 export type DurationSec = (typeof DURATIONS_SEC)[number];
 
-export const ROUND_COUNTS = [3, 4, 5] as const;
+export const ROUND_COUNTS = [1, 3, 4, 5] as const;
+/** Express games to try things out, offered only in test mode (?dev in the URL). */
+export const TEST_ONLY = { durationSec: 5, rounds: 1 } as const;
 export type RoundCount = (typeof ROUND_COUNTS)[number];
 
 export const RESISTANCES = ["light", "normal", "hard", "megaHard"] as const;

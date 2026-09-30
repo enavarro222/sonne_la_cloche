@@ -1,9 +1,18 @@
 import { useTranslation } from "react-i18next";
-import { DURATIONS_SEC, METRICS, RESISTANCES, ROUND_COUNTS, type Settings } from "../core/settings";
+import {
+  DURATIONS_SEC,
+  METRICS,
+  RESISTANCES,
+  ROUND_COUNTS,
+  type Settings,
+  TEST_ONLY,
+} from "../core/settings";
 import styles from "./SettingsScreen.module.css";
 
 interface Props {
   settings: Settings;
+  /** Adds express games (5 s rides, 1 round) to try things out. */
+  testMode: boolean;
   onChange: (settings: Partial<Settings>) => void;
   onDone: () => void;
 }
@@ -47,7 +56,9 @@ function Choice<T extends string | number>({
   );
 }
 
-export function SettingsScreen({ settings, onChange, onDone }: Props) {
+export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) {
+  const durations = DURATIONS_SEC.filter((d) => testMode || d !== TEST_ONLY.durationSec);
+  const rounds = ROUND_COUNTS.filter((r) => testMode || r !== TEST_ONLY.rounds);
   const { t } = useTranslation();
   return (
     <div className={styles.settings}>
@@ -64,7 +75,7 @@ export function SettingsScreen({ settings, onChange, onDone }: Props) {
       />
       <Choice
         label={t("settings.duration.label")}
-        options={DURATIONS_SEC}
+        options={durations}
         value={settings.durationSec}
         format={(count) => t("settings.duration.value", { count })}
         onSelect={(durationSec) => {
@@ -73,7 +84,7 @@ export function SettingsScreen({ settings, onChange, onDone }: Props) {
       />
       <Choice
         label={t("settings.rounds.label")}
-        options={ROUND_COUNTS}
+        options={rounds}
         value={settings.rounds}
         format={(count) => t("settings.rounds.value", { count })}
         onSelect={(rounds) => {

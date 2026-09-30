@@ -19,6 +19,8 @@ export function App() {
     initialState(loadRoster(), loadSettings()),
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // ?dev in the address: express games, and every feature without a bike.
+  const testMode = new URLSearchParams(location.search).has("dev");
   const sensorState = useSensor();
   const { sensor } = sensorState;
   const { game } = state;
@@ -43,6 +45,7 @@ export function App() {
     screen = settingsOpen ? (
       <SettingsScreen
         settings={state.settings}
+        testMode={testMode}
         onChange={(settings) => {
           dispatch({ type: "settingsChanged", settings });
         }}
