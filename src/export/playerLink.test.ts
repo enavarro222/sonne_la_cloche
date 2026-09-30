@@ -3,6 +3,19 @@ import { decodePlayerActivity, encodePlayerActivity } from "./playerLink";
 
 const START = Date.parse("2026-09-29T15:00:00.000Z");
 
+const summary = (players: number) => ({
+  ranking: Array.from({ length: players }, (_, i) => ({
+    rank: i + 1,
+    name: `Maximilien-J${String(i)}`,
+    total: 9000 - i * 300,
+  })),
+  awards: {
+    bestRide: { name: "Maximilien-J0", value: 1210 },
+    fastest: null,
+    strongest: { name: "Maximilien-J3", value: 302 },
+  },
+});
+
 const activity = (rounds: number, seconds: number, sample: (i: number) => [number, number]) => ({
   locale: "fr" as const,
   name: "Léa-Zoé ✨",
@@ -17,6 +30,8 @@ const activity = (rounds: number, seconds: number, sample: (i: number) => [numbe
       return { second: s + 1, cadence, power };
     }),
   })),
+  summary: summary(6),
+  strava: true,
 });
 
 describe("player link", () => {
@@ -25,14 +40,26 @@ describe("player link", () => {
     expect(await decodePlayerActivity(await encodePlayerActivity(original))).toEqual(original);
   });
 
+  it("keeps a demo game away from Strava", async () => {
+    const original = { ...activity(1, 5, () => [90, 100]), strava: false };
+    expect(await decodePlayerActivity(await encodePlayerActivity(original))).toEqual(original);
+  });
+
+  it("reads links made before the summary was added", async () => {
+    const original = { ...activity(1, 5, () => [90, 100]), summary: null };
+    expect(await decodePlayerActivity(await encodePlayerActivity(original))).toEqual(original);
+  });
+
   it("stays short enough for an easy QR code, even in the worst case", async () => {
-    // 5 rounds of 45 s with random values: nothing for the compression to exploit.
+    // 10 players, 5 rounds of 45 s with random values: nothing for the
+    // compression to exploit.
     let seed = 42;
     const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    const fragment = await encodePlayerActivity(
-      activity(5, 45, () => [Math.floor(60 + random() * 60), Math.floor(random() * 300)]),
-    );
-    expect(fragment.length).toBeLessThan(800);
+    const fragment = await encodePlayerActivity({
+      ...activity(5, 45, () => [Math.floor(60 + random() * 60), Math.floor(random() * 300)]),
+      summary: summary(10),
+    });
+    expect(fragment.length).toBeLessThan(1000);
     expect(fragment).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 

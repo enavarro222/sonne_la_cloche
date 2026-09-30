@@ -31,7 +31,7 @@ test("refuses the same name twice", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(1);
 });
 
-test("plays a whole game and announces the winner", async ({ page }) => {
+test("plays a whole game and announces the winner", async ({ page, context }) => {
   // Six simulated rides: each one runs ~1200 animation frames.
   test.setTimeout(120_000);
   // Stand-in for the device's share menu: records what it is given.
@@ -94,7 +94,7 @@ test("plays a whole game and announces the winner", async ({ page }) => {
   await expect(page.getByText("Meilleur passage")).toBeVisible();
   await expect(page.getByText("Jambes les plus rapides")).toBeVisible();
 
-  await page.getByRole("button", { name: "Partager" }).click();
+  await page.getByRole("button", { name: "Partager", exact: true }).click();
   const shared = await page.waitForFunction(
     () => (window as unknown as { shared: unknown }).shared,
   );
@@ -103,6 +103,17 @@ test("plays a whole game and announces the winner", async ({ page }) => {
     type: "image/png",
     size: [1080, 1350],
   });
+
+  // Everyone can take the game to their phone; a demo game is no real ride,
+  // so there is nothing to publish on Strava there.
+  await page.getByRole("button", { name: "📱 Sur vos téléphones" }).click();
+  const here = page.getByRole("link", { name: "ou ouvre-la sur cet appareil" });
+  const phone = await context.newPage();
+  await phone.goto((await here.getAttribute("href")) ?? "");
+  await expect(phone.getByRole("button", { name: "Partager l'image" })).toBeVisible();
+  await expect(phone.getByRole("button", { name: "Publier sur Strava" })).toHaveCount(0);
+  await phone.close();
+  await page.getByRole("button", { name: "Fermer" }).click();
 
   await page.getByRole("button", { name: "Nouvelle partie" }).click();
   await expect(page.getByText("Au tour de Léa")).toBeVisible();

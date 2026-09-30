@@ -10,6 +10,8 @@ const game = (rank: number, rides = 3): PlayerActivity => ({
   players: 6,
   total: 1881,
   rides: Array.from({ length: rides }, () => ({ startedAt: 0, points: 627, samples: [] })),
+  summary: null,
+  strava: true,
 });
 const URL = "https://sonnelacloche.enavarro.eu/";
 

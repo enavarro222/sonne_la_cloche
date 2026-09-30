@@ -118,3 +118,15 @@
 #root .banner[hidden] {
   display: none;
 }
+
+#root .strava.big {
+  font-size: 1.25em;
+  padding: 0.8em 1.6em;
+}
+
+#root .card {
+  display: block;
+  width: min(100%, 22rem);
+  border-radius: var(--radius);
+  box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 0.35);
+}

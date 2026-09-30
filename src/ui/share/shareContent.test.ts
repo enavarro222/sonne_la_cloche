@@ -1,6 +1,6 @@
 import i18n from "i18next";
 import { describe, expect, it } from "vitest";
-import { type Action, type Game, initialState, reducer } from "../../core/game";
+import { type Action, initialState, reducer, summarize } from "../../core/game";
 import { NO_STATS } from "../../core/ride";
 import { DEFAULT_SETTINGS } from "../../core/settings";
 import { wrapText } from "./resultCard";
@@ -12,7 +12,7 @@ const players = [
   { id: "zoe", name: "Zoé" },
 ];
 
-function finishedGame(points: number[]): Game {
+function finishedGame(points: number[]) {
   const actions: Action[] = [{ type: "gameStarted" }];
   points.forEach((p, i) => {
     actions.push({
@@ -25,7 +25,7 @@ function finishedGame(points: number[]): Game {
   });
   const state = actions.reduce(reducer, initialState(players, { ...DEFAULT_SETTINGS, rounds: 3 }));
   if (!state.game) throw new Error("no game");
-  return state.game;
+  return summarize(state.game);
 }
 
 const URL = "https://sonnelacloche.enavarro.eu/en/";

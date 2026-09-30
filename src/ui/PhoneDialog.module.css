@@ -29,36 +29,54 @@
 
 .body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(12rem, 1fr) auto;
   gap: calc(var(--gap) * 1.5);
   align-items: center;
 }
 
-@media (orientation: portrait) {
-  .body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
+/* Players one under the other, as big as the QR code is tall. */
 .players {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: min(66vmin, 30rem);
+  overflow-y: auto;
   list-style: none;
 }
 
 .players button {
-  min-height: var(--tap);
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.3rem 1.2rem;
+  border-radius: 14px;
   background: var(--surface);
   font-weight: 900;
-  font-size: 1.1em;
+  font-size: 1.2em;
+  text-align: left;
 }
 
 .players button[aria-pressed="true"] {
   background: var(--yellow);
   color: var(--night);
+}
+
+/* Narrow screens: the players wrap above the code. */
+@media (max-width: 720px), (orientation: portrait) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .players {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: none;
+  }
+
+  .players button {
+    width: auto;
+    min-height: var(--tap);
+    font-size: 1.1em;
+  }
 }
 
 .code {

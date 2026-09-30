@@ -8,11 +8,12 @@ import {
   isGameOver,
   lastRide,
   standings,
+  summarize,
   upNext,
 } from "../core/game";
 import type { RideStats } from "../core/ride";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { StravaDialog } from "./StravaDialog";
+import { PhoneDialog } from "./PhoneDialog";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
 import { renderResultCard } from "./share/resultCard";
@@ -77,13 +78,23 @@ interface Props {
   game: Game;
   /** False while the bike is lost: riding now would score zero. */
   bikeReady: boolean;
+  /** Only for games ridden on a real bike (or in test mode). */
+  stravaAvailable: boolean;
   onNext: () => void;
   onRetry: () => void;
   onPlayAgain: () => void;
   onHome: () => void;
 }
 
-export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, onHome }: Props) {
+export function ResultScreen({
+  game,
+  bikeReady,
+  stravaAvailable,
+  onNext,
+  onRetry,
+  onPlayAgain,
+  onHome,
+}: Props) {
   const { t, i18n } = useTranslation();
   const player = currentPlayer(game);
   const ride = lastRide(game);
@@ -93,13 +104,19 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [stravaOpen, setStravaOpen] = useState(false);
+  const [phonesOpen, setPhonesOpen] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
 
   const share = async () => {
     setSharing(true);
     setShareNote(null);
-    const content = shareContent(game, t, i18n.language, location.origin + location.pathname);
+    const content = shareContent(
+      summarize(game),
+      t,
+      i18n.language,
+      location.origin + location.pathname,
+      new Date(),
+    );
     const outcome = await shareResults(content, await renderResultCard(content));
     if (outcome === "downloaded") setShareNote(t("share.fallback"));
     if (outcome === "failed") setShareNote(t("share.failed"));
@@ -160,19 +177,19 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
               <button
                 type="button"
                 className="secondary"
-                onClick={() => void share()}
-                disabled={sharing}
+                onClick={() => {
+                  setPhonesOpen(true);
+                }}
               >
-                {t("share.button")}
+                {t("result.phone.button")}
               </button>
               <button
                 type="button"
                 className="secondary"
-                onClick={() => {
-                  setStravaOpen(true);
-                }}
+                onClick={() => void share()}
+                disabled={sharing}
               >
-                {t("result.strava.button")}
+                {t("share.button")}
               </button>
             </>
           ) : (
@@ -261,11 +278,12 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           </table>
         </div>
       </section>
-      {stravaOpen && (
-        <StravaDialog
+      {phonesOpen && (
+        <PhoneDialog
           game={game}
+          strava={stravaAvailable}
           onClose={() => {
-            setStravaOpen(false);
+            setPhonesOpen(false);
           }}
         />
       )}

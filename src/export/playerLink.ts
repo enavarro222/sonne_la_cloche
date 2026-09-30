@@ -2,6 +2,7 @@
 // It travels after the "#", which browsers never send to the server: the
 // data goes from the tablet to the phone without being stored anywhere.
 
+import type { GameSummary, SummaryFeat } from "../core/game";
 import type { RideSample } from "../core/ride";
 import type { Locale } from "../i18n/locales";
 import { isLocale } from "../i18n/locales";
@@ -20,11 +21,58 @@ export interface PlayerActivity {
   players: number;
   total: number;
   rides: readonly PlayerRide[];
+  /** The whole game, to redraw the results image; null in older links. */
+  summary: GameSummary | null;
+  /** Ridden on a real bike, so it can go to Strava (older links: all were). */
+  strava: boolean;
 }
 
 const VERSION = 1;
 /** Power is stored in 2 W steps in one byte: up to 510 W. */
 const POWER_STEP = 2;
+
+/** Awards in the order they are packed. */
+const AWARDS = ["bestRide", "fastest", "strongest"] as const;
+
+/**
+ * The summary in the header: ranking rows as [rank, name, total], awards as
+ * [row index, value] or 0, so a name is never written twice.
+ */
+function packSummary({ ranking, awards }: GameSummary) {
+  return {
+    k: ranking.map((r) => [r.rank, r.name, r.total]),
+    a: AWARDS.map((key) => {
+      const feat = awards[key];
+      const row = feat ? ranking.findIndex((r) => r.name === feat.name) : -1;
+      return feat && row >= 0 ? [row, feat.value] : 0;
+    }),
+  };
+}
+
+const isInt = (value: unknown): value is number => Number.isInteger(value);
+
+function unpackSummary(packed: unknown): GameSummary | null {
+  if (typeof packed !== "object" || packed === null) return null;
+  const { k, a } = packed as Record<string, unknown>;
+  if (!Array.isArray(k) || !Array.isArray(a) || a.length !== AWARDS.length) return null;
+  const ranking: GameSummary["ranking"] = [];
+  for (const row of k as unknown[]) {
+    if (!Array.isArray(row)) return null;
+    const [rank, name, total] = row as unknown[];
+    if (!isInt(rank) || typeof name !== "string" || !isInt(total)) return null;
+    ranking.push({ rank, name, total });
+  }
+  const feat = (entry: unknown): SummaryFeat | null | undefined => {
+    if (entry === 0) return null;
+    if (!Array.isArray(entry)) return undefined;
+    const [row, value] = entry as unknown[];
+    const name = isInt(row) ? ranking[row]?.name : undefined;
+    return name !== undefined && isInt(value) ? { name, value } : undefined;
+  };
+  const [bestRide, fastest, strongest] = (a as unknown[]).map(feat);
+  if (bestRide === undefined || fastest === undefined || strongest === undefined) return null;
+  return { ranking, awards: { bestRide, fastest, strongest } };
+}
 
 const clampByte = (value: number) => Math.min(255, Math.max(0, Math.round(value)));
 
@@ -36,6 +84,8 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
       r: activity.rank,
       p: activity.players,
       t: activity.total,
+      ...(activity.summary && { s: packSummary(activity.summary) }),
+      ...(!activity.strava && { d: 1 }),
     }),
   );
   const size =
@@ -70,7 +120,7 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
     new TextDecoder().decode(bytes.subarray(o, o + headerLength)),
   ) as Record<string, unknown>;
   o += headerLength;
-  const { l, n, r, p, t } = header;
+  const { l, n, r, p, t, s, d } = header;
   if (
     typeof l !== "string" ||
     !isLocale(l) ||
@@ -98,7 +148,16 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
     }
     rides.push({ startedAt, points, samples });
   }
-  return { locale: l, name: n, rank: r, players: p, total: t, rides };
+  return {
+    locale: l,
+    name: n,
+    rank: r,
+    players: p,
+    total: t,
+    rides,
+    summary: unpackSummary(s),
+    strava: d !== 1,
+  };
 }
 
 async function transform(

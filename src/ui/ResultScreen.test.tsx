@@ -20,11 +20,12 @@ function gameAfterOneRide(stats: RideStats): Game {
   return state.game;
 }
 
-const renderResult = (game: Game, onHome: () => void = () => undefined) =>
+const renderResult = (game: Game, onHome: () => void = () => undefined, stravaAvailable = true) =>
   render(
     <ResultScreen
       game={game}
       bikeReady
+      stravaAvailable={stravaAvailable}
       onNext={() => undefined}
       onRetry={() => undefined}
       onPlayAgain={() => undefined}
@@ -90,5 +91,18 @@ describe("ResultScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Home" }));
     expect(onHome).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("lets everyone take the game to their phone, even without a bike", () => {
+    let state = reducer(initialState(players, { ...DEFAULT_SETTINGS, rounds: 3 }), {
+      type: "gameStarted",
+    });
+    for (let i = 0; i < 6; i++) {
+      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS, trace: TRACE });
+      if (i < 5) state = reducer(state, { type: "nextTurn" });
+    }
+    if (!state.game) throw new Error("no game");
+    renderResult(state.game, undefined, false);
+    expect(screen.getByRole("button", { name: "📱 On your phones" })).toBeInTheDocument();
   });
 });

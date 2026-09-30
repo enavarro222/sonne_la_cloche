@@ -5,15 +5,20 @@ import { playerActivities } from "../export/fromGame";
 import { encodePlayerActivity } from "../export/playerLink";
 import { DEFAULT_LOCALE, isLocale } from "../i18n/locales";
 import { cx } from "./cx";
-import styles from "./StravaDialog.module.css";
+import styles from "./PhoneDialog.module.css";
 
 interface Props {
   game: Game;
+  /** Played on a real bike (or in test mode): the phone offers Strava too. */
+  strava: boolean;
   onClose: () => void;
 }
 
-/** One QR code per player: it opens their game on their phone, ready for Strava. */
-export function StravaDialog({ game, onClose }: Props) {
+/**
+ * One QR code per player: it opens their game on their own phone, to share
+ * it with their own accounts (the picture on WhatsApp and the like, Strava).
+ */
+export function PhoneDialog({ game, strava, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const id = useId();
   const [selected, setSelected] = useState(0);
@@ -21,7 +26,7 @@ export function StravaDialog({ game, onClose }: Props) {
   const close = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const locale = isLocale(i18n.language) ? i18n.language : DEFAULT_LOCALE;
-  const activities = playerActivities(game, locale);
+  const activities = playerActivities(game, locale, strava);
   const activity = activities[selected];
 
   useEffect(() => {
@@ -55,7 +60,7 @@ export function StravaDialog({ game, onClose }: Props) {
     };
     // The activity is derived from the game and the selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, selected, locale]);
+  }, [game, selected, locale, strava]);
 
   return (
     <div className={styles.backdrop}>
@@ -65,7 +70,7 @@ export function StravaDialog({ game, onClose }: Props) {
         aria-modal="true"
         aria-labelledby={`${id}-title`}
       >
-        <h2 id={`${id}-title`}>{t("result.strava.title")}</h2>
+        <h2 id={`${id}-title`}>{t("result.phone.title")}</h2>
         <div className={styles.body}>
           <ul className={styles.players}>
             {activities.map((a, index) => (
@@ -84,14 +89,14 @@ export function StravaDialog({ game, onClose }: Props) {
           </ul>
           <figure className={styles.code}>
             {qr?.index === selected ? (
-              <img src={qr.src} alt={t("result.strava.scan", { name: activity?.name ?? "" })} />
+              <img src={qr.src} alt={t("result.phone.scan", { name: activity?.name ?? "" })} />
             ) : (
               <div className={styles.placeholder} aria-hidden="true" />
             )}
-            <figcaption>{t("result.strava.scan", { name: activity?.name ?? "" })}</figcaption>
+            <figcaption>{t("result.phone.scan", { name: activity?.name ?? "" })}</figcaption>
             {qr?.index === selected && (
               <a href={qr.url} target="_blank" rel="noopener" className={styles.here}>
-                {t("result.strava.openHere")}
+                {t("result.phone.openHere")}
               </a>
             )}
           </figure>
@@ -102,7 +107,7 @@ export function StravaDialog({ game, onClose }: Props) {
           className={cx("secondary", styles.close)}
           onClick={onClose}
         >
-          {t("result.strava.close")}
+          {t("result.phone.close")}
         </button>
       </div>
     </div>

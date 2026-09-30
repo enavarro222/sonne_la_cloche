@@ -95,6 +95,8 @@ export function App() {
       <ResultScreen
         game={game}
         bikeReady={sensorState.ready}
+        // A demo game on Strava would be a fake activity.
+        stravaAvailable={sensorState.connection.kind === "bluetooth" || testMode}
         onNext={() => {
           dispatch({ type: "nextTurn" });
         }}

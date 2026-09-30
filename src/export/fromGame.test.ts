@@ -28,7 +28,7 @@ describe("playerActivities", () => {
     ];
     const state = actions.reduce(reducer, initialState(players, DEFAULT_SETTINGS));
     if (!state.game) throw new Error("no game");
-    const [lea, tom] = playerActivities(state.game, "fr");
+    const [lea, tom] = playerActivities(state.game, "fr", true);
     expect(lea).toMatchObject({ locale: "fr", name: "Léa", rank: 2, players: 2, total: 250 });
     expect(lea?.rides.map((r) => [r.points, new Date(r.startedAt).toISOString()])).toEqual([
       [100, at(0)],
@@ -36,5 +36,11 @@ describe("playerActivities", () => {
     ]);
     expect(tom).toMatchObject({ name: "Tom", rank: 1, total: 300 });
     expect(tom?.rides[0]?.samples).toEqual([{ second: 1, cadence: 90, power: 60 }]);
+    // Everyone carries the whole ranking, to redraw the results image.
+    expect(lea?.summary?.ranking).toEqual([
+      { rank: 1, name: "Tom", total: 300 },
+      { rank: 2, name: "Léa", total: 250 },
+    ]);
+    expect(lea?.summary).toEqual(tom?.summary);
   });
 });

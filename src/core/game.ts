@@ -241,3 +241,28 @@ export function highlights(game: Game): Highlights {
     strongest: top((r) => r.stats.maxPower),
   };
 }
+
+/** An award in a summary: the name and a rounded value. */
+export interface SummaryFeat {
+  name: string;
+  value: number;
+}
+
+/**
+ * The end of a game as the results image shows it: the ranking and the
+ * awards, without the rides. Small enough to travel in a QR code.
+ */
+export interface GameSummary {
+  ranking: { rank: number; name: string; total: number }[];
+  awards: Record<keyof Highlights, SummaryFeat | null>;
+}
+
+export function summarize(game: Game): GameSummary {
+  const feat = (f: Feat | null): SummaryFeat | null =>
+    f && { name: f.player.name, value: Math.round(f.value) };
+  const { bestRide, fastest, strongest } = highlights(game);
+  return {
+    ranking: standings(game).map((s) => ({ rank: s.rank, name: s.player.name, total: s.total })),
+    awards: { bestRide: feat(bestRide), fastest: feat(fastest), strongest: feat(strongest) },
+  };
+}

@@ -12,6 +12,9 @@
   --surface: rgb(255 255 255 / 0.08);
   --surface-dark: rgb(0 0 0 / 0.28);
   --line: rgb(255 255 255 / 0.18);
+  /* Strava's brand orange, for the buttons that lead to Strava only. */
+  --strava: #fc4c02;
+  --strava-dark: #b83700;
 
   --font-display: "Bungee", "Impact", "Haettenschweiler", sans-serif;
   --font-text: "Nunito", "Trebuchet MS", system-ui, sans-serif;
@@ -103,6 +106,21 @@ button:disabled {
 .secondary {
   border: 3px solid rgb(255 255 255 / 0.25);
   padding: 0.55em 1.1em;
+}
+
+.strava {
+  min-height: var(--tap);
+  padding: 0.55em 1.1em;
+  border-radius: var(--radius);
+  background: var(--strava);
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 4px 0 var(--strava-dark);
+}
+
+.strava:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--strava-dark);
 }
 
 .visually-hidden {

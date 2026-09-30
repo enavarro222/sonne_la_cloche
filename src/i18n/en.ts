@@ -83,7 +83,7 @@ export const en = {
     },
   },
   strava: {
-    title: "Your game on Strava",
+    title: "Your game",
     invalid:
       "This link does not contain a game. Scan the QR code again on the game's final screen.",
     summary: "{{rank}} of {{players}} · {{total}} points",
@@ -99,11 +99,19 @@ export const en = {
     noPosition: "Position unavailable: the activity will have no map.",
     publish: "Publish on Strava",
     download: "Download the .fit file",
+    importHelp: "Then import it on strava.com, or in your training app (Garmin Connect…).",
+    shareImage: "Share the picture",
+    shareHelp: "On WhatsApp, Signal, Instagram… or save it to your photos.",
+    imageAlt: "Results of the game: ranking and awards",
+    stravaTitle: "Strava",
+    imageHelp: "Once published, add the picture as a photo to your activity, in the Strava app.",
     help: "Strava asks you to authorize the game; the access is withdrawn right after the upload. Nothing is stored.",
     sending: "Sending to Strava…",
     done: "Published on Strava!",
     view: "See the activity on Strava",
     refused: "Authorization refused on Strava.",
+    notConfigured:
+      "Publishing on Strava is not set up on this server yet. You can still download the file and import it on strava.com.",
     duplicate: "This game is already on Strava.",
     failed: "Publishing failed. You can still download the file and import it on strava.com.",
     activityName: "🔔 Ring the Bell!",
@@ -154,9 +162,9 @@ export const en = {
       value: "{{name}}: {{value}} {{unit}}",
     },
     bikeLost: "Reconnect the bike to go on",
-    strava: {
-      button: "Strava",
-      title: "Put your game on Strava",
+    phone: {
+      button: "📱 On your phones",
+      title: "Everyone takes their game home",
       scan: "{{name}}, scan this with your phone",
       openHere: "or open it on this device",
       close: "Close",

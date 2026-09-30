@@ -84,7 +84,7 @@ export const fr: Translation = {
     },
   },
   strava: {
-    title: "Ta partie sur Strava",
+    title: "Ta partie",
     invalid: "Ce lien ne contient pas de partie. Rescanne le QR code sur l'écran de fin de partie.",
     summary: "{{rank}} sur {{players}} · {{total}} points",
     rank_ordinal_one: "{{count}}er",
@@ -100,11 +100,20 @@ export const fr: Translation = {
     noPosition: "Position indisponible : l'activité n'aura pas de carte.",
     publish: "Publier sur Strava",
     download: "Télécharger le fichier .fit",
+    importHelp:
+      "Importe-le ensuite sur strava.com, ou dans ton appli d'entraînement (Garmin Connect…).",
+    shareImage: "Partager l'image",
+    shareHelp: "Sur WhatsApp, Signal, Instagram… ou enregistre-la dans tes photos.",
+    imageAlt: "Résultats de la partie : classement et récompenses",
+    stravaTitle: "Strava",
+    imageHelp: "Une fois publiée, ajoute l'image en photo à ton activité, dans l'app Strava.",
     help: "Strava te demande d'autoriser le jeu ; l'accès est retiré juste après l'envoi. Rien n'est conservé.",
     sending: "Envoi à Strava…",
     done: "C'est publié sur Strava !",
     view: "Voir l'activité sur Strava",
     refused: "Autorisation refusée sur Strava.",
+    notConfigured:
+      "La publication sur Strava n'est pas encore configurée sur ce serveur. Tu peux toujours télécharger le fichier et l'importer sur strava.com.",
     duplicate: "Cette partie est déjà sur Strava.",
     failed:
       "La publication a échoué. Tu peux toujours télécharger le fichier et l'importer sur strava.com.",
@@ -156,9 +165,9 @@ export const fr: Translation = {
       value: "{{name}} : {{value}} {{unit}}",
     },
     bikeLost: "Reconnecte le vélo pour continuer",
-    strava: {
-      button: "Strava",
-      title: "Mets ta partie sur Strava",
+    phone: {
+      button: "📱 Sur vos téléphones",
+      title: "Chacun récupère sa partie",
       scan: "{{name}}, scanne avec ton téléphone",
       openHere: "ou ouvre-la sur cet appareil",
       close: "Fermer",
