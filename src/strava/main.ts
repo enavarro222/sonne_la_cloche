@@ -82,7 +82,7 @@ async function upload(
       file: toBase64(buildFit(activity.rides, pending.center ?? undefined)),
       name,
       description,
-      sportType: pending.center ? "VirtualRide" : "Ride",
+      sportType: "VirtualRide",
       externalId: `sonne-la-cloche-${String(activity.rides[0]?.startedAt ?? 0)}-${activity.name}`,
     }),
   });

@@ -24,7 +24,8 @@ const stats = (samples: readonly RideSample[], pick: (s: RideSample) => number) 
 export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Array<ArrayBuffer> {
   const ordered = [...rides].sort((a, b) => a.startedAt - b.startedAt);
   const all = ordered.flatMap((r) => r.samples);
-  const sub_sport = center ? "virtual_activity" : "indoor_cycling";
+  // A game ride is virtual, with or without a map.
+  const sub_sport = "virtual_activity";
   const fit = new FitWriter();
   const at = (ms: number) => fit.time(new Date(ms));
   const first = ordered[0]?.startedAt ?? 0;

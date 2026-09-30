@@ -42,7 +42,7 @@ test("each player can take their game to Strava from a QR code", async ({ page, 
     bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
   );
   expect(fit.laps).toHaveLength(3);
-  expect(fit.sessions?.[0]?.sub_sport).toBe("indoor_cycling");
+  expect(fit.sessions?.[0]?.sub_sport).toBe("virtual_activity");
 
   // Publishing: Strava's consent page and the server are stood in for.
   let sent: Record<string, string> = {};
@@ -62,7 +62,7 @@ test("each player can take their game to Strava from a QR code", async ({ page, 
   );
   expect(sent.name).toBe("🔔 Sonne la cloche !");
   expect(sent.description).toMatch(/^1er sur 2 avec \d+ points en 3 passages\. http/);
-  expect(sent.sportType).toBe("Ride");
+  expect(sent.sportType).toBe("VirtualRide");
   expect(
     Buffer.from(sent.file ?? "", "base64")
       .subarray(8, 12)

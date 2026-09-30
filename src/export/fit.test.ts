@@ -27,9 +27,9 @@ describe("buildFit", () => {
     expect(fit.records?.[0]?.position_lat).toBeCloseTo(43.9, 2);
   });
 
-  it("is an indoor ride without GPS", async () => {
+  it("is still a virtual ride without GPS", async () => {
     const fit = await parse(buildFit(rides));
-    expect(fit.sessions?.[0]?.sub_sport).toBe("indoor_cycling");
+    expect(fit.sessions?.[0]?.sub_sport).toBe("virtual_activity");
     expect(fit.records?.some((r) => r.position_lat !== undefined)).toBe(false);
   });
 
