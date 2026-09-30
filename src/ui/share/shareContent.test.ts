@@ -19,6 +19,7 @@ function finishedGame(points: number[]): Game {
       type: "rideFinished",
       points: p,
       stats: { ...NO_STATS, maxCadence: 90 + i, maxPower: 60 },
+      trace: { startedAt: "2026-09-29T15:00:00.000Z", samples: [] },
     });
     if (i < points.length - 1) actions.push({ type: "nextTurn" });
   });

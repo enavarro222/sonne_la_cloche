@@ -6,6 +6,8 @@ import type { RideStats } from "../core/ride";
 import { DEFAULT_SETTINGS } from "../core/settings";
 import { ResultScreen } from "./ResultScreen";
 
+const TRACE = { startedAt: "2026-09-29T15:00:00.000Z", samples: [] };
+
 const players = [
   { id: "lea", name: "Léa" },
   { id: "tom", name: "Tom" },
@@ -13,7 +15,7 @@ const players = [
 
 function gameAfterOneRide(stats: RideStats): Game {
   let state = reducer(initialState(players, DEFAULT_SETTINGS), { type: "gameStarted" });
-  state = reducer(state, { type: "rideFinished", points: 500, stats });
+  state = reducer(state, { type: "rideFinished", points: 500, stats, trace: TRACE });
   if (!state.game) throw new Error("no game");
   return state.game;
 }
@@ -79,7 +81,7 @@ describe("ResultScreen", () => {
       type: "gameStarted",
     });
     for (let i = 0; i < 6; i++) {
-      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS });
+      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS, trace: TRACE });
       if (i < 5) state = reducer(state, { type: "nextTurn" });
     }
     if (!state.game) throw new Error("no game");

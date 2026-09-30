@@ -24,6 +24,14 @@ export interface Effort {
   power: number;
 }
 
+/** One measurement per second of ride, for the activity export. */
+export interface RideSample {
+  /** Seconds since the start of the ride: 1, 2, 3… */
+  second: number;
+  cadence: number;
+  power: number;
+}
+
 export interface RideProgress {
   elapsedSec: number;
   points: number;
@@ -32,6 +40,7 @@ export interface RideProgress {
   powerSum: number;
   maxCadence: number;
   maxPower: number;
+  samples: readonly RideSample[];
 }
 
 export interface RideStats {
@@ -48,7 +57,11 @@ export const startRide = (): RideProgress => ({
   powerSum: 0,
   maxCadence: 0,
   maxPower: 0,
+  samples: [],
 });
+
+/** Floating-point slack when checking whether a whole second was reached. */
+const SAMPLE_EPSILON = 1e-6;
 
 const clean = (value: number): number => (Number.isFinite(value) ? Math.max(0, value) : 0);
 
@@ -65,13 +78,20 @@ export function stepRide(
   const cadence = clean(effort.cadence);
   const power = clean(effort.power);
   const value = metric === "cadence" ? cadence : power;
+  const elapsedSec = progress.elapsedSec + dt;
+  // A sample each time a whole second is reached (a long frame may reach several).
+  let samples = progress.samples;
+  while (samples.length + 1 <= elapsedSec + SAMPLE_EPSILON) {
+    samples = [...samples, { second: samples.length + 1, cadence, power }];
+  }
   return {
-    elapsedSec: progress.elapsedSec + dt,
+    elapsedSec,
     points: progress.points + (value / POINTS_DIVISOR) * dt,
     cadenceSum: progress.cadenceSum + cadence * dt,
     powerSum: progress.powerSum + power * dt,
     maxCadence: Math.max(progress.maxCadence, cadence),
     maxPower: Math.max(progress.maxPower, power),
+    samples,
   };
 }
 

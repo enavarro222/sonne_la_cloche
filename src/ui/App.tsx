@@ -81,9 +81,9 @@ export function App() {
         settings={game.settings}
         record={bestRide(game)}
         sensor={sensor}
-        onFinish={(points, stats) => {
+        onFinish={(ride) => {
           sounds.fanfare();
-          dispatch({ type: "rideFinished", points, stats });
+          dispatch({ type: "rideFinished", ...ride });
         }}
       />
     );

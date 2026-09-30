@@ -3,7 +3,7 @@ import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../core/settings";
 import type { Sensor } from "../sensors/types";
-import { COUNTDOWN_STEP_MS, GO_DISPLAY_MS, RideScreen } from "./RideScreen";
+import { COUNTDOWN_STEP_MS, type FinishedRide, GO_DISPLAY_MS, RideScreen } from "./RideScreen";
 
 const COUNTDOWN_MS = COUNTDOWN_STEP_MS * 3 + GO_DISPLAY_MS;
 const player = { id: "lea", name: "Léa" };
@@ -41,7 +41,7 @@ describe("RideScreen", () => {
     vi.useRealTimers();
   });
 
-  const renderRide = (sensor: Sensor, onFinish: (points: number) => void) =>
+  const renderRide = (sensor: Sensor, onFinish: (ride: FinishedRide) => void) =>
     render(
       <StrictMode>
         <RideScreen
@@ -63,7 +63,17 @@ describe("RideScreen", () => {
     expect(screen.getByTestId("ride-score")).toBeInTheDocument();
     advance(25_000);
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish.mock.calls[0]?.[0]).toBeCloseTo(600, -1);
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(600, -1);
+  });
+
+  it("hands over the ride's trace: start time and one sample per second", () => {
+    const onFinish = vi.fn();
+    renderRide(steadySensor(90), onFinish);
+    advance(COUNTDOWN_MS + 21_000);
+    const ride = onFinish.mock.calls[0]?.[0] as FinishedRide;
+    expect(Date.parse(ride.trace.startedAt)).not.toBeNaN();
+    expect(ride.trace.samples).toHaveLength(20);
+    expect(ride.trace.samples[19]).toEqual({ second: 20, cadence: 90, power: 0 });
   });
 
   it("does not restart when the sensor is replaced mid-ride (bike reconnected)", () => {
@@ -84,7 +94,7 @@ describe("RideScreen", () => {
     );
     advance(10_500);
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish.mock.calls[0]?.[0]).toBeCloseTo(600, -1);
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(600, -1);
   });
 
   it("rings the bell once the record is beaten", () => {

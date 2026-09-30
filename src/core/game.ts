@@ -3,14 +3,22 @@
 // ride over all rounds.
 
 import { canStart, normalizeName, type Player, validateName } from "./players";
-import { cleanStats, type RideStats } from "./ride";
+import { cleanStats, type RideSample, type RideStats } from "./ride";
 import type { Settings } from "./settings";
+
+/** The ride as it happened, for the activity export. */
+export interface RideTrace {
+  /** ISO 8601 time of the start signal. */
+  startedAt: string;
+  samples: readonly RideSample[];
+}
 
 export interface RideResult {
   playerId: string;
   round: number;
   points: number;
   stats: RideStats;
+  trace: RideTrace;
 }
 
 export interface Game {
@@ -37,7 +45,7 @@ export type Action =
   | { type: "playerRemoved"; id: string }
   | { type: "settingsChanged"; settings: Partial<Settings> }
   | { type: "gameStarted" }
-  | { type: "rideFinished"; points: number; stats: RideStats }
+  | { type: "rideFinished"; points: number; stats: RideStats; trace: RideTrace }
   | { type: "rideRetried" }
   | { type: "nextTurn" }
   | { type: "gameQuit" };
@@ -91,7 +99,13 @@ export function reducer(state: AppState, action: Action): AppState {
           phase: "result",
           rides: [
             ...rides,
-            { playerId: player.id, round: game.round, points, stats: cleanStats(action.stats) },
+            {
+              playerId: player.id,
+              round: game.round,
+              points,
+              stats: cleanStats(action.stats),
+              trace: action.trace,
+            },
           ],
         },
       };

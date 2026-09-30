@@ -16,6 +16,7 @@ import {
   type Track,
   trackPosition,
 } from "../core/ride";
+import type { RideTrace } from "../core/game";
 import type { Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import { DemoSensor } from "../sensors/demo/demoSensor";
@@ -28,6 +29,12 @@ import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
 
+export interface FinishedRide {
+  points: number;
+  stats: RideStats;
+  trace: RideTrace;
+}
+
 export const COUNTDOWN_STEP_MS = 800;
 export const GO_DISPLAY_MS = 450;
 const TICK_FROM_SEC = 5;
@@ -38,7 +45,7 @@ interface Props {
   settings: Settings;
   record: { player: Player; points: number } | null;
   sensor: Sensor;
-  onFinish: (points: number, stats: RideStats) => void;
+  onFinish: (ride: FinishedRide) => void;
 }
 
 type Stage = { name: "countdown"; count: number } | { name: "go" } | { name: "racing" };
@@ -93,7 +100,7 @@ function useRideLoop(
   sensor: Sensor,
   settings: Settings,
   recordPoints: number | null,
-  onFinish: (points: number, stats: RideStats) => void,
+  onFinish: (ride: FinishedRide) => void,
 ): Frame {
   const [frame, setFrame] = useState<Frame>(() => ({
     progress: startRide(),
@@ -114,6 +121,7 @@ function useRideLoop(
     let track = startTrack(mark, settings);
     let rung = false;
     let crankAngle = 0;
+    const startedAt = new Date().toISOString();
     let last = performance.now();
     let lastTick = TICK_FROM_SEC + 1;
     let raf = 0;
@@ -136,8 +144,13 @@ function useRideLoop(
         lastTick = secondsLeft;
         sounds.tick();
       }
-      if (isRideOver(progress, durationSec)) finish.current(progress.points, rideStats(progress));
-      else raf = requestAnimationFrame(step);
+      if (isRideOver(progress, durationSec)) {
+        finish.current({
+          points: progress.points,
+          stats: rideStats(progress),
+          trace: { startedAt, samples: progress.samples },
+        });
+      } else raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => {

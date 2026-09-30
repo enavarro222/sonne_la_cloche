@@ -36,10 +36,13 @@ const withGame = (game: Game): AppState => ({
   game,
 });
 
+const TRACE = { startedAt: "2026-09-29T15:00:00.000Z", samples: [] };
+
 const finished = (points: number, stats: RideStats = NO_STATS): Action => ({
   type: "rideFinished",
   points,
   stats,
+  trace: TRACE,
 });
 
 const ride = (points: number, stats?: RideStats): Action[] => [

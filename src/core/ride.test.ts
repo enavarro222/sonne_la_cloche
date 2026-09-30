@@ -72,6 +72,29 @@ describe("stepRide", () => {
   });
 });
 
+describe("ride samples", () => {
+  it("records one sample per second, with the effort of that moment", () => {
+    let progress = startRide();
+    for (let i = 0; i < 60; i++) {
+      progress = stepRide(progress, effort(i < 30 ? 60 : 90, 100), "cadence", 1 / 30, 20);
+    }
+    expect(progress.samples).toEqual([
+      { second: 1, cadence: 60, power: 100 },
+      { second: 2, cadence: 90, power: 100 },
+    ]);
+  });
+
+  it("ends with one sample per second of the ride, despite rounding", () => {
+    let progress = startRide();
+    // 1/60 s frames do not add up exactly to whole seconds in floating point.
+    for (let i = 0; i < 20 * 60 + 10; i++)
+      progress = stepRide(progress, effort(80), "cadence", 1 / 60, 20);
+    expect(progress.samples.map((s) => s.second)).toEqual(
+      Array.from({ length: 20 }, (_, i) => i + 1),
+    );
+  });
+});
+
 describe("track", () => {
   const settings = { ...DEFAULT_SETTINGS, metric: "cadence" as const, durationSec: 30 as const };
   const goal = bellMark(null, settings);
