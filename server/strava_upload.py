@@ -20,6 +20,7 @@ import base64
 import binascii
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -33,7 +34,9 @@ from typing import Callable
 STRAVA = "https://www.strava.com"
 API = f"{STRAVA}/api/v3"
 MAX_BODY_BYTES = 512 * 1024
-SPORT_TYPES = {"VirtualRide", "Ride"}
+# The page packs the player's game into the OAuth state (base64url, "." and ",").
+STATE_PATTERN = re.compile(r"[A-Za-z0-9_\-.,]{1,2000}")
+SPORT_TYPES = {"VirtualRide"}
 UPLOAD_POLL_ATTEMPTS = 20
 UPLOAD_POLL_DELAY_SEC = 1.0
 
@@ -43,6 +46,10 @@ class Config:
     client_id: str
     client_secret: str
     redirect_uri: str
+
+    @property
+    def complete(self) -> bool:
+        return bool(self.client_id and self.client_secret and self.redirect_uri)
 
     @staticmethod
     def from_env() -> "Config":
@@ -211,7 +218,7 @@ def upload_activity(
             raise UploadError("upload_timeout")
 
         # What the file alone could not impose: the type, and the trainer flag.
-        http(
+        status, updated = http(
             "PUT",
             f"{API}/activities/{activity_id}",
             json.dumps(
@@ -224,6 +231,9 @@ def upload_activity(
             ).encode(),
             {**auth, "Content-Type": "application/json"},
         )
+        # Strava may accept the update and still ignore a field: log what it kept.
+        kept = {k: updated.get(k) for k in ("sport_type", "trainer")} if isinstance(updated, dict) else {}
+        print(f"activity update {status}: asked {request.sport_type}, trainer; got {kept}", flush=True)
         return f"{STRAVA}/activities/{activity_id}"
     finally:
         # Nothing to keep: give the access back right away.
@@ -243,7 +253,7 @@ class Handler(BaseHTTPRequestHandler):
         # Paths only: never log query strings or bodies.
         print(f"{self.command} {self.path.split('?')[0]} {args[1] if len(args) > 1 else ''}", flush=True)
 
-    def send_json(self, status: HTTPStatus, payload: dict[str, str]) -> None:
+    def send_json(self, status: HTTPStatus, payload: dict[str, object]) -> None:
         body = json.dumps(payload).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -254,16 +264,26 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         url = urllib.parse.urlsplit(self.path)
+        if url.path == "/api/strava/status":
+            # Lets the page offer publishing only where it can work.
+            self.send_json(HTTPStatus.OK, {"configured": self.config.complete})
+            return
         if url.path != "/api/strava/authorize":
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
             return
         query = urllib.parse.parse_qs(url.query)
         state = query.get("state", [""])[0]
-        if not state or len(state) > 100:
+        if not STATE_PATTERN.fullmatch(state):
             self.send_json(HTTPStatus.BAD_REQUEST, {"error": "bad_request"})
             return
         self.send_response(HTTPStatus.FOUND)
-        self.send_header("Location", authorize_url(self.config, state, query.get("mobile") == ["1"]))
+        if self.config.complete:
+            location = authorize_url(self.config, state, query.get("mobile") == ["1"])
+        else:
+            # Not set up: sending people to Strava would only show them an error.
+            print("authorize: Strava credentials missing", flush=True)
+            location = "/strava/?" + urllib.parse.urlencode({"error": "not_configured", "state": state})
+        self.send_header("Location", location)
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
 

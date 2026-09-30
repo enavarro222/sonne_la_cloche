@@ -73,6 +73,7 @@ class UploadRequestTests(unittest.TestCase):
             valid_payload(code=""),
             valid_payload(code=12),
             valid_payload(sportType="Run"),
+            valid_payload(sportType="Ride"),
             valid_payload(file="not base64!"),
             valid_payload(file=base64.b64encode(b"hello, this is not a fit file").decode()),
         ):
@@ -191,9 +192,41 @@ class HttpServerTests(unittest.TestCase):
         self.assertEqual(query["scope"], ["activity:write"])
         self.assertNotIn("s3cret", headers["Location"])
 
+    def test_authorize_without_credentials_comes_back_with_an_error(self):
+        su.Handler.config = su.Config("", "", CONFIG.redirect_uri)
+        try:
+            status, headers, _ = self.request("GET", "/api/strava/authorize?state=xyz")
+        finally:
+            su.Handler.config = CONFIG
+        self.assertEqual(status, 302)
+        self.assertEqual(headers["Location"], "/strava/?error=not_configured&state=xyz")
+
+    def test_status_says_whether_publishing_works(self):
+        status, _, body = self.request("GET", "/api/strava/status")
+        self.assertEqual((status, json.loads(body)), (200, {"configured": True}))
+        su.Handler.config = su.Config("", "", CONFIG.redirect_uri)
+        try:
+            _, _, body = self.request("GET", "/api/strava/status")
+        finally:
+            su.Handler.config = CONFIG
+        self.assertEqual(json.loads(body), {"configured": False})
+
     def test_authorize_needs_a_state(self):
         status, _, _ = self.request("GET", "/api/strava/authorize")
         self.assertEqual(status, 400)
+
+    def test_authorize_carries_a_game_sized_state(self):
+        state = "A-b_9" * 160 + ".43.90000,-1.90000"
+        status, headers, _ = self.request("GET", f"/api/strava/authorize?state={urllib.parse.quote(state)}")
+        self.assertEqual(status, 302)
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(headers["Location"]).query)
+        self.assertEqual(query["state"], [state])
+
+    def test_authorize_rejects_odd_states(self):
+        for state in ("<script>", "a" * 2001, "a b"):
+            with self.subTest(state=state):
+                status, _, _ = self.request("GET", f"/api/strava/authorize?state={urllib.parse.quote(state)}")
+                self.assertEqual(status, 400)
 
     def test_rejects_bodies_that_are_too_large_or_not_json(self):
         status, _, _ = self.request("POST", "/api/strava/upload", b"x" * (su.MAX_BODY_BYTES + 1))
