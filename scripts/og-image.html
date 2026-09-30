@@ -1,0 +1,84 @@
+<!doctype html>
+<!-- Link preview card (WhatsApp, Signal, Slack…), rendered by og-image.ts. -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: "Bungee";
+        src: url("../node_modules/@fontsource/bungee/files/bungee-latin-400-normal.woff2");
+      }
+      @font-face {
+        font-family: "Nunito";
+        font-weight: 800;
+        src: url("../node_modules/@fontsource/nunito/files/nunito-latin-800-normal.woff2");
+      }
+      * {
+        margin: 0;
+        box-sizing: border-box;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 56px;
+        padding: 0 80px;
+        color: #fff3e0;
+        background:
+          repeating-linear-gradient(
+            115deg,
+            rgb(255 255 255 / 0.045) 0 60px,
+            transparent 60px 140px
+          ),
+          radial-gradient(circle at 30% 0%, #3a2d9a, #1b1464 70%);
+      }
+      img {
+        width: 360px;
+        height: 360px;
+        flex: none;
+        filter: drop-shadow(0 16px 32px rgb(0 0 0 / 0.35));
+      }
+      h1 {
+        font: 400 88px/1 "Bungee";
+        color: #ffc93c;
+        text-shadow: 0 6px 0 #b3234f;
+      }
+      p {
+        margin-top: 36px;
+        font: 800 38px/1.25 "Nunito";
+        text-wrap: balance;
+      }
+      .tags {
+        margin-top: 28px;
+        color: #2ee6a8;
+        font-size: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="../public/icon.svg" alt="" />
+    <div>
+      <h1 id="title"></h1>
+      <p id="tagline"></p>
+      <p class="tags" id="tags"></p>
+    </div>
+    <script>
+      const texts = {
+        fr: {
+          title: "Sonne la cloche !",
+          tagline: "Le jeu de sprint sur home trainer, chacun son tour devant un seul écran.",
+          tags: "Gratuit · Dans le navigateur · Dès 8 ans",
+        },
+        en: {
+          title: "Ring the Bell!",
+          tagline: "The home-trainer sprint game: everyone takes turns on one screen.",
+          tags: "Free · In the browser · Ages 8 and up",
+        },
+      };
+      const t = texts[new URLSearchParams(location.search).get("lang") ?? "fr"];
+      for (const [id, text] of Object.entries(t)) document.getElementById(id).textContent = text;
+    </script>
+  </body>
+</html>
