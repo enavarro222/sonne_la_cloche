@@ -15,6 +15,7 @@ export default defineConfig({
         root: page("index.html"),
         fr: page("fr/index.html"),
         en: page("en/index.html"),
+        strava: page("strava/index.html"),
       },
     },
   },

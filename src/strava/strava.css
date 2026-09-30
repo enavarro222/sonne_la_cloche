@@ -1,0 +1,120 @@
+#root {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+#root h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--yellow);
+  margin-bottom: 1rem;
+}
+
+#root section {
+  margin-top: 1.6rem;
+}
+
+#root h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.05em;
+  color: var(--yellow);
+  margin-bottom: 0.6rem;
+}
+
+#root .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+#root .qr {
+  display: block;
+  width: 200px;
+  border-radius: 12px;
+}
+
+#root .help {
+  color: var(--cream-faint);
+  font-size: 0.9em;
+}
+
+#root .url {
+  word-break: break-all;
+}
+
+#root .status {
+  color: var(--mint);
+  font-weight: 700;
+}
+
+#root .link {
+  color: var(--mint);
+  font-weight: 900;
+}
+
+#root .banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 3px solid var(--line);
+  font-weight: 900;
+  font-size: 1.15em;
+}
+
+#root .banner.done {
+  border-color: var(--mint);
+  color: var(--mint);
+}
+
+#root .banner.failed {
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+#root .banner a {
+  text-decoration: none;
+}
+
+#root .player {
+  font-family: var(--font-display);
+  font-size: 1.6em;
+  color: var(--cream);
+  margin-top: 1rem;
+}
+
+#root .summary {
+  color: var(--mint);
+  font-weight: 900;
+  font-size: 1.1em;
+}
+
+#root .rides {
+  margin: 0.8rem 0 1.2rem 1.2rem;
+  color: var(--cream-dim);
+  font-weight: 700;
+}
+
+#root .map {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  min-height: var(--tap);
+}
+
+#root .map input {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--mint);
+}
+
+#root .banner[hidden] {
+  display: none;
+}

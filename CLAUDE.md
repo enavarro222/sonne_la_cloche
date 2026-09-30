@@ -40,6 +40,9 @@ src/sensors/   Sensor interface; ble/ (pure parsers + Web Bluetooth), demo/
 src/i18n/      en (source, typed) + fr, locale from URL path
 src/storage/   localStorage, always wrapped in try/catch
 src/ui/        React screens and hooks; the only layer that renders text
+src/export/    per-player export: FIT file, virtual GPS track, QR link codec
+src/strava/    the page a player's QR code opens on their phone (/strava/)
+server/        tiny Strava upload service (Python stdlib), holds the OAuth secret
 e2e/           Playwright, fake clock (page.clock) to fast-forward rides
 ```
 
@@ -47,6 +50,13 @@ e2e/           Playwright, fake clock (page.clock) to fast-forward rides
   Rules belong in `core/` with unit tests, not in components.
 - `core/` never produces text, only data; the UI translates.
 - The ride loop polls `sensor.read(now)` each animation frame.
+- A player's game reaches their phone inside the QR code's URL fragment
+  (`#…`, never sent to a server). Keep it small: see `playerLink.ts`.
+- FIT files are written with `@markw65/fit-file-writer` (MIT). Do not use
+  Garmin's own SDK: its license forbids distributing it in an MIT project.
+- Strava only accepts activity type, title and trainer flag through its API,
+  hence the server. New Strava API apps are limited to their owner's account
+  until Strava approves more athletes.
 
 ## Conventions
 

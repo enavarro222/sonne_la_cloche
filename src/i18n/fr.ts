@@ -83,6 +83,37 @@ export const fr: Translation = {
       help: "Un tour = tout le monde pédale une fois. Le classement additionne tous les tours.",
     },
   },
+  strava: {
+    title: "Ta partie sur Strava",
+    invalid: "Ce lien ne contient pas de partie. Rescanne le QR code sur l'écran de fin de partie.",
+    summary: "{{rank}} sur {{players}} · {{total}} points",
+    rank_ordinal_one: "{{count}}er",
+    rank_ordinal_two: "{{count}}e",
+    rank_ordinal_few: "{{count}}e",
+    rank_ordinal_other: "{{count}}e",
+    ride: "Tour {{round}} : {{points}} points en {{seconds}} s",
+    map: "Ajouter une carte : un circuit virtuel autour de la position du téléphone",
+    mapHelp:
+      "Le circuit montre où vous avez joué. Tes zones de confidentialité Strava s'appliquent.",
+    locating: "Recherche de la position…",
+    located: "Position trouvée.",
+    noPosition: "Position indisponible : l'activité n'aura pas de carte.",
+    publish: "Publier sur Strava",
+    download: "Télécharger le fichier .fit",
+    help: "Strava te demande d'autoriser le jeu ; l'accès est retiré juste après l'envoi. Rien n'est conservé.",
+    sending: "Envoi à Strava…",
+    done: "C'est publié sur Strava !",
+    view: "Voir l'activité sur Strava",
+    refused: "Autorisation refusée sur Strava.",
+    duplicate: "Cette partie est déjà sur Strava.",
+    failed:
+      "La publication a échoué. Tu peux toujours télécharger le fichier et l'importer sur strava.com.",
+    activityName: "🔔 Sonne la cloche !",
+    activityDescription_one:
+      "{{rank}} sur {{players}} avec {{total}} points en {{count}} passage. {{url}}",
+    activityDescription_other:
+      "{{rank}} sur {{players}} avec {{total}} points en {{count}} passages. {{url}}",
+  },
   share: {
     button: "Partager",
     playedOn: "Partie du {{date}}",
@@ -124,6 +155,13 @@ export const fr: Translation = {
       value: "{{name}} : {{value}} {{unit}}",
     },
     bikeLost: "Reconnecte le vélo pour continuer",
+    strava: {
+      button: "Strava",
+      title: "Mets ta partie sur Strava",
+      scan: "{{name}}, scanne avec ton téléphone",
+      openHere: "ou ouvre-la sur cet appareil",
+      close: "Fermer",
+    },
     quit: {
       title: "Quitter la partie ?",
       message: "Les scores de cette partie seront perdus.",

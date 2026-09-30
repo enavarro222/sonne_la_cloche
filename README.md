@@ -31,6 +31,12 @@ rider.
 Players and settings are remembered: for the next game, connect the bike and
 hit _Let's go!_
 
+At the end, _Share_ sends an image of the results to WhatsApp, Signal and the
+like, and _Strava_ shows a QR code per player: it opens their game on their
+phone, to publish it on their Strava account (as an indoor or virtual ride) or
+download it as a `.fit` file. The game data travels inside the QR code; nothing
+is stored on a server.
+
 ## What you need
 
 - A home trainer or sensor that speaks Bluetooth **FTMS**, **Cycling Power**
@@ -53,12 +59,23 @@ pnpm dev          # http://localhost:5173, redirects to /fr/ or /en/
 pnpm build        # static site in dist/ (/, /fr/, /en/), no server needed
 ```
 
+## Strava publishing (optional)
+
+Publishing needs the small service in `server/` (Python standard library
+only): Strava's OAuth requires a client secret that cannot live in a web page.
+It exchanges the authorization, uploads the file, sets the activity type and
+revokes the access right away. It reads `STRAVA_CLIENT_ID`,
+`STRAVA_CLIENT_SECRET` and `STRAVA_REDIRECT_URI` from its environment, and
+expects `/api/strava/` of the game's domain to be proxied to it. Without it, the
+`.fit` download still works.
+
 ## Develop
 
 ```sh
 pnpm check        # format check + lint + typecheck + unit tests + e2e
 pnpm test         # unit tests (Vitest)
 pnpm e2e          # end-to-end tests (Playwright, tablet and desktop screens)
+pnpm test:server  # tests of the Strava service (Python)
 ```
 
 First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes

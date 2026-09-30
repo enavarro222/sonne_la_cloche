@@ -12,6 +12,7 @@ import {
 } from "../core/game";
 import type { RideStats } from "../core/ride";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { StravaDialog } from "./StravaDialog";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
 import { renderResultCard } from "./share/resultCard";
@@ -92,6 +93,7 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [stravaOpen, setStravaOpen] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
 
   const share = async () => {
@@ -162,6 +164,15 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
                 disabled={sharing}
               >
                 {t("share.button")}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  setStravaOpen(true);
+                }}
+              >
+                {t("result.strava.button")}
               </button>
             </>
           ) : (
@@ -250,6 +261,14 @@ export function ResultScreen({ game, bikeReady, onNext, onRetry, onPlayAgain, on
           </table>
         </div>
       </section>
+      {stravaOpen && (
+        <StravaDialog
+          game={game}
+          onClose={() => {
+            setStravaOpen(false);
+          }}
+        />
+      )}
       {confirmingQuit && (
         <ConfirmDialog
           title={t("result.quit.title")}

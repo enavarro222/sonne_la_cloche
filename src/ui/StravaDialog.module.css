@@ -1,0 +1,91 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: var(--gap);
+  background: rgb(10 6 40 / 0.8);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: min(100%, 60rem);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: calc(var(--gap) * 1.5);
+  border-radius: var(--radius);
+  background: var(--night-light);
+  border: 3px solid var(--line);
+}
+
+.dialog h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--yellow);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: calc(var(--gap) * 1.5);
+  align-items: center;
+}
+
+@media (orientation: portrait) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.players button {
+  min-height: var(--tap);
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 900;
+  font-size: 1.1em;
+}
+
+.players button[aria-pressed="true"] {
+  background: var(--yellow);
+  color: var(--night);
+}
+
+.code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  font-weight: 900;
+  color: var(--mint);
+}
+
+/* Large enough to scan from a phone held at arm's length. */
+.code img,
+.placeholder {
+  width: min(52vmin, 22rem);
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.close {
+  align-self: flex-end;
+}
+
+.here {
+  color: var(--cream-dim);
+  font-weight: 700;
+  font-size: 0.9em;
+}
