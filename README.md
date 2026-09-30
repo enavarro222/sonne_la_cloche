@@ -1,15 +1,26 @@
 # Sonne la cloche !
 
-A pedaling game made for a kids' birthday party: a child's bike on a smart
-home trainer, one tablet or TV, and each kid gets 20 to 45 seconds to pedal as
-fast as they can. The score counts pedal turns rather than watts, so the
-smallest kids have as much of a chance as the tallest.
+A pedaling game for a group around one screen: a bike on a smart home
+trainer, a tablet or a TV, and everyone takes turns pedaling as fast as they
+can for 20 to 45 seconds to ring the bell. It was born for a kids' birthday
+party and works just as well between adults: family gatherings, friends,
+a team afternoon.
+
+By default the score counts pedal turns rather than watts, so small legs stand
+a chance against big ones; switch to watts for a strength contest. On smart
+trainers the game also sets the resistance, from light to mega hard.
 
 It runs in the browser, reads the trainer over Bluetooth, and works in French
 (`/fr/`) and English (`/en/`).
 
-**Play it at <https://sonnelacloche.enavarro.eu/>** (Chrome or Edge; no bike
-needed to try it, see _Try without a bike_ below).
+Everything happens on the device: no account, no server, no tracking, nothing
+sent anywhere during a game. Players and settings stay in the browser's local
+storage. The one exception is publishing on Strava, which is optional and
+goes through a small server (see below); without it, that button simply does
+not show up.
+
+**Play it at <https://sonnelacloche.enavarro.eu/>** (Chrome or Edge). No bike?
+It is still a game: see _Without a bike_ below.
 
 ![A ride: Tom has just passed Léa's record and rung the bell](docs/screenshots/ride.png)
 
@@ -31,11 +42,21 @@ rider.
 Players and settings are remembered: for the next game, connect the bike and
 hit _Let's go!_
 
-At the end, _Share_ sends an image of the results to WhatsApp, Signal and the
-like, and _Strava_ shows a QR code per player: it opens their game on their
-phone, to publish it on their Strava account (as an indoor or virtual ride) or
-download it as a `.fit` file. The game data travels inside the QR code; nothing
-is stored on a server.
+At the end, everyone takes the game home on their own phone: _On your phones_
+shows a QR code per player. It opens their game with the results picture, to
+share on WhatsApp, Signal, Instagram… with their own accounts. After a game on
+a real bike, they can also publish it on their Strava account (as a virtual
+ride) or download it as a `.fit` file. The game data travels inside the QR
+code; nothing is stored on a server. _Share_ sends the same picture straight
+from the tablet.
+
+## Without a bike
+
+_Try without a bike_ turns the keyboard into pedals: press ← and → in turn,
+the faster the rhythm the faster you go (on a touch screen, tap the _Left
+foot_ and _Right foot_ buttons in turn). Same rules, same bell, same pictures
+to share: a real game on a laptop or a tablet. Only Strava is kept for rides
+on a real bike.
 
 ## What you need
 
@@ -45,11 +66,9 @@ is stored on a server.
 - **Chrome or Edge**, on a computer or an Android tablet. Safari, Firefox and
   iOS don't support Web Bluetooth.
 - **HTTPS** (or `localhost`): browsers only allow Bluetooth on secure pages.
-- For young kids: put the bike in its smallest gear and the trainer at minimum
-  resistance, or their legs give up after ten seconds.
-
-No trainer at hand? _Try without a bike_, then hold the on-screen button (or
-Space) to pedal.
+- Resistance: the game sets it on FTMS trainers (light, normal, hard, mega
+  hard). With another sensor, use the bike's gears; for young kids, the lowest
+  gear, or their legs give up after ten seconds.
 
 ## Run it
 
@@ -66,8 +85,9 @@ only): Strava's OAuth requires a client secret that cannot live in a web page.
 It exchanges the authorization, uploads the file, sets the activity type and
 revokes the access right away. It reads `STRAVA_CLIENT_ID`,
 `STRAVA_CLIENT_SECRET` and `STRAVA_REDIRECT_URI` from its environment, and
-expects `/api/strava/` of the game's domain to be proxied to it. Without it, the
-`.fit` download still works.
+expects `/api/strava/` of the game's domain to be proxied to it. The phone page
+asks it whether Strava is set up (`/api/strava/status`) and only then offers to
+publish; otherwise, as with `pnpm dev`, it offers the `.fit` download alone.
 
 ## Develop
 
@@ -80,6 +100,10 @@ pnpm test:server  # tests of the Strava service (Python)
 
 First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes
 the architecture and the constraints to keep in mind.
+
+Add `?dev` to the address (e.g. `/fr/?dev`) for a test mode: 5-second rides and
+one-round games in the settings, and every end-of-game feature available
+without a bike.
 
 ## Troubleshooting
 

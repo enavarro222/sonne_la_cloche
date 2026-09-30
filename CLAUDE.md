@@ -1,22 +1,24 @@
 # Sonne la cloche !
 
-Pedaling game for a children's birthday party. A kid's bike sits on a smart
-home trainer; children take turns sprinting for 20–45 s and a score shows on
-one screen. Rewrite of the `../course-des-pedales` prototype.
+Pedaling game for a group around one screen, kids or adults. A bike sits on a
+smart home trainer; players take turns sprinting for 20–45 s and a score shows
+on one screen. Born for a kids' birthday party. Rewrite of the
+`../course-des-pedales` prototype.
 
 ## Usage context — keep it in mind for every decision
 
-- **Audience: 8-year-olds**, plus one adult driving the screen. Everything must
-  be understandable without reading, and readable from 3 m.
+- **Audience: all ages**, from 8-year-olds up, plus one adult driving the
+  screen. Kids are the most demanding case: everything must be understandable
+  without reading, and readable from 3 m. Don't make the tone childish either.
 - **Fast default path.** From opening the page to pedaling: connect the bike,
   start. Players and settings are remembered; defaults must suit ~80% of
   games. New features must not lengthen that path — put options behind ⚙.
 - **Fairness between sizes.** Default score is cadence (pedal turns), not
-  watts: an 8-year-old makes 40–60 W, ranking by watts ranks kids by height.
+  watts: an 8-year-old makes 40–60 W, ranking by watts ranks players by size.
 - **One screen**: an Android tablet in landscape (Chrome) or a PC/TV. Both are
   tested (see `playwright.config.ts`). No page scroll during a game.
-- **Client only.** No backend, no account, no network call while playing
-  (fonts are bundled).
+- **Client only while playing.** No account, no network call during a game
+  (fonts are bundled). The only backend is the optional Strava service.
 
 ## Technical constraints
 
@@ -74,6 +76,11 @@ e2e/           Playwright, fake clock (page.clock) to fast-forward rides
 
 ## Testing without the bike
 
-"Try without a bike" enables the demo sensor: hold the on-screen button (or
-Space) to pedal at ~95 rpm. It is the only way to check a change without the
-hardware, and the e2e tests rely on it — **never break it**.
+"Try without a bike" enables the demo sensor: press ← and → in turn (or tap the
+two foot buttons) to pedal; the cadence follows the rhythm, pressing the same
+side twice does not count. It is a real game mode, the only way to check a
+change without the hardware, and the e2e tests rely on it — **never break it**.
+
+The QR codes (_On your phones_) are always offered; their Strava part only
+after a game on a real bike. `?dev` in the URL (e.g. `/fr/?dev`) is a test
+mode: 5 s rides, 1-round games, and Strava available in demo mode.
