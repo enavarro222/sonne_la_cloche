@@ -33,22 +33,25 @@ export async function startDemoGame(page: Page): Promise<void> {
   await page.getByRole("button", { name: "C'est parti !" }).click();
 }
 
-/** Plays one ride in demo mode, pedaling (holding the button) or not. */
+/** Time between two demo steps: one every 170 ms is ~95 rpm. */
+export const STEP_MS = 170;
+
+/** Plays one ride in demo mode, pedaling (← → in turn) or not. */
 export async function ride(
   page: Page,
   { durationSec, pedal }: { durationSec: number; pedal: boolean },
 ): Promise<void> {
-  const hold = page.getByRole("button", { name: /Maintiens pour pédaler|Hold to pedal/ });
-  if (pedal) {
-    const box = await hold.boundingBox();
-    if (!box) throw new Error("hold button not visible");
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-  }
   await page.clock.runFor(COUNTDOWN_MS);
   await expect(page.getByTestId("ride-score")).toBeVisible();
-  await page.clock.runFor(durationSec * 1000 + 500);
-  if (pedal) await page.mouse.up();
+  const totalMs = durationSec * 1000 + 500;
+  if (pedal) {
+    for (let t = 0, i = 0; t < totalMs; t += STEP_MS, i++) {
+      await page.keyboard.press(i % 2 ? "ArrowRight" : "ArrowLeft");
+      await page.clock.runFor(STEP_MS);
+    }
+  } else {
+    await page.clock.runFor(totalMs);
+  }
   await expect(page.getByRole("heading", { name: /Classement|Ranking/ })).toBeVisible();
 }
 

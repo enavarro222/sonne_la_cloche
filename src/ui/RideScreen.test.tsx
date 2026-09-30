@@ -1,7 +1,8 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../core/settings";
+import { DemoSensor } from "../sensors/demo/demoSensor";
 import type { Sensor } from "../sensors/types";
 import { COUNTDOWN_STEP_MS, type FinishedRide, GO_DISPLAY_MS, RideScreen } from "./RideScreen";
 
@@ -147,5 +148,33 @@ describe("RideScreen", () => {
       />,
     );
     expect(sensor.setResistance).toHaveBeenCalledWith("hard");
+  });
+
+  it("pedals in demo mode with ← and → in turn, not with one key", () => {
+    const onFinish = vi.fn();
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={null}
+        sensor={new DemoSensor()}
+        onFinish={onFinish}
+      />,
+    );
+    advance(COUNTDOWN_MS + 100);
+    // Same key only: no pedaling.
+    for (let i = 0; i < 10; i++) {
+      fireEvent.keyDown(window, { code: "ArrowRight" });
+      advance(350);
+    }
+    expect(Number(screen.getByTestId("ride-score").textContent)).toBe(0);
+    // Alternating every 170 ms: about 95 rpm, 30 points per second.
+    for (let i = 0; i < 20; i++) {
+      fireEvent.keyDown(window, { code: i % 2 ? "ArrowRight" : "ArrowLeft" });
+      advance(170);
+    }
+    expect(Number(screen.getByTestId("ride-score").textContent)).toBeGreaterThan(80);
+    expect(screen.getByRole("button", { name: "← Left foot" })).toBeInTheDocument();
   });
 });

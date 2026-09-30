@@ -127,10 +127,16 @@
   color: var(--cream);
 }
 
-.hold {
-  min-width: 14rem;
-  padding: 0 1.2rem;
+.pedals {
+  display: flex;
+  gap: 0.8rem;
+}
+
+/* Big targets: kids and adults hammer them in turn. */
+.foot {
+  min-width: 9rem;
   min-height: 4.5rem;
+  padding: 0 1rem;
   border-radius: var(--radius);
   background: var(--surface);
   border: 3px dashed var(--mint);
@@ -140,10 +146,10 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  touch-action: none;
+  touch-action: manipulation;
 }
 
-.held {
+.down {
   background: var(--mint);
   color: var(--night);
 }

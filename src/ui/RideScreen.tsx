@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Player } from "../core/players";
 import {
@@ -19,7 +19,7 @@ import {
 import type { RideTrace } from "../core/game";
 import type { Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
-import { DemoSensor } from "../sensors/demo/demoSensor";
+import { DemoSensor, type Foot } from "../sensors/demo/demoSensor";
 import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types";
 import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
@@ -161,59 +161,67 @@ function useRideLoop(
   return frame;
 }
 
-/** Hold-to-pedal control for the demo mode: pointer (touch/mouse) and Space. */
-function HoldToPedal({ sensor }: { sensor: DemoSensor }) {
+const KEYS: Record<string, Foot> = { ArrowLeft: "left", ArrowRight: "right" };
+
+/**
+ * Demo pedaling: left and right in turn, with the arrow keys or two big
+ * buttons on a touch screen. The flash shows which foot went down.
+ */
+function PedalButtons({ sensor }: { sensor: DemoSensor }) {
   const { t } = useTranslation();
-  const [held, setHeld] = useState(false);
+  const [down, setDown] = useState<Foot | null>(null);
+  const step = useCallback(
+    (foot: Foot) => {
+      sensor.step(foot, performance.now());
+      setDown(foot);
+    },
+    [sensor],
+  );
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.code !== "Space") return;
-      event.preventDefault(); // also for auto-repeat, or the page scrolls
-      if (event.repeat) return;
-      const down = event.type === "keydown";
-      if (down) sensor.press();
-      else sensor.release();
-      setHeld(down);
-    };
-    const onBlur = () => {
-      sensor.release();
-      setHeld(false);
+      const foot = KEYS[event.code];
+      if (!foot) return;
+      event.preventDefault(); // no page scrolling
+      if (!event.repeat) step(foot);
     };
     addEventListener("keydown", onKey);
-    addEventListener("keyup", onKey);
-    addEventListener("blur", onBlur);
     return () => {
       removeEventListener("keydown", onKey);
-      removeEventListener("keyup", onKey);
-      removeEventListener("blur", onBlur);
-      sensor.release();
     };
-  }, [sensor]);
+  }, [step]);
 
-  const release = () => {
-    sensor.release();
-    setHeld(false);
-  };
+  useEffect(() => {
+    if (!down) return;
+    const timer = setTimeout(() => {
+      setDown(null);
+    }, 120);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [down]);
 
-  return (
+  const button = (foot: Foot, label: string) => (
     <button
       type="button"
-      className={cx(styles.hold, held && styles.held)}
-      onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId);
-        sensor.press();
-        setHeld(true);
+      className={cx(styles.foot, down === foot && styles.down)}
+      onPointerDown={() => {
+        step(foot);
       }}
-      onPointerUp={release}
-      onPointerCancel={release}
       // A long press would otherwise open the context menu on Android.
       onContextMenu={(event) => {
         event.preventDefault();
       }}
     >
-      {t("ride.hold")}
+      {label}
     </button>
+  );
+
+  return (
+    <div className={styles.pedals}>
+      {button("left", t("ride.leftFoot"))}
+      {button("right", t("ride.rightFoot"))}
+    </div>
   );
 }
 
@@ -309,7 +317,7 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
             {t("ride.powerUnit")}
           </span>
         </p>
-        {sensor instanceof DemoSensor && <HoldToPedal sensor={sensor} />}
+        {sensor instanceof DemoSensor && <PedalButtons sensor={sensor} />}
       </div>
     </div>
   );

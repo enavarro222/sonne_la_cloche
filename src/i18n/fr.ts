@@ -30,7 +30,7 @@ export const fr: Translation = {
       connect: "Connecter le vélo",
       demo: "Essayer sans vélo",
       demoOn:
-        "Mode démo : pendant la course, maintiens le bouton (ou la barre d'espace) pour pédaler.",
+        "Mode démo : pendant la course, pédale en appuyant tour à tour sur ← et →. Sur écran tactile, touche tour à tour les boutons « Pied gauche » et « Pied droit ».",
       connected: "✓ {{name}} connecté ({{protocol}})",
       connectedControlled: "✓ {{name}} connecté ({{protocol}}), résistance pilotée par le jeu",
       change: "Changer de vélo",
@@ -132,7 +132,8 @@ export const fr: Translation = {
     goalReached: "Objectif atteint !",
     cadenceUnit: "tr/min",
     powerUnit: "W",
-    hold: "Maintiens pour pédaler",
+    leftFoot: "← Pied gauche",
+    rightFoot: "Pied droit →",
   },
   result: {
     personalBest: "{{name}}, nouveau record perso !",

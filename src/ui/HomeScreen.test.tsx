@@ -44,7 +44,7 @@ describe("HomeScreen bike block", () => {
 
   it("in demo mode: says so, explains how to pedal, offers the real bike", async () => {
     const sensor = renderHome({ kind: "demo" });
-    expect(screen.getByRole("status")).toHaveTextContent(/Demo mode: .*hold the on-screen button/);
+    expect(screen.getByRole("status")).toHaveTextContent(/Demo mode: .*pressing ← and → in turn/);
     expect(screen.queryByRole("button", { name: "Try without a bike" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Connect the bike" }));
     expect(sensor.connect).toHaveBeenCalled();

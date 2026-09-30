@@ -28,7 +28,8 @@ export const en = {
       title: "The bike",
       connect: "Connect the bike",
       demo: "Try without a bike",
-      demoOn: "Demo mode: during the ride, hold the on-screen button (or Space) to pedal.",
+      demoOn:
+        "Demo mode: during the ride, pedal by pressing ← and → in turn. On a touch screen, tap the “Left foot” and “Right foot” buttons in turn.",
       connected: "✓ {{name}} connected ({{protocol}})",
       connectedControlled: "✓ {{name}} connected ({{protocol}}), resistance set by the game",
       change: "Change bike",
@@ -129,7 +130,8 @@ export const en = {
     goalReached: "Goal reached!",
     cadenceUnit: "rpm",
     powerUnit: "W",
-    hold: "Hold to pedal",
+    leftFoot: "← Left foot",
+    rightFoot: "Right foot →",
   },
   result: {
     personalBest: "{{name}}, new personal best!",

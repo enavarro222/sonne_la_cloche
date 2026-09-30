@@ -61,9 +61,10 @@ test("plays a whole game and announces the winner", async ({ page }) => {
     await ride(page, { durationSec: 20, pedal: true });
     expect(await resultPoints(page)).toBeGreaterThan(400);
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
-    // Ride details: the demo pedals at 95 rpm and 152 W.
-    await expect(page.getByText("en moyenne · max 95")).toBeVisible();
-    await expect(page.getByText("en moyenne · max 152")).toBeVisible();
+    // Ride details: ← → every 170 ms is about 95 rpm, 150 W in demo mode; a
+    // little real time slips in between two key presses, slowing it down.
+    await expect(page.getByText(/^en moyenne · max (8\d|9\d|10\d)$/)).toBeVisible();
+    await expect(page.getByText(/^en moyenne · max 1[2-7]\d$/)).toBeVisible();
     await page.getByRole("button", { name: "Au suivant : Tom" }).click();
 
     await expect(page.getByText(`Au tour de Tom`)).toBeVisible();

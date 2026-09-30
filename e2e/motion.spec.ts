@@ -7,8 +7,17 @@ test("the bike moves smoothly, on every frame", async ({ page }) => {
   await page.goto("/fr/");
   await addPlayers(page, "Léa", "Tom");
   await startDemoGame(page);
-  await page.keyboard.down("Space");
   await expect(page.getByTestId("ride-score")).toBeVisible();
+  // Pedal in real time: ← and → in turn every 250 ms (120 rpm).
+  await page.evaluate(() => {
+    let step = 0;
+    setInterval(() => {
+      dispatchEvent(
+        new KeyboardEvent("keydown", { code: step++ % 2 ? "ArrowRight" : "ArrowLeft" }),
+      );
+    }, 250);
+  });
+  await page.waitForTimeout(1000);
 
   const xs = await page.evaluate(
     () =>
@@ -24,7 +33,6 @@ test("the bike moves smoothly, on every frame", async ({ page }) => {
         requestAnimationFrame(sample);
       }),
   );
-  await page.keyboard.up("Space");
 
   const steps = xs.slice(1).map((x, i) => x - (xs[i] ?? x));
   // The track is sized for a whole ride: one second moves the bike a few %.
