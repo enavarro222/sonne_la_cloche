@@ -1,5 +1,8 @@
 # Sonne la cloche !
 
+[![CI](https://github.com/enavarro222/sonne_la_cloche/actions/workflows/ci.yml/badge.svg)](https://github.com/enavarro222/sonne_la_cloche/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/enavarro222/sonne_la_cloche/graph/badge.svg)](https://codecov.io/gh/enavarro222/sonne_la_cloche)
+
 A pedaling game for a group around one screen: a bike on a smart home
 trainer, a tablet or a TV, and everyone takes turns pedaling as fast as they
 can for 20 to 45 seconds to ring the bell. It was born for a kids' birthday
@@ -101,14 +104,16 @@ proxied to it. Without them, the form is not offered.
 ## Develop
 
 ```sh
-pnpm check        # format check + lint + typecheck + unit tests + e2e
-pnpm test         # unit tests (Vitest)
-pnpm e2e          # end-to-end tests (Playwright, tablet and desktop screens)
-pnpm test:server  # tests of the Strava and feedback service (Python)
+pnpm check          # format check + lint + typecheck + unit tests + e2e
+pnpm test           # unit tests (Vitest)
+pnpm test:coverage  # unit tests with coverage (coverage/lcov-report/)
+pnpm e2e            # end-to-end tests (Playwright, tablet and desktop screens)
+pnpm test:server    # tests of the Strava and feedback service (Python)
 ```
 
 First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes
-the architecture and the constraints to keep in mind.
+the architecture and the constraints to keep in mind. GitHub Actions runs the
+same checks on every push and pull request, and sends coverage to Codecov.
 
 Add `?dev` to the address (e.g. `/fr/?dev`) for a test mode: 5-second rides and
 one-round games in the settings, and every end-of-game feature available
