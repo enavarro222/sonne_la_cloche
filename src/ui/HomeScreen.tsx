@@ -134,7 +134,7 @@ export function HomeScreen({
   onStart,
   onOpenSettings,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState("");
   const [duplicate, setDuplicate] = useState<string | null>(null);
 
@@ -152,6 +152,10 @@ export function HomeScreen({
   // The game always opens with the first player of the roster.
   const firstUp = enoughPlayers ? roster[0] : undefined;
   const hint = !enoughPlayers ? t("home.needPlayers") : !sensor.ready ? t("home.needBike") : null;
+  const bike =
+    sensor.connection.kind === "bluetooth" ? sensor.connection.protocol : sensor.connection.kind;
+  const trainer = sensor.connection.kind === "bluetooth" ? sensor.connection.deviceName : "";
+  const feedbackUrl = `/feedback/?${new URLSearchParams({ lang: i18n.language, bike, trainer }).toString()}`;
   const settingsSummary = [
     t(`settings.metric.${settings.metric}`),
     t("settings.duration.value", { count: settings.durationSec }),
@@ -235,8 +239,14 @@ export function HomeScreen({
 
         <p className={styles.credits}>
           <span>{t("home.madeBy", { author: AUTHOR })}</span>
-          <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
-            {t("home.source")}
+          <span>
+            <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
+              {t("home.source")}
+            </a>
+          </span>
+          {/* A new tab: leaving this page would drop the Bluetooth connection. */}
+          <a href={feedbackUrl} target="_blank" rel="noopener">
+            {t("home.feedback")}
           </a>
         </p>
       </section>

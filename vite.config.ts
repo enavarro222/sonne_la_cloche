@@ -16,6 +16,7 @@ export default defineConfig({
         fr: page("fr/index.html"),
         en: page("en/index.html"),
         strava: page("strava/index.html"),
+        feedback: page("feedback/index.html"),
       },
     },
   },

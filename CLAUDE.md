@@ -18,7 +18,8 @@ on one screen. Born for a kids' birthday party. Rewrite of the
 - **One screen**: an Android tablet in landscape (Chrome) or a PC/TV. Both are
   tested (see `playwright.config.ts`). No page scroll during a game.
 - **Client only while playing.** No account, no network call during a game
-  (fonts are bundled). The only backend is the optional Strava service.
+  (fonts are bundled). The only backend is the optional service in `server/`
+  (Strava, feedback).
 
 ## Technical constraints
 
@@ -44,7 +45,9 @@ src/storage/   localStorage, always wrapped in try/catch
 src/ui/        React screens and hooks; the only layer that renders text
 src/export/    per-player export: FIT file, virtual GPS track, QR link codec
 src/strava/    the page a player's QR code opens on their phone (/strava/)
-server/        tiny Strava upload service (Python stdlib), holds the OAuth secret
+src/feedback/  "Your opinion?" form (phone page and /feedback/), plain DOM
+server/        tiny service (Python stdlib): Strava upload (holds the OAuth
+               secret) and feedback filed as issues in a private repository
 e2e/           Playwright, fake clock (page.clock) to fast-forward rides
 ```
 

@@ -8,10 +8,12 @@ import "@fontsource/nunito/700.css";
 import "@fontsource/nunito/900.css";
 import "../ui/theme.css";
 import "./strava.css";
+import "../feedback/feedback.css";
 
 import i18n from "i18next";
 import { activityText } from "../export/activityText";
 import { buildFit } from "../export/fit";
+import { feedbackAvailable, feedbackForm } from "../feedback/form";
 import { decodePlayerActivity, type PlayerActivity } from "../export/playerLink";
 import type { LatLon } from "../export/virtualTrack";
 import { applyLocale, initI18n } from "../i18n/i18n";
@@ -261,6 +263,18 @@ function renderActivity(root: HTMLElement, activity: PlayerActivity, fragment: s
   const image = imageSection(activity);
   if (image) root.append(image);
   if (activity.strava) root.append(stravaSection(activity, fragment));
+  void feedbackAvailable().then((available) => {
+    if (!available) return;
+    const bike = activity.strava ? "bike" : "demo";
+    root.append(
+      el(
+        "section",
+        {},
+        el("h2", {}, t("feedback.title")),
+        feedbackForm({ locale: activity.locale, source: "phone", bike }),
+      ),
+    );
+  });
   return report;
 }
 

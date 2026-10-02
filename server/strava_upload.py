@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Tiny Strava upload service for Sonne la cloche.
+"""Tiny Strava upload service for Sonne la cloche (it also files players'
+feedback: see feedback.py).
 
 Strava's OAuth needs a client secret, which cannot live in a web page. This
 service holds it and does only this:
@@ -30,6 +31,8 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
+
+import feedback
 
 STRAVA = "https://www.strava.com"
 API = f"{STRAVA}/api/v3"
@@ -247,6 +250,7 @@ def upload_activity(
 
 class Handler(BaseHTTPRequestHandler):
     config: Config
+    feedback: feedback.Config = feedback.Config("", "")
     server_version = "sonnelacloche-strava"
 
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
@@ -264,6 +268,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         url = urllib.parse.urlsplit(self.path)
+        if url.path == "/api/feedback/status":
+            self.send_json(HTTPStatus.OK, {"configured": self.feedback.complete})
+            return
         if url.path == "/api/strava/status":
             # Lets the page offer publishing only where it can work.
             self.send_json(HTTPStatus.OK, {"configured": self.config.complete})
@@ -288,6 +295,9 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self) -> None:  # noqa: N802
+        if self.path == "/api/feedback":
+            self.post_feedback()
+            return
         if self.path != "/api/strava/upload":
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
             return
@@ -307,9 +317,30 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_json(HTTPStatus.OK, {"url": url})
 
+    def post_feedback(self) -> None:
+        if not self.feedback.complete:
+            self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "not_configured"})
+            return
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0 or length > feedback.MAX_BODY_BYTES:
+            self.send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "too_large"})
+            return
+        try:
+            message = feedback.Feedback.parse(json.loads(self.rfile.read(length)))
+            feedback.file_issue(self.feedback, message, self.headers.get("User-Agent", ""), urllib_http)
+        except ValueError:
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": "bad_request"})
+        except feedback.FeedbackError as error:
+            print(f"feedback error: {error}", flush=True)
+            status = HTTPStatus.BAD_REQUEST if error.code == "bad_request" else HTTPStatus.BAD_GATEWAY
+            self.send_json(status, {"error": error.code})
+        else:
+            self.send_json(HTTPStatus.OK, {"sent": True})
+
 
 def main() -> None:
     Handler.config = Config.from_env()
+    Handler.feedback = feedback.Config.from_env()
     address = (os.environ.get("BIND", "127.0.0.1"), int(os.environ.get("PORT", "8787")))
     print(f"listening on {address[0]}:{address[1]}", flush=True)
     ThreadingHTTPServer(address, Handler).serve_forever()

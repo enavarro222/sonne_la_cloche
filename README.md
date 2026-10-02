@@ -89,13 +89,22 @@ expects `/api/strava/` of the game's domain to be proxied to it. The phone page
 asks it whether Strava is set up (`/api/strava/status`) and only then offers to
 publish; otherwise, as with `pnpm dev`, it offers the `.fit` download alone.
 
+## Players' feedback (optional)
+
+The same service files the messages of the _Your opinion?_ form (home screen
+and phone page) as issues in a private GitHub repository: players need no
+account, and their words are not made public. It reads `GITHUB_TOKEN` (a
+fine-grained token allowed to write issues on that repository only) and
+`GITHUB_FEEDBACK_REPO` (`owner/name`), and expects `/api/feedback` to be
+proxied to it. Without them, the form is not offered.
+
 ## Develop
 
 ```sh
 pnpm check        # format check + lint + typecheck + unit tests + e2e
 pnpm test         # unit tests (Vitest)
 pnpm e2e          # end-to-end tests (Playwright, tablet and desktop screens)
-pnpm test:server  # tests of the Strava service (Python)
+pnpm test:server  # tests of the Strava and feedback service (Python)
 ```
 
 First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes
