@@ -6,6 +6,10 @@ export const en = {
   language: {
     label: "Language",
   },
+  fullscreen: {
+    enter: "Full screen",
+    exit: "Exit full screen",
+  },
   status: {
     idle: "Bike not connected",
     connecting: "Searching…",

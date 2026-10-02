@@ -7,6 +7,10 @@ export const fr: Translation = {
   language: {
     label: "Langue",
   },
+  fullscreen: {
+    enter: "Plein écran",
+    exit: "Quitter le plein écran",
+  },
   status: {
     idle: "Home-trainer non connecté",
     connecting: "Recherche…",

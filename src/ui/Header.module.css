@@ -51,3 +51,30 @@
   background: var(--yellow);
   color: var(--night);
 }
+
+.fullscreen {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--surface-dark);
+  color: var(--cream-dim);
+  cursor: pointer;
+}
+
+.fullscreen:hover {
+  color: var(--yellow);
+}
+
+.fullscreen svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
