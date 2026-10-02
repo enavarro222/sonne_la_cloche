@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import type { Player } from "../core/players";
 import { DEFAULT_SETTINGS } from "../core/settings";
 import { REPOSITORY_URL } from "./credits";
 import { HomeScreen } from "./HomeScreen";
@@ -8,7 +9,7 @@ import type { Connection } from "./useSensor";
 
 const noop = () => undefined;
 
-function renderHome(connection: Connection = { kind: "none" }) {
+function renderHome(connection: Connection = { kind: "none" }, roster: Player[] = []) {
   const sensor = {
     connection,
     connecting: false,
@@ -20,7 +21,7 @@ function renderHome(connection: Connection = { kind: "none" }) {
   };
   render(
     <HomeScreen
-      roster={[]}
+      roster={roster}
       settings={DEFAULT_SETTINGS}
       sensor={sensor}
       bluetoothSupported
@@ -97,5 +98,20 @@ describe("HomeScreen credits", () => {
     expect(link).toHaveAttribute("href", REPOSITORY_URL);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+});
+
+describe("HomeScreen start button", () => {
+  it("names the player who rides first", () => {
+    renderHome({ kind: "demo" }, [
+      { id: "1", name: "Léa" },
+      { id: "2", name: "Tom" },
+    ]);
+    expect(screen.getByRole("button", { name: "Let's go! Léa rides first" })).toBeEnabled();
+  });
+
+  it("names nobody until there are enough players", () => {
+    renderHome({ kind: "demo" }, [{ id: "1", name: "Léa" }]);
+    expect(screen.getByRole("button", { name: "Let's go!" })).toBeDisabled();
   });
 });

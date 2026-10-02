@@ -89,6 +89,20 @@
   gap: 0.6rem;
 }
 
+.startButton {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.firstUp {
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: 0.7em;
+  opacity: 0.9;
+}
+
 .start .help {
   text-align: center;
 }

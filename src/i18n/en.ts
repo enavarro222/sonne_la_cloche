@@ -42,6 +42,7 @@ export const en = {
       failed: "Connection failed: {{message}}",
     },
     start: "Let's go!",
+    firstUp: "Let's go! {{name}} rides first",
     needPlayers: "Add at least 2 players",
     needBike: "Connect the bike, or try without one",
     settings: "Settings",

@@ -43,6 +43,7 @@ export const fr: Translation = {
       failed: "La connexion a échoué : {{message}}",
     },
     start: "C'est parti !",
+    firstUp: "C'est parti ! {{name}} commence",
     needPlayers: "Ajoute au moins 2 joueurs",
     needBike: "Connecte le vélo, ou essaie sans",
     settings: "Réglages",

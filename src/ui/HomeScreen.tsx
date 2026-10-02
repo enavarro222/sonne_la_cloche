@@ -149,6 +149,8 @@ export function HomeScreen({
   };
 
   const enoughPlayers = canStart(roster);
+  // The game always opens with the first player of the roster.
+  const firstUp = enoughPlayers ? roster[0] : undefined;
   const hint = !enoughPlayers ? t("home.needPlayers") : !sensor.ready ? t("home.needBike") : null;
   const settingsSummary = [
     t(`settings.metric.${settings.metric}`),
@@ -209,12 +211,14 @@ export function HomeScreen({
         <div className={styles.start}>
           <button
             type="button"
-            className="primary"
+            className={cx("primary", styles.startButton)}
             onClick={onStart}
             disabled={hint !== null}
             aria-describedby={hint ? "start-hint" : undefined}
+            aria-label={firstUp ? t("home.firstUp", { name: firstUp.name }) : undefined}
           >
             {t("home.start")}
+            {firstUp && <span className={styles.firstUp}>{firstUp.name}</span>}
           </button>
           {hint && (
             <p id="start-hint" className={styles.help}>
