@@ -1,6 +1,7 @@
 """Tests for the Strava upload service: python3 -m unittest discover server"""
 
 import base64
+import http.client
 import json
 import threading
 import unittest
@@ -10,6 +11,22 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 
 import strava_upload as su
+
+
+def announced_status(port, path, length):
+    """Status for a request announcing a body of `length` bytes, none of them sent.
+
+    The server must refuse on the announced size alone, before reading: sending
+    the whole oversized body would race its early answer (broken pipe).
+    """
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+    try:
+        connection.putrequest("POST", path)
+        connection.putheader("Content-Length", str(length))
+        connection.endheaders()
+        return connection.getresponse().status
+    finally:
+        connection.close()
 
 CONFIG = su.Config("12345", "s3cret", "https://sonnelacloche.enavarro.eu/strava/")
 FIT = bytes([14, 0x20, 0, 0, 0, 0, 0, 0]) + b".FIT" + b"\x00" * 20
@@ -229,8 +246,8 @@ class HttpServerTests(unittest.TestCase):
                 self.assertEqual(status, 400)
 
     def test_rejects_bodies_that_are_too_large_or_not_json(self):
-        status, _, _ = self.request("POST", "/api/strava/upload", b"x" * (su.MAX_BODY_BYTES + 1))
-        self.assertEqual(status, 413)
+        port = self.server.server_address[1]
+        self.assertEqual(announced_status(port, "/api/strava/upload", su.MAX_BODY_BYTES + 1), 413)
         status, _, body = self.request("POST", "/api/strava/upload", b"not json")
         self.assertEqual((status, json.loads(body)), (400, {"error": "bad_request"}))
 

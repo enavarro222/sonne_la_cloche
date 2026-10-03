@@ -1,5 +1,6 @@
 """Tests for the feedback service: python3 -m unittest discover server"""
 
+import http.client
 import json
 import threading
 import unittest
@@ -9,6 +10,22 @@ from http.server import ThreadingHTTPServer
 
 import feedback as fb
 import strava_upload as su
+
+
+def announced_status(port, path, length):
+    """Status for a request announcing a body of `length` bytes, none of them sent.
+
+    The server must refuse on the announced size alone, before reading: sending
+    the whole oversized body would race its early answer (broken pipe).
+    """
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+    try:
+        connection.putrequest("POST", path)
+        connection.putheader("Content-Length", str(length))
+        connection.endheaders()
+        return connection.getresponse().status
+    finally:
+        connection.close()
 
 CONFIG = fb.Config("gh-token", "enavarro222/sonne_la_cloche-feedback")
 
@@ -176,8 +193,8 @@ class HttpServerTests(unittest.TestCase):
         self.assertEqual((status, body), (503, {"error": "not_configured"}))
 
     def test_rejects_bad_bodies(self):
-        status, _ = self.request("POST", "/api/feedback", b"x" * (fb.MAX_BODY_BYTES + 1))
-        self.assertEqual(status, 413)
+        port = self.server.server_address[1]
+        self.assertEqual(announced_status(port, "/api/feedback", fb.MAX_BODY_BYTES + 1), 413)
         self.assertEqual(self.request("POST", "/api/feedback", b"not json"), (400, {"error": "bad_request"}))
         bad = json.dumps(valid_payload(locale="de")).encode()
         self.assertEqual(self.request("POST", "/api/feedback", bad), (400, {"error": "bad_request"}))
