@@ -5,6 +5,9 @@ const URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "e2e",
+  // Only does something with E2E_COVERAGE set (see e2e/coverage.ts).
+  globalSetup: "./e2e/global-setup.ts",
+  globalTeardown: "./e2e/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // Shared CI runners are slower and noisier: one retry absorbs a stray timeout.

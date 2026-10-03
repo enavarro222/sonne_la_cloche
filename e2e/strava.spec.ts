@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import FitParser from "fit-file-parser";
 import { addPlayers, chooseSettings, openGame, ride, startDemoGame } from "./helpers";
 

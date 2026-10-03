@@ -1,4 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { addPlayers, openGame, ride, startDemoGame } from "./helpers";
 
 // A full party: 8 children with long names.

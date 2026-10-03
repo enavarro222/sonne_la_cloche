@@ -63,6 +63,9 @@ jobs:
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -72,7 +75,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm e2e
+      # Also measures what the pages ran, mapped back to src/ (e2e/coverage.ts).
+      - run: pnpm e2e:coverage
+      - uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: coverage/e2e/lcov.info
+          flags: e2e
+          fail_ci_if_error: false
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

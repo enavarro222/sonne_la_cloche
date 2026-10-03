@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { addPlayers, chooseSettings, openGame, resultPoints, ride, startDemoGame } from "./helpers";
 
 const start = (page: import("@playwright/test").Page) =>

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { addPlayers, openGame, startDemoGame } from "./helpers";
 
 for (const [locale, path, title] of [

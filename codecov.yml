@@ -15,6 +15,11 @@ flags:
   server:
     paths: [server/]
     carryforward: true
+  # The same sources as web, as the e2e tests run them in Chromium: Codecov
+  # merges both, so a line counts as covered if either kind of test runs it.
+  e2e:
+    paths: [src/]
+    carryforward: true
 
 comment:
   layout: "condensed_header, diff, flags"

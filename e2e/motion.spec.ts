@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { addPlayers, startDemoGame } from "./helpers";
 
 // Real time on purpose (no fake clock): this checks what is actually painted,

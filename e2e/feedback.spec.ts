@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("the home screen opens the feedback form in a new tab", async ({ page, context }) => {
   await page.goto("/fr/");

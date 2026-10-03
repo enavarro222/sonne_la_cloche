@@ -10,6 +10,8 @@ export default defineConfig({
   // no server rewrite rule needed wherever the build is hosted.
   appType: "mpa",
   build: {
+    // Source maps let the e2e coverage point back to src/ (E2E_COVERAGE=1).
+    sourcemap: !!process.env.E2E_COVERAGE,
     rollupOptions: {
       input: {
         root: page("index.html"),

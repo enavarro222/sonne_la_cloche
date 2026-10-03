@@ -108,6 +108,7 @@ pnpm check          # format check + lint + typecheck + unit tests + e2e
 pnpm test           # unit tests (Vitest)
 pnpm test:coverage  # unit tests with coverage (coverage/lcov-report/)
 pnpm e2e            # end-to-end tests (Playwright, tablet and desktop screens)
+pnpm e2e:coverage   # the same, measuring what they run (coverage/e2e/)
 pnpm test:server    # tests of the Strava and feedback service (Python)
 ```
 
