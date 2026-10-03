@@ -54,6 +54,7 @@ export const fr: Translation = {
     madeBy: "Fait par {{author}}",
     source: "Code source sur GitHub",
     feedback: "Un avis ?",
+    version: "Version {{version}} : les nouveautés",
   },
   settings: {
     title: "Réglages",

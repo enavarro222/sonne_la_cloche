@@ -99,6 +99,15 @@ describe("HomeScreen credits", () => {
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
+
+  it("shows which version is running, linked to its release notes", () => {
+    renderHome();
+    const version = screen.getByRole("link", { name: /^Version \d+\.\d+\.\d+: what's new$/ });
+    expect(version).toHaveTextContent(/^v\d+\.\d+\.\d+$/);
+    expect(version.getAttribute("href")).toBe(
+      `${REPOSITORY_URL}/releases/tag/${version.textContent}`,
+    );
+  });
 });
 
 describe("HomeScreen start button", () => {

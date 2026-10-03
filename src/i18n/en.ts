@@ -53,6 +53,7 @@ export const en = {
     madeBy: "Made by {{author}}",
     source: "Source code on GitHub",
     feedback: "Your opinion?",
+    version: "Version {{version}}: what's new",
   },
   settings: {
     title: "Settings",

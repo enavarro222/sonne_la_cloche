@@ -116,6 +116,10 @@ First e2e run: `pnpm exec playwright install chromium`. `CLAUDE.md` describes
 the architecture and the constraints to keep in mind. GitHub Actions runs the
 same checks on every push and pull request, and sends coverage to Codecov.
 
+To release: set the new version in `package.json`, describe it in
+`CHANGELOG.md`, then push a `v<version>` tag. GitHub Actions publishes the
+release; the home screen shows the version, linked to its notes.
+
 Add `?dev` to the address (e.g. `/fr/?dev`) for a test mode: 5-second rides and
 one-round games in the settings, and every end-of-game feature available
 without a bike.

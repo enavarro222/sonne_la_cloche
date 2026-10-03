@@ -8,7 +8,7 @@ import {
   validateName,
 } from "../core/players";
 import type { Settings } from "../core/settings";
-import { AUTHOR, REPOSITORY_URL } from "./credits";
+import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import type { SensorState } from "./useSensor";
@@ -244,9 +244,20 @@ export function HomeScreen({
               {t("home.source")}
             </a>
           </span>
-          {/* A new tab: leaving this page would drop the Bluetooth connection. */}
-          <a href={feedbackUrl} target="_blank" rel="noopener">
-            {t("home.feedback")}
+          <span>
+            {/* A new tab: leaving this page would drop the Bluetooth connection. */}
+            <a href={feedbackUrl} target="_blank" rel="noopener">
+              {t("home.feedback")}
+            </a>
+          </span>
+          <a
+            href={RELEASE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.version}
+            aria-label={t("home.version", { version: VERSION })}
+          >
+            {`v${VERSION}`}
           </a>
         </p>
       </section>
