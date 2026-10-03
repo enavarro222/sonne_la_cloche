@@ -21,27 +21,7 @@ import { pickLocale } from "../i18n/locales";
 import { renderResultCard } from "../ui/share/resultCard";
 import { shareContent } from "../ui/share/shareContent";
 import { shareResults } from "../ui/share/shareResults";
-
-/**
- * The OAuth "state" carries the game (and the map center) through Strava's
- * consent page, which Strava hands back untouched: the upload can finish in
- * whatever tab or browser Strava returns to (its app opens a new one). No
- * need to check it against a nonce: the code is bound to the account that
- * just consented, so it can only ever publish to that account.
- */
-function toState(fragment: string, center: LatLon | null): string {
-  return center ? `${fragment}.${center.lat.toFixed(5)},${center.lon.toFixed(5)}` : fragment;
-}
-
-function fromState(state: string): { fragment: string; center: LatLon | null } {
-  const [fragment = "", position] = state.split(".");
-  const [lat, lon] = (position ?? "").split(",").map(Number);
-  const center =
-    lat !== undefined && lon !== undefined && Number.isFinite(lat) && Number.isFinite(lon)
-      ? { lat, lon }
-      : null;
-  return { fragment, center };
-}
+import { fitFileName, fromState, toBase64, toState } from "./phonePage";
 
 type BannerState = "working" | "done" | "failed";
 
@@ -55,26 +35,10 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function toBase64(bytes: Uint8Array): string {
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
-
-function fileName(activity: PlayerActivity): string {
-  const date = new Date(activity.rides[0]?.startedAt ?? Date.now()).toISOString().slice(0, 10);
-  const name = activity.name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // accents off: "Léa" → "Lea"
-    .replace(/[^\w-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return `sonne-la-cloche-${date}-${name || "player"}.fit`;
-}
-
 function downloadFit(activity: PlayerActivity, center: LatLon | null): void {
   const file = buildFit(activity.rides, center ?? undefined);
   const url = URL.createObjectURL(new Blob([file], { type: "application/octet-stream" }));
-  el("a", { href: url, download: fileName(activity) }).click();
+  el("a", { href: url, download: fitFileName(activity) }).click();
   setTimeout(() => {
     URL.revokeObjectURL(url);
   }, 10_000);

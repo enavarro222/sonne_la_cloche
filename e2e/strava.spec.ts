@@ -82,6 +82,11 @@ test("each player takes their game to their phone, and to Strava", async ({ page
     sent = route.request().postDataJSON() as Record<string, string>;
     await route.fulfill({ json: { url: "https://www.strava.com/activities/99" } });
   });
+  // With a map: the phone's position has to survive the trip through Strava.
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 43.9, longitude: -1.9 });
+  await phone.getByRole("checkbox", { name: /^Ajouter une carte/ }).check();
+  await expect(phone.getByText(/^Position trouvée\./)).toBeVisible();
   await phone.getByRole("button", { name: "Publier sur Strava" }).click();
   await expect(
     phone.getByRole("status").filter({ hasText: "C'est publié sur Strava !" }),
@@ -98,6 +103,16 @@ test("each player takes their game to their phone, and to Strava", async ({ page
       .subarray(8, 12)
       .toString(),
   ).toBe(".FIT");
+  const uploaded = Buffer.from(sent.file ?? "", "base64");
+  const track = await new FitParser({ mode: "list" }).parseAsync(
+    uploaded.buffer.slice(uploaded.byteOffset, uploaded.byteOffset + uploaded.byteLength),
+  );
+  const positions = (track.records ?? []).filter((r) => r.position_lat !== undefined);
+  expect(positions.length).toBeGreaterThan(0);
+  for (const { position_lat: lat, position_long: lon } of positions) {
+    expect(Math.abs((lat ?? 0) - 43.9)).toBeLessThan(0.05);
+    expect(Math.abs((lon ?? 0) + 1.9)).toBeLessThan(0.05);
+  }
   // Back on the player's page, without the code in the address.
   expect(new URL(phone.url()).search).toBe("");
 
