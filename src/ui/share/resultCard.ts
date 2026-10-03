@@ -75,16 +75,16 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
   const winnerLines = wrapText((t) => ctx.measureText(t).width, content.winner, width).slice(0, 3);
   const winnerLineHeight = 66;
   const rows = content.ranking.slice(0, 8);
-  const rowHeight = 92;
   const awardHeight = 52;
-  const blockHeight =
-    winnerLines.length * winnerLineHeight +
-    40 +
-    rows.length * rowHeight +
-    40 +
-    content.awards.length * awardHeight;
   const top = PAD + 110;
   const bottom = HEIGHT - PAD - 110;
+  // A crowded game (8 players, every award) squeezes the ranking rows rather
+  // than pushing the awards onto the footer.
+  const others =
+    winnerLines.length * winnerLineHeight + 40 + 40 + content.awards.length * awardHeight;
+  const rowHeight = Math.min(92, (bottom - top - others) / Math.max(1, rows.length));
+  const scale = rowHeight / 92;
+  const blockHeight = others + rows.length * rowHeight;
   let y = top + Math.max(0, (bottom - top - blockHeight) / 2);
 
   ctx.fillStyle = COLORS.mint;
@@ -98,15 +98,15 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
     const first = row.rank === 1;
     ctx.fillStyle = first ? COLORS.pink : COLORS.surface;
     ctx.beginPath();
-    ctx.roundRect(PAD, y, width, rowHeight - 14, 22);
+    ctx.roundRect(PAD, y, width, rowHeight - 14 * scale, 22 * scale);
     ctx.fill();
-    const baseline = y + (rowHeight - 14) / 2 + 16;
+    const baseline = y + (rowHeight - 14 * scale) / 2 + 16 * scale;
     ctx.textAlign = "left";
     ctx.fillStyle = first ? COLORS.cream : COLORS.yellow;
-    ctx.font = `44px ${DISPLAY}`;
+    ctx.font = `${String(Math.round(44 * scale))}px ${DISPLAY}`;
     ctx.fillText(String(row.rank), PAD + 32, baseline);
     ctx.fillStyle = COLORS.cream;
-    ctx.font = `900 46px ${TEXT}`;
+    ctx.font = `900 ${String(Math.round(46 * scale))}px ${TEXT}`;
     ctx.fillText(fitText(ctx, row.name, width - 360), PAD + 120, baseline);
     ctx.textAlign = "right";
     ctx.fillText(String(row.total), WIDTH - PAD - 32, baseline);

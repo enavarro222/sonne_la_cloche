@@ -132,6 +132,57 @@ test("each player takes their game to their phone, and to Strava", async ({ page
   await expect(unset.getByRole("button", { name: "Télécharger le fichier .fit" })).toBeVisible();
 });
 
+test("tells the player why publishing did not work, and keeps the download", async ({
+  page,
+  context,
+}) => {
+  // A quick game in test mode, just to get a player's link.
+  await openGame(page, "/fr/?dev");
+  await chooseSettings(page, { duration: "5 s", rounds: "1 tour" });
+  await addPlayers(page, "Léa", "Tom");
+  await startDemoGame(page);
+  await ride(page, { durationSec: 5, pedal: true });
+  await page.getByRole("button", { name: /^Au suivant/ }).click();
+  await ride(page, { durationSec: 5, pedal: false });
+  await page.getByRole("button", { name: "📱 Sur vos téléphones" }).click();
+  const link = page.getByRole("link", { name: "ou ouvre-la sur cet appareil" });
+  const fragment = new URL((await link.getAttribute("href")) ?? "").hash.slice(1);
+  const state = encodeURIComponent(fragment);
+  await context.route("**/api/strava/status", (route) =>
+    route.fulfill({ json: { configured: true } }),
+  );
+  const phone = await context.newPage();
+  const download = phone.getByRole("button", { name: "Télécharger le fichier .fit" });
+
+  // The player said no on Strava's consent page.
+  await phone.goto(`/strava/?error=access_denied&state=${state}`);
+  await expect(phone.getByRole("status")).toHaveText("Autorisation refusée sur Strava.");
+  await expect(download).toBeVisible();
+
+  // The same game, published twice.
+  await phone.route("**/api/strava/upload", (route) =>
+    route.fulfill({ status: 502, json: { error: "duplicate" } }),
+  );
+  await phone.goto(`/strava/?code=ok&state=${state}`);
+  await expect(phone.getByRole("status")).toHaveText("Cette partie est déjà sur Strava.");
+
+  // Strava or the server failing: the file is still there to import by hand.
+  await phone.unroute("**/api/strava/upload");
+  await phone.route("**/api/strava/upload", (route) => route.abort());
+  await phone.goto(`/strava/?code=ok&state=${state}`);
+  await expect(phone.getByRole("status")).toContainText("La publication a échoué.");
+  await expect(download).toBeVisible();
+
+  // No position allowed: no map, and the box does not stay ticked.
+  const map = phone.getByRole("checkbox", { name: /^Ajouter une carte/ });
+  // A click, not check(): the page unticks the box at once, as it should.
+  await map.click();
+  await expect(
+    phone.getByText("Position indisponible : l'activité n'aura pas de carte."),
+  ).toBeVisible();
+  await expect(map).not.toBeChecked();
+});
+
 test("a page opened without a game says so", async ({ page }) => {
   await page.goto("/strava/#nothing-here");
   await expect(page.getByText(/Ce lien ne contient pas de partie/)).toBeVisible();

@@ -71,6 +71,7 @@ async function upload(
   center: LatLon | null,
 ): Promise<{ url?: string; error?: string }> {
   const { name, description } = activityText(activity, i18n.t, `${location.origin}/`);
+  // No network or no server: the player must hear it failed, not wait forever.
   const response = await fetch("/api/strava/upload", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -82,7 +83,8 @@ async function upload(
       sportType: "VirtualRide",
       externalId: `sonne-la-cloche-${String(activity.rides[0]?.startedAt ?? 0)}-${activity.name}`,
     }),
-  });
+  }).catch(() => null);
+  if (!response) return { error: "network" };
   return (await response.json().catch(() => ({}))) as { url?: string; error?: string };
 }
 

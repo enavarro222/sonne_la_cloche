@@ -26,7 +26,9 @@ const advance = (ms: number) => {
   }
 };
 
-describe("RideScreen", () => {
+// Each test plays up to 25 s of a ride in 50 ms steps (hundreds of renders):
+// fast alone, but slower than the default 5 s budget under coverage.
+describe("RideScreen", { timeout: 20_000 }, () => {
   beforeEach(() => {
     vi.useFakeTimers({
       toFake: [
