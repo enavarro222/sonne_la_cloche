@@ -63,7 +63,7 @@ describe("HomeScreen bike block", () => {
     expect(screen.getByRole("button", { name: "Change bike" })).toBeInTheDocument();
   });
 
-  it("says when the game sets the trainer's resistance", () => {
+  it("says when the game sets the trainer's slope", () => {
     renderHome({
       kind: "bluetooth",
       deviceName: "SUITO",
@@ -72,7 +72,7 @@ describe("HomeScreen bike block", () => {
       lost: false,
     });
     expect(screen.getByRole("status")).toHaveTextContent(
-      "✓ SUITO connected (FTMS), resistance set by the game",
+      "✓ SUITO connected (FTMS), slope set by the game",
     );
   });
 

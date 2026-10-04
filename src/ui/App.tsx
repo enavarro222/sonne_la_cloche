@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { bestRide, currentPlayer, initialState, isGameOver, reducer } from "../core/game";
 import { isBluetoothSupported } from "../sensors/ble/bluetoothSensor";
+import { SLOPE_PERCENT } from "../core/settings";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
 import styles from "./App.module.css";
 import { Header } from "./Header";
@@ -35,8 +36,8 @@ export function App() {
   // Right away on connection (the trainer may still be set up for an adult,
   // or in ERG mode after another app), and whenever the setting changes.
   useEffect(() => {
-    void sensor?.setResistance?.(state.settings.resistance);
-  }, [sensor, state.settings.resistance]);
+    void sensor?.setSlope?.(SLOPE_PERCENT[state.settings.slope]);
+  }, [sensor, state.settings.slope]);
   useHistoryGuard(game !== null);
   useLeaveWarning(game !== null && !isGameOver(game));
 

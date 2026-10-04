@@ -7,7 +7,7 @@ import {
   type Player,
   validateName,
 } from "../core/players";
-import type { Settings } from "../core/settings";
+import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
@@ -160,7 +160,7 @@ export function HomeScreen({
     t(`settings.metric.${settings.metric}`),
     t("settings.duration.value", { count: settings.durationSec }),
     t("settings.rounds.value", { count: settings.rounds }),
-    t(`settings.resistance.short.${settings.resistance}`),
+    t("settings.slope.short", { percent: SLOPE_PERCENT[settings.slope] }),
   ].join(" · ");
 
   return (

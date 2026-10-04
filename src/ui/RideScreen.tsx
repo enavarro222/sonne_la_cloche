@@ -17,7 +17,7 @@ import {
   trackPosition,
 } from "../core/ride";
 import type { RideTrace } from "../core/game";
-import type { Settings } from "../core/settings";
+import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import { DemoSensor, type Foot } from "../sensors/demo/demoSensor";
 import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types";
@@ -231,10 +231,10 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
     sensor.reset();
   });
   // Again before each ride: another app may have changed it since.
-  const resistanceSensor = useLatest(sensor);
+  const slopeSensor = useLatest(sensor);
   useEffect(() => {
-    void resistanceSensor.current.setResistance?.(settings.resistance);
-  }, [resistanceSensor, settings.resistance]);
+    void slopeSensor.current.setSlope?.(SLOPE_PERCENT[settings.slope]);
+  }, [slopeSensor, settings.slope]);
   const { progress, reading, track, rung, crankAngle } = useRideLoop(
     stage.name === "racing",
     sensor,

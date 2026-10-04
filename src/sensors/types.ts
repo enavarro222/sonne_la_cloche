@@ -1,5 +1,3 @@
-import type { Resistance } from "../core/settings";
-
 export interface SensorReading {
   /** Pedal turns per minute. */
   cadence: number;
@@ -15,10 +13,10 @@ export interface Sensor {
   reset(): void;
   disconnect(): void;
   /**
-   * Sets the trainer's resistance, when it can be controlled. Resolves to
-   * false when it cannot or refused; never rejects.
+   * Sets the trainer's slope, in percent, when it can be controlled.
+   * Resolves to false when it cannot or refused; never rejects.
    */
-  setResistance?(resistance: Resistance): Promise<boolean>;
+  setSlope?(percent: number): Promise<boolean>;
 }
 
 export const ZERO_READING: SensorReading = { cadence: 0, power: 0 };

@@ -114,7 +114,7 @@ describe("starting a game", () => {
       metric: "power",
       durationSec: 20,
       rounds: 4,
-      resistance: "normal",
+      slope: "gentle",
     });
   });
 });

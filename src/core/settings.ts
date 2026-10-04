@@ -9,15 +9,26 @@ export const ROUND_COUNTS = [1, 3, 4, 5] as const;
 export const TEST_ONLY = { durationSec: 5, rounds: 1 } as const;
 export type RoundCount = (typeof ROUND_COUNTS)[number];
 
-export const RESISTANCES = ["light", "normal", "hard", "megaHard"] as const;
-/** How hard the trainer is to push, on trainers the game can control. */
-export type Resistance = (typeof RESISTANCES)[number];
+export const SLOPES = ["flat", "gentle", "hill", "wall"] as const;
+/** The road's slope, sent to trainers the game can control. */
+export type Slope = (typeof SLOPES)[number];
+
+/** Grade of each slope, in percent. */
+export const SLOPE_PERCENT: Record<Slope, number> = { flat: 0, gentle: 2, hill: 5, wall: 10 };
+
+/** The resistance setting the slope replaced, as saved by earlier versions. */
+const SLOPE_OF_RESISTANCE: Record<string, Slope> = {
+  light: "flat",
+  normal: "gentle",
+  hard: "hill",
+  megaHard: "wall",
+};
 
 export interface Settings {
   metric: Metric;
   durationSec: DurationSec;
   rounds: RoundCount;
-  resistance: Resistance;
+  slope: Slope;
 }
 
 // Cadence by default: an 8-year-old produces 40-60 W, so ranking by watts
@@ -26,7 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   metric: "cadence",
   durationSec: 30,
   rounds: 4,
-  resistance: "normal",
+  slope: "gentle",
 };
 
 const pick = <T>(allowed: readonly T[], value: unknown, fallback: T): T =>
@@ -39,6 +50,11 @@ export function parseSettings(value: unknown): Settings {
     metric: pick(METRICS, raw.metric, DEFAULT_SETTINGS.metric),
     durationSec: pick(DURATIONS_SEC, raw.durationSec, DEFAULT_SETTINGS.durationSec),
     rounds: pick(ROUND_COUNTS, raw.rounds, DEFAULT_SETTINGS.rounds),
-    resistance: pick(RESISTANCES, raw.resistance, DEFAULT_SETTINGS.resistance),
+    slope: pick(
+      SLOPES,
+      raw.slope ??
+        (typeof raw.resistance === "string" ? SLOPE_OF_RESISTANCE[raw.resistance] : null),
+      DEFAULT_SETTINGS.slope,
+    ),
   };
 }

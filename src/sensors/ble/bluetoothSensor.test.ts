@@ -5,7 +5,13 @@ import {
   connectTrainer,
   requestTrainer,
 } from "./bluetoothSensor";
-import { encodeSetResistance, OP_REQUEST_CONTROL, OP_START, resistanceLevel } from "./ftmsControl";
+import {
+  encodeSetResistance,
+  encodeSetSimulation,
+  OP_REQUEST_CONTROL,
+  OP_START,
+  resistanceLevel,
+} from "./ftmsControl";
 
 const view = (...bytes: number[]) => new DataView(new Uint8Array(bytes).buffer);
 const u16 = (n: number) => [n & 0xff, (n >> 8) & 0xff];
@@ -25,7 +31,9 @@ const FTMS_90_RPM = view(...u16(0x0044), ...u16(2500), ...u16(180), ...u16(150))
 /** Cycling Power Measurement: no flags, 200 W. */
 const POWER_200_W = view(...u16(0), ...u16(200));
 /** Fitness Machine Feature: resistance target supported (as an Elite Suito). */
-const CAN_SET_RESISTANCE = view(0, 0, 0, 0, 0x0c, 0x20, 0, 0);
+const CAN_SET_RESISTANCE = view(0, 0, 0, 0, 0x04, 0, 0, 0);
+/** Elite Suito: resistance, power and simulation. */
+const CAN_SIMULATE = view(0, 0, 0, 0, 0x0c, 0x20, 0, 0);
 
 /** A GATT characteristic: notifications, reads, and a trainer that obeys. */
 class FakeCharacteristic extends EventTarget {
@@ -171,26 +179,34 @@ describe("connectTrainer", () => {
   });
 });
 
-describe("connectTrainer resistance control", () => {
-  function controllableTrainer(range?: DataView) {
+describe("connectTrainer slope control", () => {
+  function controllableTrainer(range?: DataView, feature = CAN_SET_RESISTANCE) {
     const controlPoint = new FakeCharacteristic();
     const characteristics: Partial<Record<number, FakeCharacteristic>> = {
       [INDOOR_BIKE_DATA]: new FakeCharacteristic(),
-      [FTMS_FEATURE]: new FakeCharacteristic(CAN_SET_RESISTANCE),
+      [FTMS_FEATURE]: new FakeCharacteristic(feature),
       [CONTROL_POINT]: controlPoint,
       [RESISTANCE_RANGE]: new FakeCharacteristic(range),
     };
     return { ...fakeDevice({ [FTMS]: characteristics }), controlPoint };
   }
 
-  it("sets the resistance within the trainer's own range", async () => {
+  it("sends the grade to a trainer with simulation", async () => {
+    const { device, controlPoint } = controllableTrainer(undefined, CAN_SIMULATE);
+    const { sensor, controllable } = await connectTrainer(device, () => undefined);
+    expect(controllable).toBe(true);
+    expect(await sensor.setSlope?.(5)).toBe(true);
+    expect(controlPoint.written.at(-1)).toEqual([...encodeSetSimulation(5)]);
+  });
+
+  it("without simulation, sets the resistance within the trainer's own range", async () => {
     const range = view(...u16(0), ...u16(100), ...u16(10));
     const { device, controlPoint } = controllableTrainer(range);
     const { sensor, controllable } = await connectTrainer(device, () => undefined);
     expect(controllable).toBe(true);
 
-    expect(await sensor.setResistance?.("hard")).toBe(true);
-    const level = resistanceLevel("hard", { min: 0, max: 100, increment: 10 });
+    expect(await sensor.setSlope?.(5)).toBe(true);
+    const level = resistanceLevel(5, { min: 0, max: 100, increment: 10 });
     expect(controlPoint.written).toEqual([
       [OP_REQUEST_CONTROL],
       [OP_START],
@@ -201,11 +217,11 @@ describe("connectTrainer resistance control", () => {
   it("keeps the default range when the trainer does not give one", async () => {
     const { device, controlPoint } = controllableTrainer();
     const { sensor } = await connectTrainer(device, () => undefined);
-    expect(await sensor.setResistance?.("hard")).toBe(true);
+    expect(await sensor.setSlope?.(5)).toBe(true);
     expect(controlPoint.written.at(-1)).toEqual([...encodeSetResistance(25)]);
   });
 
-  it("leaves the resistance alone when the trainer cannot set it", async () => {
+  it("leaves the trainer alone when it cannot be set", async () => {
     const plain = fakeDevice({
       [FTMS]: {
         [INDOOR_BIKE_DATA]: new FakeCharacteristic(),
@@ -214,7 +230,7 @@ describe("connectTrainer resistance control", () => {
     });
     const connection = await connectTrainer(plain.device, () => undefined);
     expect(connection.controllable).toBe(false);
-    expect("setResistance" in connection.sensor).toBe(false);
+    expect("setSlope" in connection.sensor).toBe(false);
 
     // No feature characteristic at all: still a working bike, just not controlled.
     const minimal = fakeDevice({ [FTMS]: { [INDOOR_BIKE_DATA]: new FakeCharacteristic() } });

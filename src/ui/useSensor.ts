@@ -17,7 +17,7 @@ export type Connection =
       kind: "bluetooth";
       deviceName: string;
       protocol: Protocol;
-      /** The game sets the trainer's resistance. */
+      /** The game sets the trainer's slope. */
       controllable: boolean;
       lost: boolean;
     };

@@ -35,7 +35,7 @@ export const en = {
       demoOn:
         "Demo mode: during the ride, pedal by pressing ← and → in turn. On a touch screen, tap the “Left foot” and “Right foot” buttons in turn.",
       connected: "✓ {{name}} connected ({{protocol}})",
-      connectedControlled: "✓ {{name}} connected ({{protocol}}), resistance set by the game",
+      connectedControlled: "✓ {{name}} connected ({{protocol}}), slope set by the game",
       change: "Change bike",
       help: "The home trainer must be switched on and closed in every other app (Zwift, Garmin…).",
       unsupported: "This browser can't use Bluetooth: open the game in Chrome or Edge.",
@@ -68,19 +68,15 @@ export const en = {
       label: "Ride length",
       value: "{{count}} s",
     },
-    resistance: {
-      label: "Trainer resistance",
-      light: "Light",
-      normal: "Normal",
-      hard: "Hard",
-      megaHard: "Mega hard",
-      short: {
-        light: "light resistance",
-        normal: "normal resistance",
-        hard: "hard resistance",
-        megaHard: "mega hard resistance",
-      },
-      help: "Set by the game on smart trainers it can control (FTMS). With another sensor, use the bike's gears.",
+    slope: {
+      label: "Slope",
+      option: "{{name}} {{percent}}\u00a0%",
+      flat: "Flat",
+      gentle: "Gentle",
+      hill: "Hill",
+      wall: "Wall",
+      short: "{{percent}}\u00a0%\u00a0slope",
+      help: "The steeper, the harder. Set by the game on smart trainers it can control (FTMS). With another sensor, use the bike's gears.",
     },
     rounds: {
       label: "Rounds",

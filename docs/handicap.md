@@ -1,6 +1,21 @@
 # Handicap mode: each player on their own slope
 
-Status: design, not implemented.
+Status: step 1 done (common slope), handicap not implemented.
+
+## Step 1: a common slope instead of a resistance
+
+The ⚙ setting is a slope, shown with its value: Flat 0 %, Gentle 2 %,
+Hill 5 %, Wall 10 %. Every player rides it; scoring is unchanged. It is
+sent as a simulated grade (FTMS opcode `0x11`) or, on trainers without
+simulation, as a resistance level: 2.5 % of the range per percent, which
+keeps the Suito values tested with a child (0, 10, 25, 50). The grades
+still have to be checked on the bike with a child, against those levels.
+
+The handicap will be an option on top of it, off by default: off, everyone
+rides the common slope; on, each player gets the common slope + `θ_i`
+(computed with the common slope instead of flat).
+
+## Handicap
 
 Players are scored on the **distance** their measured power takes them,
 but each rides **their own virtual slope**: the stronger the player, the
@@ -11,7 +26,7 @@ really feels the climb.
 Only slope is used (no headwind) for now: it is easy to grasp ("you climb at
 5 %") and every FTMS trainer in simulation mode renders it.
 
-## Game flow
+### Game flow
 
 1. **Round 1, calibration.** Same duration as the other rounds, flat
    (θ = 0) for everyone, all out. A player's reference power `P_ref` is
@@ -33,7 +48,7 @@ Round 1 has no handicap yet: over 30 s, a 300 W adult covers 288 m against
 Open question: reuse a returning player's stored `P_ref` to handicap their
 round 1 as well.
 
-## Virtual flying start
+### Virtual flying start
 
 The 3/2/1/Go countdown is unchanged (timer, ~2.9 s). At "Go", the virtual
 speed starts at the **common speed `v_c`** instead of 0; from then on it
@@ -61,7 +76,7 @@ a steeper slope (30 s ride, 150 W vs 350 W players):
 Out of ~257 m each. Accepted: stopping on a climb costs more, in real life
 too.
 
-## Physics model
+### Physics model
 
 One model for the game and for computing slopes. The trainer only renders
 the feel.
@@ -75,7 +90,7 @@ m = 80 kg (the same for every player, not their real weight), Crr = 0.004,
 CdA = 0.32 m², ρ = 1.225 kg/m³, g = 9.81 m/s². Time step clamped to 0.25 s
 (split longer frames).
 
-## Computing each player's slope
+### Computing each player's slope
 
 With a flying start at `v_c`, the steady-state formula is exact, no
 simulation needed.
@@ -111,7 +126,7 @@ longer exact.
 The slope goes up at 0.5 %/s at most, in the game as on the trainer,
 **during the countdown**: at "Go", every player is already on their slope.
 
-## Fairness at the margins (accepted)
+### Fairness at the margins (accepted)
 
 The handicap is exact at `P_ref`. On a slope, extra power converts into
 more speed than on the flat. If both ride at 110 % of their `P_ref` for
@@ -119,7 +134,7 @@ more speed than on the flat. If both ride at 110 % of their `P_ref` for
 (effort pays when climbing) and small as long as players stay near their
 level.
 
-## Sandbagging: P_ref only goes up
+### Sandbagging: P_ref only goes up
 
 Riding round 1 easy lowers `P_ref`, and therefore the slope. Hence:
 
@@ -128,7 +143,7 @@ Riding round 1 easy lowers `P_ref`, and therefore the slope. Hence:
   `P_ref` to it, recompute θ (same `v_c`) and move to it at 0.5 %/s.
 - Never lower `P_ref` or θ during a game: fatigue is not rewarded.
 
-## Trainer
+### Trainer
 
 FTMS _Set Indoor Bike Simulation Parameters_ (Control Point opcode `0x11`),
 after _Request Control_:

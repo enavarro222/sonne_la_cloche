@@ -1,10 +1,5 @@
 import type { Sensor } from "../types";
-import {
-  DEFAULT_RANGE,
-  FtmsControl,
-  parseResistanceRange,
-  supportsResistance,
-} from "./ftmsControl";
+import { controlFeatures, DEFAULT_RANGE, FtmsControl, parseResistanceRange } from "./ftmsControl";
 import {
   type ParsedData,
   parseCscMeasurement,
@@ -52,7 +47,7 @@ export interface BluetoothConnection {
   sensor: BluetoothSensor;
   deviceName: string;
   protocol: Protocol;
-  /** The game can set the trainer's resistance. */
+  /** The game can set the trainer's slope. */
   controllable: boolean;
 }
 
@@ -60,13 +55,15 @@ const FTMS_FEATURE = 0x2acc;
 const FTMS_RESISTANCE_RANGE = 0x2ad6;
 const FTMS_CONTROL_POINT = 0x2ad9;
 
-/** Resistance control, if this FTMS trainer offers it. */
+/** Slope control, if this FTMS trainer offers it: simulation, else resistance. */
 async function setUpControl(service: BluetoothRemoteGATTService): Promise<FtmsControl | null> {
   try {
     const feature = await (await service.getCharacteristic(FTMS_FEATURE)).readValue();
-    if (!supportsResistance(feature)) return null;
+    const { simulation, resistance } = controlFeatures(feature);
+    if (!simulation && !resistance) return null;
     const controlPoint = await service.getCharacteristic(FTMS_CONTROL_POINT);
     await controlPoint.startNotifications(); // its answers come as indications
+    if (simulation) return new FtmsControl(controlPoint, { kind: "simulation" });
     let range = DEFAULT_RANGE;
     try {
       const raw = await (await service.getCharacteristic(FTMS_RESISTANCE_RANGE)).readValue();
@@ -74,7 +71,7 @@ async function setUpControl(service: BluetoothRemoteGATTService): Promise<FtmsCo
     } catch {
       // Optional characteristic: keep the default range.
     }
-    return new FtmsControl(controlPoint, range);
+    return new FtmsControl(controlPoint, { kind: "resistance", range });
   } catch {
     return null;
   }
@@ -147,7 +144,7 @@ export async function connectTrainer(
         tracker.reset();
       },
       detach,
-      ...(control && { setResistance: (resistance) => control.setResistance(resistance) }),
+      ...(control && { setSlope: (percent) => control.setSlope(percent) }),
       disconnect: () => {
         detach();
         gatt.disconnect();

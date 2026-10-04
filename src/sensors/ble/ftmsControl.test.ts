@@ -1,11 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type ControlPoint,
+  controlFeatures,
   DEFAULT_RANGE,
   encodeSetResistance,
+  encodeSetSimulation,
   FtmsControl,
   OP_REQUEST_CONTROL,
   OP_SET_RESISTANCE,
+  OP_SET_SIMULATION,
   OP_START,
   parseControlResponse,
   parseResistanceRange,
@@ -13,17 +16,28 @@ import {
   RESULT_CONTROL_NOT_PERMITTED,
   RESULT_SUCCESS,
   resistanceLevel,
-  supportsResistance,
+  type SlopeMode,
 } from "./ftmsControl";
 
 const view = (...bytes: number[]) => new DataView(new Uint8Array(bytes).buffer);
+const RESISTANCE: SlopeMode = { kind: "resistance", range: DEFAULT_RANGE };
 
 describe("FTMS encoding", () => {
-  it("reads whether the resistance can be set", () => {
+  it("reads whether the slope or the resistance can be set", () => {
     // Elite Suito: target settings 0x0000200C (resistance, power, simulation).
-    expect(supportsResistance(view(0, 0, 0, 0, 0x0c, 0x20, 0, 0))).toBe(true);
-    expect(supportsResistance(view(0, 0, 0, 0, 0x08, 0, 0, 0))).toBe(false);
-    expect(supportsResistance(view(0, 0))).toBe(false);
+    expect(controlFeatures(view(0, 0, 0, 0, 0x0c, 0x20, 0, 0))).toEqual({
+      simulation: true,
+      resistance: true,
+    });
+    expect(controlFeatures(view(0, 0, 0, 0, 0x04, 0, 0, 0))).toEqual({
+      simulation: false,
+      resistance: true,
+    });
+    expect(controlFeatures(view(0, 0, 0, 0, 0x08, 0, 0, 0))).toEqual({
+      simulation: false,
+      resistance: false,
+    });
+    expect(controlFeatures(view(0, 0))).toEqual({ simulation: false, resistance: false });
   });
 
   it("reads the supported resistance range", () => {
@@ -32,16 +46,24 @@ describe("FTMS encoding", () => {
     expect(parseResistanceRange(view(0, 0))).toBeNull();
   });
 
-  it("maps the settings onto the Suito values tested with a child", () => {
-    expect(resistanceLevel("light", DEFAULT_RANGE)).toBe(0);
-    expect(resistanceLevel("normal", DEFAULT_RANGE)).toBe(10);
-    expect(resistanceLevel("hard", DEFAULT_RANGE)).toBe(25);
-    expect(resistanceLevel("megaHard", DEFAULT_RANGE)).toBe(50);
+  it("maps the slopes onto the Suito resistances tested with a child", () => {
+    expect(resistanceLevel(0, DEFAULT_RANGE)).toBe(0);
+    expect(resistanceLevel(2, DEFAULT_RANGE)).toBe(10);
+    expect(resistanceLevel(5, DEFAULT_RANGE)).toBe(25);
+    expect(resistanceLevel(10, DEFAULT_RANGE)).toBe(50);
   });
 
   it("follows other ranges, their step, and stays a byte", () => {
-    expect(resistanceLevel("hard", { min: 10, max: 90, increment: 4 })).toBe(22);
-    expect(resistanceLevel("hard", { min: 0, max: 4000, increment: 1 })).toBe(255);
+    expect(resistanceLevel(5, { min: 10, max: 90, increment: 4 })).toBe(22);
+    expect(resistanceLevel(5, { min: 0, max: 4000, increment: 1 })).toBe(255);
+    expect(resistanceLevel(-3, DEFAULT_RANGE)).toBe(0);
+    expect(resistanceLevel(80, DEFAULT_RANGE)).toBe(200);
+  });
+
+  it("encodes a simulated grade with the game's rolling and wind coefficients", () => {
+    // Grade 5 % = 500 (0.01 %), Crr 0.004 = 40, wind coefficient 0.20 kg/m = 20.
+    expect([...encodeSetSimulation(5)]).toEqual([OP_SET_SIMULATION, 0, 0, 0xf4, 0x01, 40, 20]);
+    expect([...encodeSetSimulation(-1.5)]).toEqual([OP_SET_SIMULATION, 0, 0, 0x6a, 0xff, 40, 20]);
   });
 
   it("encodes the command and decodes the answer", () => {
@@ -84,11 +106,18 @@ describe("FtmsControl", () => {
     vi.useRealTimers();
   });
 
-  it("takes control once, then sets the resistance", async () => {
+  it("takes control once, then sets the grade on a simulation trainer", async () => {
     const { point, written } = fakeControlPoint();
-    const control = new FtmsControl(point, DEFAULT_RANGE);
-    expect(await control.setResistance("hard")).toBe(true);
-    expect(await control.setResistance("light")).toBe(true);
+    const control = new FtmsControl(point, { kind: "simulation" });
+    expect(await control.setSlope(5)).toBe(true);
+    expect(written).toEqual([[OP_REQUEST_CONTROL], [OP_START], [...encodeSetSimulation(5)]]);
+  });
+
+  it("sets a resistance level on a trainer without simulation", async () => {
+    const { point, written } = fakeControlPoint();
+    const control = new FtmsControl(point, RESISTANCE);
+    expect(await control.setSlope(5)).toBe(true);
+    expect(await control.setSlope(0)).toBe(true);
     expect(written).toEqual([
       [OP_REQUEST_CONTROL],
       [OP_START],
@@ -99,24 +128,24 @@ describe("FtmsControl", () => {
 
   it("still works when the trainer refuses the start command", async () => {
     const { point } = fakeControlPoint({ [OP_START]: 0x02 });
-    expect(await new FtmsControl(point, DEFAULT_RANGE).setResistance("normal")).toBe(true);
+    expect(await new FtmsControl(point, RESISTANCE).setSlope(2)).toBe(true);
   });
 
   it("gives up when control is refused", async () => {
     const { point, written } = fakeControlPoint({
       [OP_REQUEST_CONTROL]: RESULT_CONTROL_NOT_PERMITTED,
     });
-    expect(await new FtmsControl(point, DEFAULT_RANGE).setResistance("normal")).toBe(false);
+    expect(await new FtmsControl(point, RESISTANCE).setSlope(2)).toBe(false);
     expect(written).toEqual([[OP_REQUEST_CONTROL]]);
   });
 
   it("takes control back when another app took it meanwhile", async () => {
     const answers: Partial<Record<number, number>> = {};
     const { point, written } = fakeControlPoint(answers);
-    const control = new FtmsControl(point, DEFAULT_RANGE);
-    await control.setResistance("normal");
+    const control = new FtmsControl(point, RESISTANCE);
+    await control.setSlope(2);
     answers[OP_SET_RESISTANCE] = RESULT_CONTROL_NOT_PERMITTED;
-    const retried = control.setResistance("hard");
+    const retried = control.setSlope(5);
     // After the control request succeeds again, the resistance is accepted.
     setTimeout(() => {
       answers[OP_SET_RESISTANCE] = RESULT_SUCCESS;
@@ -133,7 +162,7 @@ describe("FtmsControl", () => {
   it("does not hang when the trainer never answers", async () => {
     vi.useFakeTimers();
     const { point } = fakeControlPoint({ [OP_REQUEST_CONTROL]: "silent" });
-    const result = new FtmsControl(point, DEFAULT_RANGE).setResistance("normal");
+    const result = new FtmsControl(point, RESISTANCE).setSlope(2);
     await vi.advanceTimersByTimeAsync(RESPONSE_TIMEOUT_MS + 1);
     expect(await result).toBe(false);
   });
@@ -141,13 +170,13 @@ describe("FtmsControl", () => {
   it("never rejects, even if the write fails", async () => {
     const { point } = fakeControlPoint();
     point.writeValueWithResponse = vi.fn(() => Promise.reject(new Error("GATT error")));
-    expect(await new FtmsControl(point, DEFAULT_RANGE).setResistance("normal")).toBe(false);
+    expect(await new FtmsControl(point, RESISTANCE).setSlope(2)).toBe(false);
   });
 
   it("sends one command at a time", async () => {
     const { point, written } = fakeControlPoint();
-    const control = new FtmsControl(point, DEFAULT_RANGE);
-    const both = await Promise.all([control.setResistance("hard"), control.setResistance("light")]);
+    const control = new FtmsControl(point, RESISTANCE);
+    const both = await Promise.all([control.setSlope(5), control.setSlope(0)]);
     expect(both).toEqual([true, true]);
     expect(written.at(-2)).toEqual([OP_SET_RESISTANCE, 25]);
     expect(written.at(-1)).toEqual([OP_SET_RESISTANCE, 0]);
