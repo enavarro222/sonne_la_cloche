@@ -298,3 +298,18 @@ describe("scores", () => {
     });
   });
 });
+
+describe("own slopes", () => {
+  it("keeps the slope of each ride, for the ranking", () => {
+    const { game } = run(
+      withGame(started()),
+      { type: "rideFinished", points: 80, stats: NO_STATS, trace: TRACE, gradePct: 0 },
+      { type: "nextTurn" },
+      { type: "rideFinished", points: 90, stats: NO_STATS, trace: TRACE, gradePct: Number.NaN },
+    );
+    if (!game) throw new Error("no game");
+    expect(game.rides.map((r) => r.gradePct)).toEqual([0, undefined]);
+    expect(standings(game).map((s) => s.gradePct)).toEqual([undefined, 0]);
+    expect(lastRide(game)?.gradePct).toBeUndefined();
+  });
+});

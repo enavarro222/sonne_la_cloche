@@ -1,6 +1,6 @@
 # Handicap mode: each player on their own slope
 
-Status: step 1 done (common slope), handicap not implemented.
+Status: implemented. Grades and feel still to be checked on a real trainer.
 
 ## Step 1: a common slope instead of a resistance
 
@@ -11,9 +11,26 @@ simulation, as a resistance level: 2.5 % of the range per percent, which
 keeps the Suito values tested with a child (0, 10, 25, 50). The grades
 still have to be checked on the bike with a child, against those levels.
 
-The handicap will be an option on top of it, off by default: off, everyone
-rides the common slope; on, each player gets the common slope + `θ_i`
-(computed with the common slope instead of flat).
+The handicap is a third "What counts" choice, **Own slope each**, next to
+leg speed and strength: with those two, everyone rides the common slope;
+with it, each player gets the common slope + `θ_i` (computed on the common
+slope instead of flat), and the score is metres.
+
+## What the players see
+
+Little text, nothing hidden:
+
+- **Every ride**: the track leans with the slope ridden, held up at its far
+  end by a little strongman with stretchy arms (sweating from 5 %, red and
+  shaking from 8 %), the grade written next to him. Same for the common
+  slope in the other modes.
+- **Round 1**: a "Measuring round · points ×½" badge.
+- **Next rounds**: during the 3/2/1, a gauge of power against the
+  player's level, green from 95 % to 115 %.
+- **Results**: the grade ridden under the score, the next rider's grade,
+  and each player's latest grade in the ranking.
+
+The track leans twice the real angle (up to 8°), so a 2 % slope shows.
 
 ## Handicap
 
@@ -123,8 +140,9 @@ The weakest, or a single player, gets θ = 0. Examples:
 Above 12 %, cap θ and flag the player on screen: the handicap is no
 longer exact.
 
-The slope goes up at 0.5 %/s at most, in the game as on the trainer,
-**during the countdown**: at "Go", every player is already on their slope.
+The slope is sent to the trainer when the ride screen opens, before the
+countdown: at "Go", every player is already on their slope. No ramp for
+now: trainers smooth grade changes themselves; to be checked on the bike.
 
 ### Fairness at the margins (accepted)
 
@@ -140,7 +158,9 @@ Riding round 1 easy lowers `P_ref`, and therefore the slope. Hence:
 
 - At the end of every ride: `P_ref = max(P_ref, mean power of the ride)`.
 - During a ride: if the 10 s moving average exceeds `1.1 × P_ref`, raise
-  `P_ref` to it, recompute θ (same `v_c`) and move to it at 0.5 %/s.
+  `P_ref` to it and recompute θ (same `v_c`), in the game and on the
+  trainer. Implemented with the ride's average so far instead of a moving
+  average: simpler, same effect after 10 s.
 - Never lower `P_ref` or θ during a game: fatigue is not rewarded.
 
 ### Trainer
@@ -155,8 +175,8 @@ after _Request Control_:
 | Crr             | uint8  | 0.0001    | 40 (0.004)                |
 | Wind resistance | uint8  | 0.01 kg/m | 20 (½·ρ·CdA ≈ 0.20)       |
 
-- **Trainer minimum grade** of 1–2 %, added for every player alike, so the
-  weakest does not spin in the void. The game model keeps 0 %.
+- **No trainer minimum grade** for now: the common slope setting plays
+  that role (2 % by default).
 - Grade is sent as a percentage (`tan θ`), the model works in radians.
 - After a reconnection: _Request Control_ again, then resend the grade.
 - The trainer computes resistance with its own model: only the feel comes
@@ -166,7 +186,11 @@ after _Request Control_:
 
 ## Where it lives
 
-- `src/core/`: model, slope computation, `P_ref` ratchet, scoring. Pure,
-  unit-tested (the table above as test cases).
-- `src/sensors/ble/`: encoding of opcode `0x11`, next to the resistance
-  command.
+- `src/core/handicap.ts`: model, slopes, reference powers, mid-ride raise.
+  Pure, unit-tested (fairness at the reference as a test case).
+- `src/core/ride.ts`: distance scoring on a slope.
+- `src/sensors/ble/ftmsControl.ts`: opcode `0x11`, with the model's Crr
+  and air drag.
+- `src/ui/RideScreen.tsx`, `src/ui/lifter/`: flying start, gauge, leaning
+  track and its strongman.
+- `e2e/slope.spec.ts`: a whole game in demo mode.

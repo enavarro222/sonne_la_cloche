@@ -1,6 +1,7 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { bestRide, currentPlayer, initialState, isGameOver, reducer } from "../core/game";
 import { isBluetoothSupported } from "../sensors/ble/bluetoothSensor";
+import { courseFor } from "../core/handicap";
 import { SLOPE_PERCENT } from "../core/settings";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
 import styles from "./App.module.css";
@@ -35,9 +36,14 @@ export function App() {
   useWakeLock(sensor !== null);
   // Right away on connection (the trainer may still be set up for an adult,
   // or in ERG mode after another app), and whenever the setting changes.
+  const course = useMemo(
+    () => (game?.phase === "riding" && game.settings.metric === "slope" ? courseFor(game) : null),
+    [game],
+  );
+  const grade = course?.gradePct ?? SLOPE_PERCENT[state.settings.slope];
   useEffect(() => {
-    void sensor?.setSlope?.(SLOPE_PERCENT[state.settings.slope]);
-  }, [sensor, state.settings.slope]);
+    void sensor?.setSlope?.(grade);
+  }, [sensor, grade]);
   useHistoryGuard(game !== null);
   useLeaveWarning(game !== null && !isGameOver(game));
 
@@ -85,6 +91,7 @@ export function App() {
         settings={game.settings}
         record={bestRide(game)}
         sensor={sensor}
+        course={course}
         onFinish={(ride) => {
           sounds.fanfare();
           dispatch({ type: "rideFinished", ...ride });

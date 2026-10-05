@@ -1,0 +1,66 @@
+.lifter {
+  display: block;
+  overflow: visible;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.arms,
+.legs {
+  stroke: var(--cream);
+  stroke-width: 3.5;
+}
+
+.hands {
+  fill: var(--cream);
+}
+
+.shirt {
+  stroke: var(--pink);
+  stroke-width: 11;
+}
+
+.head {
+  fill: var(--cream);
+}
+
+.red {
+  fill: #ffb0a0;
+}
+
+.eye {
+  fill: var(--night);
+}
+
+.mouth {
+  stroke: var(--night);
+  stroke-width: 1.5;
+}
+
+.sweat {
+  fill: var(--mint);
+}
+
+.shaking {
+  animation: shake 0.25s linear infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  75% {
+    transform: translateX(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shaking {
+    animation: none;
+  }
+}

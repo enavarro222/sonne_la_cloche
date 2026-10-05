@@ -1,4 +1,5 @@
-export const METRICS = ["cadence", "power"] as const;
+/** Pedal turns, watts, or the distance on each player's own slope (see handicap.ts). */
+export const METRICS = ["cadence", "power", "slope"] as const;
 export type Metric = (typeof METRICS)[number];
 
 export const DURATIONS_SEC = [5, 20, 30, 45] as const;

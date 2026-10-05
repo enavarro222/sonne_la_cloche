@@ -11,6 +11,7 @@ import {
   summarize,
   upNext,
 } from "../core/game";
+import { courseOf } from "../core/handicap";
 import type { RideStats } from "../core/ride";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { PhoneDialog } from "./PhoneDialog";
@@ -102,6 +103,9 @@ export function ResultScreen({
   const next = upNext(game);
   const over = isGameOver(game);
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
+  const ownSlopes = game.settings.metric === "slope";
+  const percent = (grade: number) =>
+    new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(grade);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [phonesOpen, setPhonesOpen] = useState(false);
@@ -135,6 +139,9 @@ export function ResultScreen({
           </span>
           <span className={styles.unit}>{t("result.points")}</span>
         </p>
+        {ride?.gradePct !== undefined && (
+          <p className={styles.slope}>{t("result.slope", { percent: percent(ride.gradePct) })}</p>
+        )}
 
         {!over && ride && <RideDetails stats={ride.stats} />}
 
@@ -154,6 +161,13 @@ export function ResultScreen({
             <p className={styles.announce}>
               <span className={styles.next}>{t("result.upNext", { name: next.player.name })}</span>
               {t("ride.round", { round: next.round, rounds: game.settings.rounds })}
+              {ownSlopes && (
+                <span className={styles.nextSlope}>
+                  {t("result.slope", {
+                    percent: percent(courseOf(game, next.player.id, next.round).gradePct),
+                  })}
+                </span>
+              )}
             </p>
           )
         )}
@@ -262,6 +276,11 @@ export function ResultScreen({
                   <td className={styles.rank}>{s.rank}</td>
                   <th scope="row" className={styles.name}>
                     {s.player.name}
+                    {s.gradePct !== undefined && (
+                      <small className={styles.nameSlope}>
+                        {t("ride.slope", { percent: percent(s.gradePct) })}
+                      </small>
+                    )}
                   </th>
                   {s.rounds.map((points, i) => (
                     <td

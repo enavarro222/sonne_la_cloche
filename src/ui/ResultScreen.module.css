@@ -250,3 +250,19 @@
   color: var(--mint);
   font-weight: 700;
 }
+
+/* "Own slope each": the slope is part of the score, shown next to it. */
+.slope,
+.nextSlope {
+  font-weight: 900;
+  color: var(--cream-dim);
+}
+
+.nameSlope {
+  margin-left: 0.5em;
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: 0.75em;
+  color: var(--cream-faint);
+  white-space: nowrap;
+}

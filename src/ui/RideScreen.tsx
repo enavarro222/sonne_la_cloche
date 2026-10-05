@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Player } from "../core/players";
 import {
@@ -17,6 +17,7 @@ import {
   trackPosition,
 } from "../core/ride";
 import type { RideTrace } from "../core/game";
+import { type Course, raiseCourse } from "../core/handicap";
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import { DemoSensor, type Foot } from "../sensors/demo/demoSensor";
@@ -25,6 +26,7 @@ import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
 import { advanceCrank } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
+import { Lifter, WIDTH as LIFTER_WIDTH } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
@@ -33,6 +35,8 @@ export interface FinishedRide {
   points: number;
   stats: RideStats;
   trace: RideTrace;
+  /** The slope ridden, when each player has their own. */
+  gradePct?: number;
 }
 
 export const COUNTDOWN_STEP_MS = 800;
@@ -45,6 +49,8 @@ interface Props {
   settings: Settings;
   record: { player: Player; points: number } | null;
   sensor: Sensor;
+  /** This player's own slope; only when each player has their own. */
+  course?: Course | null;
   onFinish: (ride: FinishedRide) => void;
 }
 
@@ -93,6 +99,7 @@ interface Frame {
   rung: boolean;
   /** Radians, turning with the measured cadence. */
   crankAngle: number;
+  course: Course | null;
 }
 
 function useRideLoop(
@@ -100,14 +107,16 @@ function useRideLoop(
   sensor: Sensor,
   settings: Settings,
   recordPoints: number | null,
+  initialCourse: Course | null,
   onFinish: (ride: FinishedRide) => void,
 ): Frame {
   const [frame, setFrame] = useState<Frame>(() => ({
-    progress: startRide(),
+    progress: startRide(initialCourse?.startSpeed),
     reading: ZERO_READING,
     track: startTrack(bellMark(recordPoints, settings), settings),
     rung: false,
     crankAngle: 0,
+    course: initialCourse,
   }));
   const finish = useLatest(onFinish);
   // Read through a ref: reconnecting the bike mid-ride must not restart the ride.
@@ -116,7 +125,9 @@ function useRideLoop(
   useEffect(() => {
     if (!running) return;
     const { durationSec, metric } = settings;
-    let progress = startRide();
+    // A flying start: the speed at "Go" is the one the player's level holds.
+    let progress = startRide(initialCourse?.startSpeed);
+    let course = initialCourse;
     const mark = bellMark(recordPoints, settings);
     let track = startTrack(mark, settings);
     let rung = false;
@@ -129,7 +140,14 @@ function useRideLoop(
     const step = (now: number) => {
       const reading = currentSensor.current.read(now);
       const dtSec = (now - last) / 1000;
-      progress = stepRide(progress, reading, metric, dtSec, durationSec);
+      progress = stepRide(progress, reading, metric, dtSec, durationSec, course ?? undefined);
+      if (course) {
+        const raised = raiseCourse(course, rideStats(progress).avgPower, progress.elapsedSec);
+        if (raised !== course) {
+          course = raised;
+          void currentSensor.current.setSlope?.(course.gradePct);
+        }
+      }
       track = stepTrack(track, progress.points, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
       last = now;
@@ -137,7 +155,7 @@ function useRideLoop(
         rung = true;
         sounds.bell();
       }
-      setFrame({ progress, reading, track, rung, crankAngle });
+      setFrame({ progress, reading, track, rung, crankAngle, course });
 
       const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
       if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
@@ -149,6 +167,7 @@ function useRideLoop(
           points: progress.points,
           stats: rideStats(progress),
           trace: { startedAt, samples: progress.samples },
+          ...(course && { gradePct: course.gradePct }),
         });
       } else raf = requestAnimationFrame(step);
     };
@@ -156,7 +175,7 @@ function useRideLoop(
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, [running, settings, recordPoints, currentSensor, finish]);
+  }, [running, settings, recordPoints, initialCourse, currentSensor, finish]);
 
   return frame;
 }
@@ -225,22 +244,122 @@ function PedalButtons({ sensor }: { sensor: DemoSensor }) {
   );
 }
 
-export function RideScreen({ player, round, settings, record, sensor, onFinish }: Props) {
+/** The sensor's live values while `active` (the ride loop is not running yet). */
+function useLiveReading(active: boolean, sensor: Sensor): SensorReading {
+  const [reading, setReading] = useState(ZERO_READING);
+  useEffect(() => {
+    if (!active) return;
+    let raf = 0;
+    const poll = (now: number) => {
+      setReading(sensor.read(now));
+      raf = requestAnimationFrame(poll);
+    };
+    raf = requestAnimationFrame(poll);
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, [active, sensor]);
+  return reading;
+}
+
+/** An element's width in pixels, kept up to date. */
+function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
+  const ref = useRef<T>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    setWidth(element.getBoundingClientRect().width);
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setWidth(entry.contentRect.width);
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  return [ref, width];
+}
+
+/** The track leans twice the real angle, up to 8°: a 2 % slope must show. */
+const tiltDeg = (gradePct: number) =>
+  Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
+/** Where the strongman stands, as a share of the track width from its left. */
+const LIFTER_AT = 0.92;
+/** Power against the player's level, green from 95 % to 115 %. */
+const GAUGE_MAX = 1.5;
+const GAUGE_ZONE = [0.95, 1.15] as const;
+
+/** Before "Go": how the player's power compares to their level. */
+function PowerGauge({ power, target }: { power: number; target: number }) {
+  const { t } = useTranslation();
+  const ratio = Math.min(GAUGE_MAX, power / target);
+  const inZone = ratio >= GAUGE_ZONE[0] && ratio <= GAUGE_ZONE[1];
+  const at = (value: number) => `${(value / GAUGE_MAX) * 100}%`;
+  return (
+    <div
+      className={styles.gauge}
+      role="meter"
+      aria-label={t("ride.gauge")}
+      aria-valuemin={0}
+      aria-valuemax={Math.round(target * GAUGE_MAX)}
+      aria-valuenow={Math.round(power)}
+    >
+      <div
+        className={styles.gaugeZone}
+        style={{ left: at(GAUGE_ZONE[0]), width: at(GAUGE_ZONE[1] - GAUGE_ZONE[0]) }}
+      />
+      <div
+        className={cx(styles.gaugeNeedle, inZone && styles.inZone)}
+        style={{ left: at(ratio) }}
+      />
+    </div>
+  );
+}
+
+export function RideScreen({
+  player,
+  round,
+  settings,
+  record,
+  sensor,
+  course = null,
+  onFinish,
+}: Props) {
   const { t, i18n } = useTranslation();
   const stage = useCountdown(() => {
-    sensor.reset();
+    // On a slope the countdown is the run-up: keep what was pedaled.
+    if (!course) sensor.reset();
   });
+  useEffect(() => {
+    if (course) sensor.reset();
+    // Only when the screen opens: before the run-up.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Again before each ride: another app may have changed it since.
   const slopeSensor = useLatest(sensor);
+  const startGrade = course?.gradePct ?? SLOPE_PERCENT[settings.slope];
   useEffect(() => {
-    void slopeSensor.current.setSlope?.(SLOPE_PERCENT[settings.slope]);
-  }, [slopeSensor, settings.slope]);
-  const { progress, reading, track, rung, crankAngle } = useRideLoop(
+    void slopeSensor.current.setSlope?.(startGrade);
+  }, [slopeSensor, startGrade]);
+  const ride = useRideLoop(
     stage.name === "racing",
     sensor,
     settings,
     record?.points ?? null,
+    course,
     onFinish,
+  );
+  const { progress, track, rung, crankAngle } = ride;
+  const live = useLiveReading(stage.name !== "racing" && course?.targetPower != null, sensor);
+  const reading = stage.name === "racing" ? ride.reading : live;
+  const gradePct = ride.course?.gradePct ?? SLOPE_PERCENT[settings.slope];
+  const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
+  const tilt = tiltDeg(gradePct);
+  const rise = (LIFTER_AT - 0.5) * sceneWidth * Math.sin((tilt * Math.PI) / 180);
+  const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
+    gradePct,
   );
 
   const mark = bellMark(record?.points ?? null, settings);
@@ -264,12 +383,20 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
       <p className={styles.who}>
         {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
         <span className={styles.round}>{t("ride.round", { round, rounds: settings.rounds })}</span>
+        {course?.targetPower === null && (
+          <span className={styles.calibration}>{t("ride.calibration")}</span>
+        )}
       </p>
 
       {stage.name !== "racing" ? (
-        <p className={styles.countdown} aria-live="assertive">
-          {stage.name === "go" ? t("ride.go") : stage.count}
-        </p>
+        <div className={styles.countdownBox}>
+          <p className={styles.countdown} aria-live="assertive">
+            {stage.name === "go" ? t("ride.go") : stage.count}
+          </p>
+          {course?.targetPower != null && (
+            <PowerGauge power={reading.power} target={course.targetPower} />
+          )}
+        </div>
       ) : (
         <>
           <p className={styles.score} data-testid="ride-score">
@@ -281,25 +408,46 @@ export function RideScreen({ player, round, settings, record, sensor, onFinish }
         </>
       )}
 
-      <div className={styles.track}>
-        <div className={cx(styles.bell, rung && styles.rung)} style={{ left: lane(bellPosition) }}>
-          <span aria-hidden="true">🔔</span>
-          <span
-            className={cx(
-              styles.bellLabel,
-              bellPosition < 0.5 && styles.bellLabelAfter,
-              rung && styles.beaten,
-            )}
+      <div className={styles.scene} ref={sceneRef}>
+        <div className={styles.track} style={{ transform: `rotate(${-tilt}deg)` }}>
+          <div
+            className={cx(styles.bell, rung && styles.rung)}
+            style={{ left: lane(bellPosition) }}
           >
-            {bellLabel}
-          </span>
+            <span aria-hidden="true">🔔</span>
+            <span
+              className={cx(
+                styles.bellLabel,
+                bellPosition < 0.5 && styles.bellLabelAfter,
+                rung && styles.beaten,
+              )}
+            >
+              {bellLabel}
+            </span>
+          </div>
+          <div
+            className={styles.bike}
+            style={{ left: lane(trackPosition(progress.points, track.target)) }}
+          >
+            <Cyclist crankAngle={crankAngle} />
+          </div>
         </div>
         <div
-          className={styles.bike}
-          style={{ left: lane(trackPosition(progress.points, track.target)) }}
+          className={styles.lifter}
+          style={{
+            left: `calc(${LIFTER_AT * 100}% - ${LIFTER_WIDTH / 2}px)`,
+            top: `calc(100% - ${rise}px)`,
+          }}
         >
-          <Cyclist crankAngle={crankAngle} />
+          <Lifter rise={rise} gradePct={gradePct} />
         </div>
+        <p
+          className={styles.grade}
+          style={{ right: `calc(${(1 - LIFTER_AT) * 100}% + ${LIFTER_WIDTH / 2}px)` }}
+          data-testid="ride-grade"
+        >
+          {t("ride.slope", { percent })}
+        </p>
       </div>
 
       <div className={styles.bottom}>

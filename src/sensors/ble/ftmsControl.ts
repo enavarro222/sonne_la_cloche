@@ -3,6 +3,8 @@
 // Byte encoding and decoding are pure functions; FtmsControl does the
 // request/response dance over a GATT characteristic.
 
+import { AIR_DRAG, ROLLING_RESISTANCE } from "../../core/handicap";
+
 export const OP_REQUEST_CONTROL = 0x00;
 export const OP_SET_RESISTANCE = 0x04;
 export const OP_START = 0x07;
@@ -33,11 +35,6 @@ export const DEFAULT_RANGE: ResistanceRange = { min: 0, max: 200, increment: 1 }
  * 50 (10 %) stopped an adult within seconds: a challenge for grown-ups.
  */
 export const RESISTANCE_SHARE_PER_PERCENT = 0.025;
-
-/** Rolling resistance and wind coefficient sent with the grade. */
-export const SIMULATION_CRR = 0.004;
-/** ½·ρ·CdA of an adult on a road bike, in kg/m. */
-export const SIMULATION_WIND_COEFFICIENT = 0.2;
 
 /** What the game can set on a trainer, from its Fitness Machine Feature (0x2ACC). */
 export function controlFeatures(feature: DataView): { simulation: boolean; resistance: boolean } {
@@ -78,8 +75,9 @@ export function encodeSetSimulation(gradePercent: number): Uint8Array<ArrayBuffe
   view.setInt16(1, 0, true); // wind speed, 0.001 m/s
   const grade = Math.round(gradePercent * 100); // 0.01 %
   view.setInt16(3, Math.min(0x7fff, Math.max(-0x8000, grade)), true);
-  view.setUint8(5, Math.round(SIMULATION_CRR * 10_000)); // 0.0001
-  view.setUint8(6, Math.round(SIMULATION_WIND_COEFFICIENT * 100)); // 0.01 kg/m
+  // The game's own model, so the legs feel what the screen shows.
+  view.setUint8(5, Math.round(ROLLING_RESISTANCE * 10_000)); // 0.0001
+  view.setUint8(6, Math.round(AIR_DRAG * 100)); // 0.01 kg/m
   return bytes;
 }
 

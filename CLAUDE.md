@@ -15,6 +15,8 @@ on one screen. Born for a kids' birthday party. Rewrite of the
   games. New features must not lengthen that path — put options behind ⚙.
 - **Fairness between sizes.** Default score is cadence (pedal turns), not
   watts: an 8-year-old makes 40–60 W, ranking by watts ranks players by size.
+  "Own slope each" scores watts fairly instead: each player on their own
+  virtual slope, see `docs/handicap.md`.
 - **One screen**: an Android tablet in landscape (Chrome) or a PC/TV. Both are
   tested (see `playwright.config.ts`). No page scroll during a game.
 - **Client only while playing.** No account, no network call during a game
