@@ -385,13 +385,15 @@ export function RideScreen({
   return (
     <div className={styles.ride}>
       <div className={styles.top}>
-        <p className={styles.who}>
-          {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
-          <span className={styles.round}>
-            {t("ride.round", { round, rounds: settings.rounds })}
-          </span>
-          {course?.measuring && <span className={styles.calibration}>{t("ride.calibration")}</span>}
-        </p>
+        <div className={styles.heading}>
+          <p className={styles.who}>
+            {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
+            <span className={styles.round}>
+              {t("ride.round", { round, rounds: settings.rounds })}
+            </span>
+          </p>
+          {course?.measuring && <p className={styles.calibration}>{t("ride.calibration")}</p>}
+        </div>
         {/* The time left has its own corner: shown from the countdown on. */}
         <p className={cx(styles.timer, secondsLeft <= TICK_FROM_SEC && styles.urgent)}>
           <FixedDigits>{seconds}</FixedDigits>

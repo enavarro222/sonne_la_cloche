@@ -16,8 +16,16 @@
   width: 100%;
 }
 
-.who {
+/* Who rides and the round; a badge below when there is one. */
+.heading {
   grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.who {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -38,7 +46,7 @@
 .calibration {
   font-family: var(--font-text);
   font-weight: 900;
-  font-size: 0.45em;
+  font-size: clamp(0.85rem, 2vmin, 1.1rem);
   color: var(--night);
   background: var(--mint);
   padding: 0.2em 0.7em;
