@@ -37,13 +37,16 @@ The grades still have to be checked on the bike with a child.
 
 ## What the players see
 
-Little text, nothing hidden:
+Little text, nothing hidden. The ride screen, top to bottom: who rides
+and the round, with the time left in its own corner; the distance in
+metres, big (the countdown takes the same box, so nothing moves at "Go");
+speed and slope; the gauge; the track; cadence and watts.
 
 - **Every ride**: the track leans with the slope ridden, held up at its far
   end by a little strongman with stretchy arms (sweating from 5 %, red and
-  shaking from 8 %), the grade written next to him. Same for a common
-  slope, whatever counts.
-- **Round 1**: a "Measuring round · points ×½" badge.
+  shaking from 8 %). Same for a common slope, whatever counts.
+- **Before "Go"**: the speed shown is the one the flying start will give.
+- **Round 1**: a "Measuring your level" badge.
 - **Next rounds**: from the 3/2/1 to the end, a gauge of power against
   the player's level (a mark). The needle turns green from 95 %; no upper
   limit is shown, since going above one's level is what pays (and showing
@@ -73,16 +76,17 @@ Only slope is used (no headwind) for now: it is easy to grasp ("you climb at
 2. **Rounds 2…N, handicapped.** Each player rides their slope `θ_i`,
    computed before the game resumes from every `P_ref`.
 
-Round 1 also scores points, so that going all out pays from the first
-ride, but with a lower weight `W1` (default 0.5, to tune).
+Every round scores its distance in metres, round 1 included: going all
+out pays from the first ride. (Half points for round 1 were tried, and
+dropped: too hard to explain on screen.)
 
-| Round | Start speed | Slope | Points              |
-| ----- | ----------- | ----- | ------------------- |
-| 1     | 25 km/h     | 0 %   | `W1 × distance (m)` |
-| 2…N   | `v_c`       | `θ_i` | `distance (m)`      |
+| Round | Start speed | Slope |
+| ----- | ----------- | ----- |
+| 1     | 25 km/h     | 0 %   |
+| 2…N   | `v_c`       | `θ_i` |
 
 Round 1 has no handicap yet: over 30 s, a 300 W adult covers 288 m against
-188 m for a 50 W child. `W1` keeps that gap from deciding the game.
+188 m for a 50 W child, a lead the next rounds do not take back.
 Open question: reuse a returning player's stored `P_ref` to handicap their
 round 1 as well.
 

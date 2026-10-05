@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type Action, type Game, initialState, reducer } from "./game";
 import {
-  CALIBRATION_WEIGHT,
   type Course,
   courseFor,
   gradeFor,
@@ -42,13 +41,13 @@ function played(avgPowers: number[], slope: Slope = "own"): Game {
   return game;
 }
 
-/** Distance (points at weight 1) covered at constant power on a course. */
+/** Distance covered at constant power on a course. */
 function distance(course: Course, power: number, seconds = 30): number {
   let progress = startRide(course.startSpeed);
   for (let t = 0; t < seconds; t += 0.05) {
     progress = stepRide(progress, { cadence: 90, power }, "distance", 0.05, seconds, course);
   }
-  return progress.points / course.weight;
+  return progress.points;
 }
 
 describe("physics", () => {
@@ -73,12 +72,11 @@ describe("physics", () => {
 });
 
 describe("courseFor", () => {
-  it("measures everyone in round 1, on the flat, for half the points", () => {
+  it("measures everyone in round 1, on the flat", () => {
     expect(courseFor(played([]))).toEqual({
       baseGradePct: 0,
       gradePct: 0,
       startSpeed: steadySpeed(100, 0),
-      weight: CALIBRATION_WEIGHT,
       targetPower: null,
       measuring: true,
     });
@@ -89,7 +87,6 @@ describe("courseFor", () => {
       baseGradePct: 5,
       gradePct: 5,
       startSpeed: steadySpeed(100, 5),
-      weight: 1,
       targetPower: null,
       measuring: false,
     };
@@ -102,7 +99,6 @@ describe("courseFor", () => {
     expect(leaRides.gradePct).toBeCloseTo(0, 3);
     expect(kmh(leaRides.startSpeed)).toBeCloseTo(30.8, 1);
     expect(leaRides.targetPower).toBe(150);
-    expect(leaRides.weight).toBe(1);
 
     const tomRides = courseFor(played([150, 350, 150]));
     expect(tomRides.gradePct).toBeCloseTo(2.98, 2);

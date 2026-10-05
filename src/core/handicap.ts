@@ -16,8 +16,6 @@ export const AIR_DRAG = 0.5 * 1.225 * 0.32;
 
 /** Round 1 starts at the speed this power holds on the common slope. */
 export const CALIBRATION_POWER = 100;
-/** Round 1 counts this share of its distance: worth trying hard, without deciding the game. */
-export const CALIBRATION_WEIGHT = 0.5;
 /** A player's handicap never goes above this, on top of the common slope. */
 export const MAX_EXTRA_GRADE = 12;
 /** A reference below this (nobody pedaled) would make the common speed meaningless. */
@@ -74,11 +72,9 @@ export interface Course {
   gradePct: number;
   /** Virtual speed at "Go", m/s: a flying start. */
   startSpeed: number;
-  /** Points per metre. */
-  weight: number;
   /** The power that holds `startSpeed` on this slope; null without a handicap. */
   targetPower: number | null;
-  /** Round 1 of own slopes: it measures everyone, for fewer points. */
+  /** Round 1 of own slopes: it measures everyone's level. */
   measuring: boolean;
 }
 
@@ -100,7 +96,6 @@ function commonCourse(baseGradePct: number, measuring: boolean): Course {
     baseGradePct,
     gradePct: baseGradePct,
     startSpeed: steadySpeed(CALIBRATION_POWER, baseGradePct),
-    weight: measuring ? CALIBRATION_WEIGHT : 1,
     targetPower: null,
     measuring,
   };
@@ -113,7 +108,6 @@ function handicapCourse(baseGradePct: number, commonSpeed: number, power: number
     baseGradePct,
     gradePct: Math.min(baseGradePct + MAX_EXTRA_GRADE, Math.max(baseGradePct, grade)),
     startSpeed: commonSpeed,
-    weight: 1,
     targetPower: power,
     measuring: false,
   };

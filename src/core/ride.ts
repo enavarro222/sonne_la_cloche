@@ -85,8 +85,7 @@ export function stepRide(
   const power = clean(effort.power);
   const speed =
     metric === "distance" && course ? stepSpeed(progress.speed, power, course.gradePct, dt) : 0;
-  const gained =
-    metric === "distance" ? (course?.weight ?? 0) * speed * dt : (cadence / POINTS_DIVISOR) * dt;
+  const gained = metric === "distance" ? speed * dt : (cadence / POINTS_DIVISOR) * dt;
   const elapsedSec = progress.elapsedSec + dt;
   // A sample each time a whole second is reached (a long frame may reach several).
   let samples = progress.samples;

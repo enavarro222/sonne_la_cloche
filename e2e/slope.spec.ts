@@ -46,7 +46,7 @@ test("by default, each their own slope: round 1 measures, then the stronger clim
   await startDemoGame(page);
 
   // Round 1 measures everyone, on the common slope.
-  await expect(page.getByText("Tour de mesure · points ×½")).toBeVisible();
+  await expect(page.getByText("On mesure ton niveau")).toBeVisible();
   expect(await percentOf(page)).toBe(0);
   await rideAt(page, 260); // Léa, gently
   await page.getByRole("button", { name: /Tom/ }).click();
@@ -58,7 +58,7 @@ test("by default, each their own slope: round 1 measures, then the stronger clim
 
   // Round 2: Léa, the weakest, stays flat; Tom climbs.
   await page.getByRole("button", { name: /Léa/ }).click();
-  await expect(page.getByText("Tour de mesure · points ×½")).toBeHidden();
+  await expect(page.getByText("On mesure ton niveau")).toBeHidden();
   await expect(page.getByRole("meter")).toBeVisible();
   expect(await percentOf(page)).toBe(0);
   await rideAt(page, 260);

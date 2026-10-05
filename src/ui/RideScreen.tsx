@@ -378,29 +378,49 @@ export function RideScreen({
   }).format(remainingSec(progress, settings.durationSec));
   const lane = (position: number) => `calc(2.5rem + ${position} * (100% - 5rem))`;
   const secondsLeft = remainingSec(progress, settings.durationSec);
+  const byDistance = settings.metric === "distance";
+  // Before "Go", the speed the flying start will give.
+  const speed = stage.name === "racing" ? progress.speed : (course?.startSpeed ?? 0);
 
   return (
     <div className={styles.ride}>
-      <p className={styles.who}>
-        {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
-        <span className={styles.round}>{t("ride.round", { round, rounds: settings.rounds })}</span>
-        {course?.measuring && <span className={styles.calibration}>{t("ride.calibration")}</span>}
-      </p>
-
-      {stage.name !== "racing" ? (
-        <p className={styles.countdown} aria-live="assertive">
-          {stage.name === "go" ? t("ride.go") : stage.count}
+      <div className={styles.top}>
+        <p className={styles.who}>
+          {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
+          <span className={styles.round}>
+            {t("ride.round", { round, rounds: settings.rounds })}
+          </span>
+          {course?.measuring && <span className={styles.calibration}>{t("ride.calibration")}</span>}
         </p>
-      ) : (
-        <>
+        {/* The time left has its own corner: shown from the countdown on. */}
+        <p className={cx(styles.timer, secondsLeft <= TICK_FROM_SEC && styles.urgent)}>
+          <FixedDigits>{seconds}</FixedDigits>
+          <small>{t("ride.secondsUnit")}</small>
+        </p>
+      </div>
+
+      {/* One box for the countdown and the score: nothing moves at "Go". */}
+      <div className={styles.big}>
+        {stage.name !== "racing" ? (
+          <p className={styles.countdown} aria-live="assertive">
+            {stage.name === "go" ? t("ride.go") : stage.count}
+          </p>
+        ) : (
           <p className={styles.score} data-testid="ride-score">
             <FixedDigits>{Math.round(progress.points)}</FixedDigits>
+            {byDistance && <small>{t("ride.distanceUnit")}</small>}
           </p>
-          <p className={cx(styles.timer, secondsLeft <= TICK_FROM_SEC && styles.urgent)}>
-            <FixedDigits>{seconds}</FixedDigits>
-          </p>
-        </>
-      )}
+        )}
+      </div>
+
+      <p className={styles.stats}>
+        {byDistance && (
+          <span>
+            <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
+          </span>
+        )}
+        <span data-testid="ride-grade">{t("settings.slope.short", { percent })}</span>
+      </p>
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 
       <div className={styles.scene} ref={sceneRef}>
@@ -436,13 +456,6 @@ export function RideScreen({
         >
           <Lifter rise={rise} gradePct={gradePct} />
         </div>
-        <p
-          className={styles.grade}
-          style={{ right: `calc(${(1 - LIFTER_AT) * 100}% + ${LIFTER_WIDTH / 2}px)` }}
-          data-testid="ride-grade"
-        >
-          {t("ride.slope", { percent })}
-        </p>
       </div>
 
       <div className={styles.bottom}>

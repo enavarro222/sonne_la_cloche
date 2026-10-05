@@ -7,7 +7,17 @@
   gap: var(--gap);
 }
 
+/* Who rides, centred; the time left in its own corner. */
+.top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--gap);
+  width: 100%;
+}
+
 .who {
+  grid-column: 2;
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -24,7 +34,7 @@
   color: var(--cream-dim);
 }
 
-/* Round 1 of "own slope each": it only measures, for half the points. */
+/* Round 1 of "own slope each": it measures everyone's level. */
 .calibration {
   font-family: var(--font-text);
   font-weight: 900;
@@ -35,32 +45,58 @@
   border-radius: 999px;
 }
 
-.countdown,
-.score {
-  font-family: var(--font-display);
-  line-height: 0.9;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.countdown {
-  font-size: clamp(6rem, 28vmin, 16rem);
-  color: var(--yellow);
-}
-
-.score {
-  font-size: clamp(5rem, 22vmin, 13rem);
-}
-
 .timer {
+  justify-self: end;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 6vmin, 3rem);
+  font-size: clamp(1.8rem, 6vmin, 3.2rem);
+  line-height: 1;
   color: var(--mint);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .urgent {
   color: var(--pink);
+}
+
+/* The countdown and the score share one box of fixed height. */
+.big {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 0.95em;
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 22vmin, 13rem);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown {
+  color: var(--yellow);
+}
+
+/* Units in the text font: the display font only has capitals ("M", "KM/H"). */
+.timer small,
+.score small {
+  margin-left: 0.15em;
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: 0.35em;
+  color: var(--cream-dim);
+}
+
+.timer small {
+  font-size: 0.5em;
+}
+
+.stats {
+  display: flex;
+  gap: 2.5rem;
+  font-family: var(--font-text);
+  font-weight: 900;
+  font-size: clamp(1.3rem, 4vmin, 2.2rem);
+  color: var(--cream);
+  white-space: nowrap;
 }
 
 /* The track and, under its far end, the strongman who lifts it. */
@@ -209,16 +245,6 @@
 .lifter {
   position: absolute;
   pointer-events: none;
-}
-
-.grade {
-  position: absolute;
-  top: calc(100% + 0.6rem);
-  margin-right: 0.5rem;
-  font-family: var(--font-display);
-  font-size: clamp(1.1rem, 3vmin, 1.6rem);
-  color: var(--cream);
-  white-space: nowrap;
 }
 
 /* Power against the player's level: the mark is their level. */
