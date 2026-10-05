@@ -7,10 +7,15 @@
   max-width: 72rem;
 }
 
-.settings > h1,
-.settings > button {
+.settings > h1 {
   grid-column: 1 / -1;
   justify-self: start;
+}
+
+/* "Done" shares the last row with the last setting. */
+.settings > button {
+  justify-self: start;
+  align-self: end;
 }
 
 @media (orientation: portrait) {

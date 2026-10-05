@@ -9,13 +9,14 @@ describe("storage", () => {
 
   it("round-trips roster and settings", () => {
     saveRoster([{ id: "1", name: "Léa" }]);
-    saveSettings({ metric: "cadence", durationSec: 45, rounds: 3, slope: "hill" });
+    saveSettings({ metric: "cadence", durationSec: 45, rounds: 3, slope: "hill", finale: "on" });
     expect(loadRoster()).toEqual([{ id: "1", name: "Léa" }]);
     expect(loadSettings()).toEqual({
       metric: "cadence",
       durationSec: 45,
       rounds: 3,
       slope: "hill",
+      finale: "on",
     });
   });
 

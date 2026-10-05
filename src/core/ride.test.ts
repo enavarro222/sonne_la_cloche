@@ -6,6 +6,9 @@ import {
   startRide,
   stepRide,
   bellMark,
+  FINALE_LIFT,
+  finaleFor,
+  finaleGrade,
   REFERENCE_CADENCE,
   rideStats,
   ringsBell,
@@ -152,5 +155,20 @@ describe("ringsBell", () => {
     const mark = { kind: "record" as const, points: 500 };
     expect(ringsBell(500, mark)).toBe(false);
     expect(ringsBell(501, mark)).toBe(true);
+  });
+});
+
+describe("finale", () => {
+  const record = { kind: "record" as const, points: 300 };
+
+  it("lifts for a rider ahead of the bell's pace, lets the track fall otherwise", () => {
+    // 25 s into 30: the bell's pace is 250 points.
+    expect(finaleFor(260, record, 25, 30)).toBe("lift");
+    expect(finaleFor(240, record, 25, 30)).toBe("flee");
+  });
+
+  it("adds a few percent, or flattens the road", () => {
+    expect(finaleGrade(4, "lift")).toBe(4 + FINALE_LIFT);
+    expect(finaleGrade(4, "flee")).toBe(0);
   });
 });

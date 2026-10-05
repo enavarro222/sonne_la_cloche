@@ -78,7 +78,14 @@ export const en = {
       wall: "Wall",
       own: "Own slope each",
       short: "{{percent}}\u00a0%\u00a0slope",
-      help: "The steeper, the harder. Own slope each: round 1 measures everyone, then the stronger you are, the steeper your road; by distance only. Set by the game on smart trainers it can control (FTMS); with another sensor, use the bike's gears.",
+      help: "The steeper, the harder. Own slope each (with Distance): round 1 measures everyone, then the stronger you are, the steeper your road.",
+    },
+    finale: {
+      label: "Last-seconds twist",
+      off: "No",
+      on: "Yes",
+      short: "twist",
+      help: "The last 5 seconds: ahead of the bell, the slope goes up 3 %; behind, it falls flat.",
     },
     rounds: {
       label: "Rounds",

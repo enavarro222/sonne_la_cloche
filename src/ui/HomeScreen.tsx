@@ -166,6 +166,7 @@ export function HomeScreen({
     settings.slope === "own"
       ? t("settings.slope.own")
       : t("settings.slope.short", { percent: SLOPE_PERCENT[settings.slope] }),
+    ...(settings.finale === "on" ? [t("settings.finale.short")] : []),
   ].join(" · ");
   const noPower = settings.metric === "distance" && !measuresPower;
 

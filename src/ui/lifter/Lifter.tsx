@@ -24,19 +24,30 @@ interface Props {
   /** How far the track is lifted above his resting height, px. */
   rise: number;
   gradePct: number;
+  /** The time is falling on his head: he lets go and runs, arms over his head. */
+  fleeing?: boolean;
 }
 
-export function Lifter({ rise, gradePct }: Props) {
+export function Lifter({ rise, gradePct, fleeing = false }: Props) {
   const y = Math.max(0, rise) / SCALE;
-  const lifting = gradePct > 0;
+  const lifting = gradePct > 0 && !fleeing;
   const head = { x: 32, y: y + 14 };
   const shoulders = y + 26;
   const hip = y + 44;
-  // Hands on the track when lifting, else hands on hips.
-  const leftHand = lifting ? { x: 20, y: 2 } : { x: 25, y: hip - 2 };
-  const rightHand = lifting ? { x: 44, y: 2 } : { x: 39, y: hip - 2 };
-  const mouth =
-    gradePct < 3
+  // Hands on the track when lifting, over his head when fleeing, else on hips.
+  const leftHand = lifting
+    ? { x: 20, y: 2 }
+    : fleeing
+      ? { x: head.x - 7, y: head.y - 10 }
+      : { x: 25, y: hip - 2 };
+  const rightHand = lifting
+    ? { x: 44, y: 2 }
+    : fleeing
+      ? { x: head.x + 7, y: head.y - 10 }
+      : { x: 39, y: hip - 2 };
+  const mouth = fleeing
+    ? `M ${head.x - 2} ${head.y + 4} a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0`
+    : gradePct < 3
       ? `M ${head.x - 4} ${head.y + 3} q 4 4 8 0`
       : gradePct < SHAKE_FROM
         ? `M ${head.x - 4} ${head.y + 4} h 8`
@@ -44,7 +55,11 @@ export function Lifter({ rise, gradePct }: Props) {
 
   return (
     <svg
-      className={cx(styles.lifter, gradePct >= SHAKE_FROM && styles.shaking)}
+      className={cx(
+        styles.lifter,
+        lifting && gradePct >= SHAKE_FROM && styles.shaking,
+        fleeing && styles.fleeing,
+      )}
       width={WIDTH}
       height={(BODY_HEIGHT + y) * SCALE}
       viewBox={`0 0 ${DRAWING_WIDTH} ${BODY_HEIGHT + y}`}

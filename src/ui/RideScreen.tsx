@@ -15,6 +15,10 @@ import {
   stepTrack,
   type Track,
   trackPosition,
+  FINALE_SEC,
+  type FinaleMove,
+  finaleFor,
+  finaleGrade,
 } from "../core/ride";
 import type { RideTrace } from "../core/game";
 import { type Course, raiseCourse } from "../core/handicap";
@@ -100,6 +104,10 @@ interface Frame {
   /** Radians, turning with the measured cadence. */
   crankAngle: number;
   course: Course | null;
+  /** The slope ridden right now, in percent. */
+  gradePct: number;
+  /** The strongman's move in the last seconds, once decided. */
+  finale: FinaleMove | null;
 }
 
 function useRideLoop(
@@ -117,6 +125,8 @@ function useRideLoop(
     rung: false,
     crankAngle: 0,
     course: initialCourse,
+    gradePct: initialCourse?.gradePct ?? SLOPE_PERCENT[settings.slope],
+    finale: null,
   }));
   const finish = useLatest(onFinish);
   // Read through a ref: reconnecting the bike mid-ride must not restart the ride.
@@ -128,6 +138,12 @@ function useRideLoop(
     // A flying start: the speed at "Go" is the one the player's level holds.
     let progress = startRide(initialCourse?.startSpeed);
     let course = initialCourse;
+    let finale: FinaleMove | null = null;
+    // The slope ridden: the player's, unless the finale changed it.
+    const ridden = () => {
+      const grade = course?.gradePct ?? SLOPE_PERCENT[settings.slope];
+      return finale ? finaleGrade(grade, finale) : grade;
+    };
     const mark = bellMark(recordPoints, settings);
     let track = startTrack(mark, settings);
     let rung = false;
@@ -140,13 +156,28 @@ function useRideLoop(
     const step = (now: number) => {
       const reading = currentSensor.current.read(now);
       const dtSec = (now - last) / 1000;
-      progress = stepRide(progress, reading, metric, dtSec, durationSec, course ?? undefined);
+      progress = stepRide(
+        progress,
+        reading,
+        metric,
+        dtSec,
+        durationSec,
+        course ? { ...course, gradePct: ridden() } : undefined,
+      );
       if (course) {
         const raised = raiseCourse(course, rideStats(progress).avgPower, progress.elapsedSec);
         if (raised !== course) {
           course = raised;
-          void currentSensor.current.setSlope?.(course.gradePct);
+          void currentSensor.current.setSlope?.(ridden());
         }
+      }
+      if (
+        settings.finale === "on" &&
+        !finale &&
+        remainingSec(progress, durationSec) <= FINALE_SEC
+      ) {
+        finale = finaleFor(progress.points, mark, progress.elapsedSec, durationSec);
+        void currentSensor.current.setSlope?.(ridden());
       }
       track = stepTrack(track, progress.points, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
@@ -155,7 +186,7 @@ function useRideLoop(
         rung = true;
         sounds.bell();
       }
-      setFrame({ progress, reading, track, rung, crankAngle, course });
+      setFrame({ progress, reading, track, rung, crankAngle, course, gradePct: ridden(), finale });
 
       const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
       if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
@@ -361,7 +392,7 @@ export function RideScreen({
   const target = ride.course?.targetPower ?? null;
   const live = useLiveReading(stage.name !== "racing" && target !== null, sensor);
   const reading = stage.name === "racing" ? ride.reading : live;
-  const gradePct = ride.course?.gradePct ?? SLOPE_PERCENT[settings.slope];
+  const { gradePct, finale } = ride;
   const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
   const tilt = tiltDeg(gradePct);
   // The track leans around its middle: its far end rises by half its length.
@@ -461,7 +492,7 @@ export function RideScreen({
             top: `calc(100% - ${rise}px)`,
           }}
         >
-          <Lifter rise={rise} gradePct={gradePct} />
+          <Lifter rise={rise} gradePct={gradePct} fleeing={finale === "flee"} />
         </div>
       </div>
 

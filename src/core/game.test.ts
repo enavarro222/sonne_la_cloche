@@ -115,6 +115,7 @@ describe("starting a game", () => {
       durationSec: 20,
       rounds: 4,
       slope: "hill",
+      finale: "off",
     });
   });
 

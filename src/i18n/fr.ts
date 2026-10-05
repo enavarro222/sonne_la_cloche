@@ -79,7 +79,14 @@ export const fr: Translation = {
       wall: "Mur",
       own: "Chacun sa pente",
       short: "pente\u00a0{{percent}}\u00a0%",
-      help: "Plus c'est raide, plus c'est dur. « Chacun sa pente » : le premier tour mesure chacun, ensuite plus on est fort, plus ça monte ; avec « Distance » seulement. Réglée par le jeu sur les home-trainers pilotables (FTMS) ; avec un autre capteur, joue sur les vitesses du vélo.",
+      help: "Plus c'est raide, plus c'est dur. « Chacun sa pente » (avec « Distance ») : le 1er tour mesure chacun, ensuite plus on est fort, plus ça monte.",
+    },
+    finale: {
+      label: "Coup de théâtre final",
+      off: "Non",
+      on: "Oui",
+      short: "coup de théâtre",
+      help: "Les 5 dernières secondes : en avance sur la cloche, la pente monte de 3 % ; en retard, elle retombe à plat.",
     },
     rounds: {
       label: "Nombre de tours",

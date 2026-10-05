@@ -33,11 +33,16 @@ export const SLOPE_PERCENT: Record<Slope, number> = {
 export const slopeAllowed = (slope: Slope, metric: Metric): boolean =>
   slope !== "own" || metric === "distance";
 
+export const FINALES = ["off", "on"] as const;
+/** The strongman's last-seconds twist, see `finaleFor` in ride.ts. */
+export type Finale = (typeof FINALES)[number];
+
 export interface Settings {
   metric: Metric;
   durationSec: DurationSec;
   rounds: RoundCount;
   slope: Slope;
+  finale: Finale;
 }
 
 // Each on their own slope by default: fair between an 8-year-old's 50 W and
@@ -48,6 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   durationSec: 30,
   rounds: 4,
   slope: "own",
+  finale: "off",
 };
 
 /** Where the slope goes when the metric no longer allows it. */
@@ -72,5 +78,6 @@ export function parseSettings(value: unknown): Settings {
     durationSec: pick(DURATIONS_SEC, raw.durationSec, DEFAULT_SETTINGS.durationSec),
     rounds: pick(ROUND_COUNTS, raw.rounds, DEFAULT_SETTINGS.rounds),
     slope: pick(SLOPES, raw.slope, DEFAULT_SETTINGS.slope),
+    finale: pick(FINALES, raw.finale, DEFAULT_SETTINGS.finale),
   });
 }

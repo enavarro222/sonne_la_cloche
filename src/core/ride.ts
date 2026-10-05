@@ -198,3 +198,26 @@ export function stepTrack(track: Track, points: number, dtSec: number): Track {
 /** Position on the track, from 0 (start) to 1 (right end). */
 export const trackPosition = (points: number, target: number): number =>
   Math.min(1, Math.max(0, points / target));
+
+// --- finale ------------------------------------------------------------------
+// An option: in the last seconds the strongman holding the track reacts. A
+// rider ahead of the bell's pace gets a steeper road; one behind, a flat one.
+
+/** The finale starts this many seconds before the end, with the ticking. */
+export const FINALE_SEC = 5;
+/** Extra grade (%) for a rider ahead of the bell. */
+export const FINALE_LIFT = 3;
+
+/** "lift": the strongman lifts the track higher; "flee": he runs away, it falls flat. */
+export type FinaleMove = "lift" | "flee";
+
+/** Decided once, as the finale starts: ahead of the bell's pace or not. */
+export const finaleFor = (
+  points: number,
+  mark: BellMark,
+  elapsedSec: number,
+  durationSec: number,
+): FinaleMove => (points >= (mark.points * elapsedSec) / durationSec ? "lift" : "flee");
+
+export const finaleGrade = (gradePct: number, move: FinaleMove): number =>
+  move === "lift" ? gradePct + FINALE_LIFT : 0;

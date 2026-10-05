@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import {
   DURATIONS_SEC,
+  FINALES,
   METRICS,
   ROUND_COUNTS,
   type Settings,
@@ -115,6 +116,16 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
           onChange({ rounds });
         }}
         help={t("settings.rounds.help")}
+      />
+      <Choice
+        label={t("settings.finale.label")}
+        options={FINALES}
+        value={settings.finale}
+        format={(finale) => t(`settings.finale.${finale}`)}
+        onSelect={(finale) => {
+          onChange({ finale });
+        }}
+        help={t("settings.finale.help")}
       />
       <button type="button" className="primary" onClick={onDone}>
         {t("settings.done")}
