@@ -53,8 +53,27 @@
   border-radius: 999px;
 }
 
+/* The hourglass: behind everything, its height is the time left. */
+.hourglass {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: -1;
+  background: rgb(255 255 255 / 0.07);
+  /* Faint: the surface passes behind text, it must not cross it out. */
+  border-top: 2px solid rgb(255 255 255 / 0.12);
+  pointer-events: none;
+}
+
+.hourglass.urgent {
+  background: rgb(255 59 119 / 0.14);
+  border-top-color: rgb(255 59 119 / 0.45);
+}
+
 .timer {
-  justify-self: end;
+  position: absolute;
+  top: 0.3rem;
+  right: clamp(1rem, 3vw, 2.5rem);
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 6vmin, 3.2rem);
   line-height: 1;
@@ -63,7 +82,7 @@
   white-space: nowrap;
 }
 
-.urgent {
+.urgent .timer {
   color: var(--pink);
 }
 

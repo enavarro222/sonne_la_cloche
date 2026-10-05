@@ -394,11 +394,6 @@ export function RideScreen({
           </p>
           {course?.measuring && <p className={styles.calibration}>{t("ride.calibration")}</p>}
         </div>
-        {/* The time left has its own corner: shown from the countdown on. */}
-        <p className={cx(styles.timer, secondsLeft <= TICK_FROM_SEC && styles.urgent)}>
-          <FixedDigits>{seconds}</FixedDigits>
-          <small>{t("ride.secondsUnit")}</small>
-        </p>
       </div>
 
       {/* One box for the countdown and the score: nothing moves at "Go". */}
@@ -476,6 +471,19 @@ export function RideScreen({
           </span>
         </p>
         {sensor instanceof DemoSensor && <PedalButtons sensor={sensor} />}
+      </div>
+      {/*
+        An hourglass: the background drains as time runs out, the seconds
+        riding on its surface. Full during the countdown.
+      */}
+      <div
+        className={cx(styles.hourglass, secondsLeft <= TICK_FROM_SEC && styles.urgent)}
+        style={{ height: `${(secondsLeft / settings.durationSec) * 100}%` }}
+      >
+        <p className={styles.timer}>
+          <FixedDigits>{seconds}</FixedDigits>
+          <small>{t("ride.secondsUnit")}</small>
+        </p>
       </div>
     </div>
   );

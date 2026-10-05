@@ -37,8 +37,9 @@ The grades still have to be checked on the bike with a child.
 
 ## What the players see
 
-Little text, nothing hidden. The ride screen, top to bottom: who rides
-and the round, with the time left in its own corner; the distance in
+Little text, nothing hidden. The time left is the background: it drains
+like an hourglass (pink for the last 5 s), the seconds riding on its
+surface. The ride screen, top to bottom: who rides and the round; the distance in
 metres, big (the countdown takes the same box, so nothing moves at "Go");
 speed and slope; the gauge; the track; cadence and watts.
 

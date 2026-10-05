@@ -5,6 +5,8 @@
 }
 
 .main {
+  /* Holds screen-wide layers, such as the ride's hourglass. */
+  position: relative;
   width: 100%;
   max-width: 1600px;
   margin-inline: auto;
