@@ -70,10 +70,12 @@
   border-top-color: rgb(255 59 119 / 0.45);
 }
 
+/* Centred on the strongman's column (LIFTER_COLUMN in RideScreen.tsx). */
 .timer {
   position: absolute;
   top: 0.3rem;
-  right: clamp(1rem, 3vw, 2.5rem);
+  right: calc(clamp(1rem, 3vw, 2.5rem) + 55px);
+  transform: translateX(50%);
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 6vmin, 3.2rem);
   line-height: 1;
@@ -135,7 +137,6 @@
 
 .track {
   position: relative;
-  width: 100%;
   height: clamp(90px, 16vmin, 140px);
   /* Leans around the middle of its bottom edge, by the slope ridden. */
   transform-origin: 50% 100%;

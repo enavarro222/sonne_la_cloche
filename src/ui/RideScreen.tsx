@@ -26,7 +26,7 @@ import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
 import { advanceCrank } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
-import { Lifter, WIDTH as LIFTER_WIDTH } from "./lifter/Lifter";
+import { HAND_X, Lifter, WIDTH as LIFTER_WIDTH } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
@@ -285,8 +285,14 @@ function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
 /** The track leans twice the real angle, up to 8°: a 2 % slope must show. */
 const tiltDeg = (gradePct: number) =>
   Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
-/** Where the strongman stands, as a share of the track width from its left. */
-const LIFTER_AT = 0.92;
+/**
+ * The strongman stands right of the track, in a column whose middle is this
+ * far from the right edge (px): the seconds of the hourglass come down that
+ * same column, onto his head.
+ */
+const LIFTER_COLUMN = 55;
+/** The track stops where his left hand holds it. */
+const TRACK_END = LIFTER_COLUMN + LIFTER_WIDTH / 2 - HAND_X;
 /** The gauge goes up to this share of the player's level… */
 const GAUGE_MAX = 1.5;
 /** …and its needle turns green from this share on. */
@@ -358,7 +364,8 @@ export function RideScreen({
   const gradePct = ride.course?.gradePct ?? SLOPE_PERCENT[settings.slope];
   const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
   const tilt = tiltDeg(gradePct);
-  const rise = (LIFTER_AT - 0.5) * sceneWidth * Math.sin((tilt * Math.PI) / 180);
+  // The track leans around its middle: its far end rises by half its length.
+  const rise = ((sceneWidth - TRACK_END) / 2) * Math.sin((tilt * Math.PI) / 180);
   const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
     gradePct,
   );
@@ -421,7 +428,10 @@ export function RideScreen({
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 
       <div className={styles.scene} ref={sceneRef}>
-        <div className={styles.track} style={{ transform: `rotate(${-tilt}deg)` }}>
+        <div
+          className={styles.track}
+          style={{ width: `calc(100% - ${TRACK_END}px)`, transform: `rotate(${-tilt}deg)` }}
+        >
           <div
             className={cx(styles.bell, rung && styles.rung)}
             style={{ left: lane(bellPosition) }}
@@ -447,7 +457,7 @@ export function RideScreen({
         <div
           className={styles.lifter}
           style={{
-            left: `calc(${LIFTER_AT * 100}% - ${LIFTER_WIDTH / 2}px)`,
+            right: `${LIFTER_COLUMN - LIFTER_WIDTH / 2}px`,
             top: `calc(100% - ${rise}px)`,
           }}
         >

@@ -12,6 +12,8 @@ const DRAWING_WIDTH = 64;
 const SCALE = 1.4;
 /** Width on screen, px. */
 export const WIDTH = DRAWING_WIDTH * SCALE;
+/** Where his left hand holds the track, px from his left edge. */
+export const HAND_X = 20 * SCALE;
 
 /** From this grade (%) he sweats… */
 const SWEAT_FROM = 5;
