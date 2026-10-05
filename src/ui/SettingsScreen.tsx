@@ -5,6 +5,7 @@ import {
   ROUND_COUNTS,
   type Settings,
   SLOPE_PERCENT,
+  slopeAllowed,
   SLOPES,
   TEST_ONLY,
 } from "../core/settings";
@@ -24,6 +25,8 @@ interface ChoiceProps<T> {
   value: T;
   format: (option: T) => string;
   onSelect: (option: T) => void;
+  /** Options that cannot be picked with the other settings. */
+  disabled?: (option: T) => boolean;
   help?: string;
 }
 
@@ -33,6 +36,7 @@ function Choice<T extends string | number>({
   value,
   format,
   onSelect,
+  disabled,
   help,
 }: ChoiceProps<T>) {
   return (
@@ -44,6 +48,7 @@ function Choice<T extends string | number>({
             key={option}
             type="button"
             aria-pressed={option === value}
+            disabled={disabled?.(option)}
             onClick={() => {
               onSelect(option);
             }}
@@ -75,6 +80,24 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
         help={t("settings.metric.help")}
       />
       <Choice
+        label={t("settings.slope.label")}
+        options={SLOPES}
+        value={settings.slope}
+        format={(slope) =>
+          slope === "own"
+            ? t("settings.slope.own")
+            : t("settings.slope.option", {
+                name: t(`settings.slope.${slope}`),
+                percent: SLOPE_PERCENT[slope],
+              })
+        }
+        onSelect={(slope) => {
+          onChange({ slope });
+        }}
+        disabled={(slope) => !slopeAllowed(slope, settings.metric)}
+        help={t("settings.slope.help")}
+      />
+      <Choice
         label={t("settings.duration.label")}
         options={durations}
         value={settings.durationSec}
@@ -92,21 +115,6 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
           onChange({ rounds });
         }}
         help={t("settings.rounds.help")}
-      />
-      <Choice
-        label={t("settings.slope.label")}
-        options={SLOPES}
-        value={settings.slope}
-        format={(slope) =>
-          t("settings.slope.option", {
-            name: t(`settings.slope.${slope}`),
-            percent: SLOPE_PERCENT[slope],
-          })
-        }
-        onSelect={(slope) => {
-          onChange({ slope });
-        }}
-        help={t("settings.slope.help")}
       />
       <button type="button" className="primary" onClick={onDone}>
         {t("settings.done")}

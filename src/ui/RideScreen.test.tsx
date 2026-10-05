@@ -8,11 +8,17 @@ import { COUNTDOWN_STEP_MS, type FinishedRide, GO_DISPLAY_MS, RideScreen } from 
 
 const COUNTDOWN_MS = COUNTDOWN_STEP_MS * 3 + GO_DISPLAY_MS;
 const player = { id: "lea", name: "Léa" };
-const settings = { ...DEFAULT_SETTINGS, durationSec: 20 as const };
+const settings = {
+  ...DEFAULT_SETTINGS,
+  metric: "cadence" as const,
+  slope: "gentle" as const,
+  durationSec: 20 as const,
+};
 
 const steadySensor = (cadence: number): Sensor => ({
   kind: "bluetooth",
   read: () => ({ cadence, power: 0 }),
+  measuresPower: () => false,
   reset: vi.fn(),
   disconnect: vi.fn(),
 });

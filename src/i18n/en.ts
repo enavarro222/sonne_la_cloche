@@ -49,6 +49,7 @@ export const en = {
     firstUp: "Let's go! {{name}} rides first",
     needPlayers: "Add at least 2 players",
     needBike: "Connect the bike, or try without one",
+    noPower: "This bike does not measure power: pedal turns will count.",
     settings: "Settings",
     madeBy: "Made by {{author}}",
     source: "Source code on GitHub",
@@ -60,10 +61,9 @@ export const en = {
     done: "Done",
     metric: {
       label: "What counts",
+      distance: "Distance",
       cadence: "Leg speed",
-      power: "Strength (watts)",
-      slope: "Own slope each",
-      help: "Leg speed counts pedal turns: fairer between children of different sizes. Strength counts watts: the biggest ones win. Own slope each counts metres: round 1 measures everyone, then the stronger you are, the steeper your road.",
+      help: "Distance turns watts into metres: it needs a trainer that measures power. Leg speed counts pedal turns: it works with any sensor.",
     },
     duration: {
       label: "Ride length",
@@ -76,8 +76,9 @@ export const en = {
       gentle: "Gentle",
       hill: "Hill",
       wall: "Wall",
+      own: "Own slope each",
       short: "{{percent}}\u00a0%\u00a0slope",
-      help: "The steeper, the harder. Set by the game on smart trainers it can control (FTMS). With another sensor, use the bike's gears.",
+      help: "The steeper, the harder. Own slope each: round 1 measures everyone, then the stronger you are, the steeper your road; by distance only. Set by the game on smart trainers it can control (FTMS); with another sensor, use the bike's gears.",
     },
     rounds: {
       label: "Rounds",

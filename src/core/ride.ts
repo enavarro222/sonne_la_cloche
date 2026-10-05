@@ -4,7 +4,7 @@ import type { Metric, Settings } from "./settings";
 // Scoring during a single ride. Pure functions: the UI loop feeds them time
 // steps and sensor values.
 
-/** Points per second = sensor value / 3 (≈ 30 pts/s at 90 rpm); on a slope, metres. */
+/** Points per second = cadence / 3 (≈ 30 pts/s at 90 rpm); by distance, metres. */
 export const POINTS_DIVISOR = 3;
 
 /**
@@ -36,7 +36,7 @@ export interface RideSample {
 export interface RideProgress {
   elapsedSec: number;
   points: number;
-  /** Virtual speed, m/s: only on a slope. */
+  /** Virtual speed, m/s: only by distance. */
   speed: number;
   /** Time integrals, for the averages. */
   cadenceSum: number;
@@ -75,7 +75,7 @@ export function stepRide(
   metric: Metric,
   dtSec: number,
   durationSec: number,
-  /** Required on a slope. */
+  /** Required by distance. */
   course?: Course,
 ): RideProgress {
   const remaining = durationSec - progress.elapsedSec;
@@ -84,11 +84,9 @@ export function stepRide(
   const cadence = clean(effort.cadence);
   const power = clean(effort.power);
   const speed =
-    metric === "slope" && course ? stepSpeed(progress.speed, power, course.gradePct, dt) : 0;
+    metric === "distance" && course ? stepSpeed(progress.speed, power, course.gradePct, dt) : 0;
   const gained =
-    metric === "slope"
-      ? (course?.weight ?? 0) * speed * dt
-      : ((metric === "cadence" ? cadence : power) / POINTS_DIVISOR) * dt;
+    metric === "distance" ? (course?.weight ?? 0) * speed * dt : (cadence / POINTS_DIVISOR) * dt;
   const elapsedSec = progress.elapsedSec + dt;
   // A sample each time a whole second is reached (a long frame may reach several).
   let samples = progress.samples;
@@ -139,15 +137,15 @@ export const isRideOver = (progress: RideProgress, durationSec: number): boolean
 // for a good ride, and stretches when the bike gets close to the end so the
 // bike never gets stuck there. The bell marks what there is to beat.
 
-/** A "good ride": this pace held for the whole ride. */
-export const REFERENCE_PACE: Record<Exclude<Metric, "slope">, number> = { cadence: 80, power: 60 };
-/** On a slope: m/s (25 km/h). */
+/** A "good ride": this cadence (rpm) held for the whole ride… */
+export const REFERENCE_CADENCE = 80;
+/** …or, by distance, this speed (m/s, 25 km/h). */
 export const REFERENCE_SPEED = 7;
 
 export const referencePoints = (settings: Settings): number =>
-  settings.metric === "slope"
+  settings.metric === "distance"
     ? REFERENCE_SPEED * settings.durationSec
-    : (REFERENCE_PACE[settings.metric] * settings.durationSec) / POINTS_DIVISOR;
+    : (REFERENCE_CADENCE * settings.durationSec) / POINTS_DIVISOR;
 
 /**
  * What the bell marks: the record, or — when nobody has scored yet — a goal

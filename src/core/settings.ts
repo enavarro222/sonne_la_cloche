@@ -1,5 +1,8 @@
-/** Pedal turns, watts, or the distance on each player's own slope (see handicap.ts). */
-export const METRICS = ["cadence", "power", "slope"] as const;
+/**
+ * Pedal turns (any sensor), or the distance measured power takes a virtual
+ * bike (needs a power meter: see handicap.ts).
+ */
+export const METRICS = ["distance", "cadence"] as const;
 export type Metric = (typeof METRICS)[number];
 
 export const DURATIONS_SEC = [5, 20, 30, 45] as const;
@@ -10,20 +13,25 @@ export const ROUND_COUNTS = [1, 3, 4, 5] as const;
 export const TEST_ONLY = { durationSec: 5, rounds: 1 } as const;
 export type RoundCount = (typeof ROUND_COUNTS)[number];
 
-export const SLOPES = ["flat", "gentle", "hill", "wall"] as const;
-/** The road's slope, sent to trainers the game can control. */
+/**
+ * The road's slope, sent to trainers the game can control. "own": each
+ * player on their own slope, the weakest on the flat (distance only).
+ */
+export const SLOPES = ["flat", "gentle", "hill", "wall", "own"] as const;
 export type Slope = (typeof SLOPES)[number];
 
-/** Grade of each slope, in percent. */
-export const SLOPE_PERCENT: Record<Slope, number> = { flat: 0, gentle: 2, hill: 5, wall: 10 };
-
-/** The resistance setting the slope replaced, as saved by earlier versions. */
-const SLOPE_OF_RESISTANCE: Record<string, Slope> = {
-  light: "flat",
-  normal: "gentle",
-  hard: "hill",
-  megaHard: "wall",
+/** Grade of each slope, in percent; for "own", the weakest player's. */
+export const SLOPE_PERCENT: Record<Slope, number> = {
+  flat: 0,
+  gentle: 2,
+  hill: 5,
+  wall: 10,
+  own: 0,
 };
+
+/** Own slopes are worked out from power: they need the distance metric. */
+export const slopeAllowed = (slope: Slope, metric: Metric): boolean =>
+  slope !== "own" || metric === "distance";
 
 export interface Settings {
   metric: Metric;
@@ -32,14 +40,26 @@ export interface Settings {
   slope: Slope;
 }
 
-// Cadence by default: an 8-year-old produces 40-60 W, so ranking by watts
-// would just rank children by size.
+// Each on their own slope by default: fair between an 8-year-old's 50 W and
+// an adult's 300 W, and it makes the most of a smart trainer. Without a power
+// meter the game falls back to pedal turns (see `forSensor`).
 export const DEFAULT_SETTINGS: Settings = {
-  metric: "cadence",
+  metric: "distance",
   durationSec: 30,
   rounds: 4,
-  slope: "gentle",
+  slope: "own",
 };
+
+/** Where the slope goes when the metric no longer allows it. */
+const FALLBACK_SLOPE: Slope = "gentle";
+
+/** Keeps the slope consistent with the metric. */
+export const consistent = (settings: Settings): Settings =>
+  slopeAllowed(settings.slope, settings.metric) ? settings : { ...settings, slope: FALLBACK_SLOPE };
+
+/** The settings a game actually uses: pedal turns when the bike measures no power. */
+export const forSensor = (settings: Settings, measuresPower: boolean): Settings =>
+  measuresPower ? settings : consistent({ ...settings, metric: "cadence" });
 
 const pick = <T>(allowed: readonly T[], value: unknown, fallback: T): T =>
   allowed.includes(value as T) ? (value as T) : fallback;
@@ -47,15 +67,10 @@ const pick = <T>(allowed: readonly T[], value: unknown, fallback: T): T =>
 /** Reads settings from untrusted data (e.g. storage), field by field. */
 export function parseSettings(value: unknown): Settings {
   const raw = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
-  return {
+  return consistent({
     metric: pick(METRICS, raw.metric, DEFAULT_SETTINGS.metric),
     durationSec: pick(DURATIONS_SEC, raw.durationSec, DEFAULT_SETTINGS.durationSec),
     rounds: pick(ROUND_COUNTS, raw.rounds, DEFAULT_SETTINGS.rounds),
-    slope: pick(
-      SLOPES,
-      raw.slope ??
-        (typeof raw.resistance === "string" ? SLOPE_OF_RESISTANCE[raw.resistance] : null),
-      DEFAULT_SETTINGS.slope,
-    ),
-  };
+    slope: pick(SLOPES, raw.slope, DEFAULT_SETTINGS.slope),
+  });
 }

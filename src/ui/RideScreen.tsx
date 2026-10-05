@@ -287,15 +287,18 @@ const tiltDeg = (gradePct: number) =>
   Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
 /** Where the strongman stands, as a share of the track width from its left. */
 const LIFTER_AT = 0.92;
-/** Power against the player's level, green from 95 % to 115 %. */
+/** The gauge goes up to this share of the player's level… */
 const GAUGE_MAX = 1.5;
-const GAUGE_ZONE = [0.95, 1.15] as const;
+/** …and its needle turns green from this share on. */
+const GAUGE_GOOD = 0.95;
 
-/** Before "Go": how the player's power compares to their level. */
+/**
+ * The player's power against their level (the mark). No upper limit shown:
+ * going above one's level is what the game rewards.
+ */
 function PowerGauge({ power, target }: { power: number; target: number }) {
   const { t } = useTranslation();
   const ratio = Math.min(GAUGE_MAX, power / target);
-  const inZone = ratio >= GAUGE_ZONE[0] && ratio <= GAUGE_ZONE[1];
   const at = (value: number) => `${(value / GAUGE_MAX) * 100}%`;
   return (
     <div
@@ -306,12 +309,9 @@ function PowerGauge({ power, target }: { power: number; target: number }) {
       aria-valuemax={Math.round(target * GAUGE_MAX)}
       aria-valuenow={Math.round(power)}
     >
+      <div className={styles.gaugeLevel} style={{ left: at(1) }} />
       <div
-        className={styles.gaugeZone}
-        style={{ left: at(GAUGE_ZONE[0]), width: at(GAUGE_ZONE[1] - GAUGE_ZONE[0]) }}
-      />
-      <div
-        className={cx(styles.gaugeNeedle, inZone && styles.inZone)}
+        className={cx(styles.gaugeNeedle, ratio >= GAUGE_GOOD && styles.good)}
         style={{ left: at(ratio) }}
       />
     </div>
@@ -352,7 +352,8 @@ export function RideScreen({
     onFinish,
   );
   const { progress, track, rung, crankAngle } = ride;
-  const live = useLiveReading(stage.name !== "racing" && course?.targetPower != null, sensor);
+  const target = ride.course?.targetPower ?? null;
+  const live = useLiveReading(stage.name !== "racing" && target !== null, sensor);
   const reading = stage.name === "racing" ? ride.reading : live;
   const gradePct = ride.course?.gradePct ?? SLOPE_PERCENT[settings.slope];
   const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
@@ -383,20 +384,13 @@ export function RideScreen({
       <p className={styles.who}>
         {t("ride.turn", { name: player.name, context: elisionContext(player.name) })}
         <span className={styles.round}>{t("ride.round", { round, rounds: settings.rounds })}</span>
-        {course?.targetPower === null && (
-          <span className={styles.calibration}>{t("ride.calibration")}</span>
-        )}
+        {course?.measuring && <span className={styles.calibration}>{t("ride.calibration")}</span>}
       </p>
 
       {stage.name !== "racing" ? (
-        <div className={styles.countdownBox}>
-          <p className={styles.countdown} aria-live="assertive">
-            {stage.name === "go" ? t("ride.go") : stage.count}
-          </p>
-          {course?.targetPower != null && (
-            <PowerGauge power={reading.power} target={course.targetPower} />
-          )}
-        </div>
+        <p className={styles.countdown} aria-live="assertive">
+          {stage.name === "go" ? t("ride.go") : stage.count}
+        </p>
       ) : (
         <>
           <p className={styles.score} data-testid="ride-score">
@@ -407,6 +401,7 @@ export function RideScreen({
           </p>
         </>
       )}
+      {target !== null && <PowerGauge power={reading.power} target={target} />}
 
       <div className={styles.scene} ref={sceneRef}>
         <div className={styles.track} style={{ transform: `rotate(${-tilt}deg)` }}>

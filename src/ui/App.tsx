@@ -37,7 +37,8 @@ export function App() {
   // Right away on connection (the trainer may still be set up for an adult,
   // or in ERG mode after another app), and whenever the setting changes.
   const course = useMemo(
-    () => (game?.phase === "riding" && game.settings.metric === "slope" ? courseFor(game) : null),
+    () =>
+      game?.phase === "riding" && game.settings.metric === "distance" ? courseFor(game) : null,
     [game],
   );
   const grade = course?.gradePct ?? SLOPE_PERCENT[state.settings.slope];
@@ -65,6 +66,8 @@ export function App() {
         roster={state.roster}
         settings={state.settings}
         sensor={sensorState}
+        // Read on each render: what the bike sends only shows once connected.
+        measuresPower={sensor?.measuresPower() ?? true}
         bluetoothSupported={isBluetoothSupported()}
         onAddPlayer={(name) => {
           dispatch({ type: "playerAdded", player: { id: crypto.randomUUID(), name } });
@@ -73,7 +76,7 @@ export function App() {
           dispatch({ type: "playerRemoved", id });
         }}
         onStart={() => {
-          dispatch({ type: "gameStarted" });
+          dispatch({ type: "gameStarted", measuresPower: sensor?.measuresPower() ?? true });
         }}
         onOpenSettings={() => {
           setSettingsOpen(true);
@@ -112,7 +115,7 @@ export function App() {
           dispatch({ type: "rideRetried" });
         }}
         onPlayAgain={() => {
-          dispatch({ type: "gameStarted" });
+          dispatch({ type: "gameStarted", measuresPower: sensor?.measuresPower() ?? true });
         }}
         onHome={() => {
           dispatch({ type: "gameQuit" });

@@ -57,6 +57,13 @@
   color: var(--night);
 }
 
+/* Not available with the other settings (own slopes with pedal turns). */
+.choice button:disabled {
+  color: var(--cream-faint);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 .help {
   margin-top: 0.5rem;
   max-width: 60ch;

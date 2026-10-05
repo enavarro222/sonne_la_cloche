@@ -23,16 +23,25 @@ const percentOf = async (page: Page) =>
     (await page.getByTestId("ride-grade").textContent())?.replace(/[^\d,]/g, "").replace(",", "."),
   );
 
-test("each their own slope: round 1 measures, then the stronger climbs", async ({ page }) => {
+test("by default, each their own slope: round 1 measures, then the stronger climbs", async ({
+  page,
+}) => {
   // Four 20 s rides with a key press every few frames.
   test.setTimeout(120_000);
-  await openGame(page);
+  await openGame(page, "/fr/", { defaults: true });
   await addPlayers(page, "Léa", "Tom");
   await page.getByRole("button", { name: "Réglages" }).click();
-  await page.getByRole("button", { name: "Chacun sa pente" }).click();
+  // The default: distance, each on their own slope.
+  await expect(page.getByRole("button", { name: "Distance" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: "Chacun sa pente" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await page.getByRole("button", { name: "20 s", exact: true }).click();
   await page.getByRole("button", { name: "3 tours", exact: true }).click();
-  await page.getByRole("button", { name: /^Plat/ }).click();
   await page.getByRole("button", { name: "Terminé" }).click();
   await startDemoGame(page);
 

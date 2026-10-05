@@ -53,6 +53,11 @@ export class DemoSensor implements Sensor {
     return { cadence: this.cadence, power: this.cadence * WATTS_PER_RPM };
   }
 
+  /** Watts are made up from the cadence, but they are there. */
+  measuresPower(): boolean {
+    return true;
+  }
+
   reset(): void {
     this.cadence = 0;
     this.lastFoot = null;

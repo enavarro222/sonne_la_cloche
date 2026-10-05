@@ -6,7 +6,7 @@ import {
   startRide,
   stepRide,
   bellMark,
-  REFERENCE_PACE,
+  REFERENCE_CADENCE,
   rideStats,
   ringsBell,
   startTrack,
@@ -53,9 +53,9 @@ describe("stepRide", () => {
     expect(stepRide(startRide(), effort(90), "cadence", -1, 30)).toEqual(startRide());
   });
 
-  it("scores the chosen metric", () => {
-    const ride = stepRide(startRide(), effort(90, 150), "power", 0.2, 30);
-    expect(ride.points).toBeCloseTo(10);
+  it("scores pedal turns, whatever the power", () => {
+    const ride = stepRide(startRide(), effort(90, 150), "cadence", 0.2, 30);
+    expect(ride.points).toBeCloseTo(6);
   });
 
   it("averages cadence and power over the time ridden, and keeps the peaks", () => {
@@ -101,11 +101,12 @@ describe("track", () => {
 
   it("gives the first ride a goal worth a good ride", () => {
     // 80 rpm for 30 s → 800 points.
-    expect(REFERENCE_PACE.cadence).toBe(80);
+    expect(REFERENCE_CADENCE).toBe(80);
     expect(goal).toEqual({ kind: "goal", points: 800 });
     expect(bellMark(0, settings)).toEqual(goal);
     expect(bellMark(0, { ...settings, durationSec: 20 }).points).toBeCloseTo(533.3, 1);
-    expect(bellMark(0, { ...settings, metric: "power" }).points).toBe(600);
+    // By distance: 7 m/s (25 km/h) for 30 s.
+    expect(bellMark(0, { ...settings, metric: "distance" }).points).toBe(210);
     expect(bellMark(450, settings)).toEqual({ kind: "record", points: 450 });
   });
 

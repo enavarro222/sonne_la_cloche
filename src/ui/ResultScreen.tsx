@@ -103,7 +103,7 @@ export function ResultScreen({
   const next = upNext(game);
   const over = isGameOver(game);
   const winners = ranking.filter((s) => s.rank === 1).map((s) => s.player.name);
-  const ownSlopes = game.settings.metric === "slope";
+  const ownSlopes = game.settings.slope === "own";
   const percent = (grade: number) =>
     new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(grade);
   const [confirmingQuit, setConfirmingQuit] = useState(false);

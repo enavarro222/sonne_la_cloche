@@ -9,6 +9,8 @@ export interface SensorReading {
 export interface Sensor {
   readonly kind: "bluetooth" | "demo";
   read(nowMs: number): SensorReading;
+  /** Whether it measures power, as far as can be told so far. */
+  measuresPower(): boolean;
   /** Called before each ride so a stale value does not leak into it. */
   reset(): void;
   disconnect(): void;

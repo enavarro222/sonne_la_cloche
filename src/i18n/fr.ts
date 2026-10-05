@@ -50,6 +50,7 @@ export const fr: Translation = {
     firstUp: "C'est parti ! {{name}} commence",
     needPlayers: "Ajoute au moins 2 joueurs",
     needBike: "Connecte le vélo, ou essaie sans",
+    noPower: "Ce vélo ne mesure pas la puissance : on comptera les tours de pédale.",
     settings: "Réglages",
     madeBy: "Fait par {{author}}",
     source: "Code source sur GitHub",
@@ -61,10 +62,9 @@ export const fr: Translation = {
     done: "Terminé",
     metric: {
       label: "Ce qui compte",
+      distance: "Distance",
       cadence: "Vitesse des jambes",
-      power: "Force (watts)",
-      slope: "Chacun sa pente",
-      help: "« Vitesse des jambes » compte les tours de pédale : plus juste entre enfants de gabarits différents. « Force » compte les watts : l'avantage va aux plus costauds. « Chacun sa pente » compte les mètres : le premier tour mesure chacun, ensuite plus on est fort, plus ça monte.",
+      help: "« Distance » transforme les watts en mètres : il faut un home-trainer qui mesure la puissance. « Vitesse des jambes » compte les tours de pédale : marche avec tous les capteurs.",
     },
     duration: {
       label: "Durée d'un passage",
@@ -77,8 +77,9 @@ export const fr: Translation = {
       gentle: "Faux plat",
       hill: "Côte",
       wall: "Mur",
+      own: "Chacun sa pente",
       short: "pente\u00a0{{percent}}\u00a0%",
-      help: "Plus c'est raide, plus c'est dur. Réglée par le jeu sur les home-trainers pilotables (FTMS). Avec un autre capteur, joue sur les vitesses du vélo.",
+      help: "Plus c'est raide, plus c'est dur. « Chacun sa pente » : le premier tour mesure chacun, ensuite plus on est fort, plus ça monte ; avec « Distance » seulement. Réglée par le jeu sur les home-trainers pilotables (FTMS) ; avec un autre capteur, joue sur les vitesses du vélo.",
     },
     rounds: {
       label: "Nombre de tours",

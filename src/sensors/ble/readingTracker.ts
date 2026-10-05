@@ -19,6 +19,10 @@ export class ReadingTracker {
   private lastCrank: CrankSample | null = null;
   private lastUpdateMs = Number.NEGATIVE_INFINITY;
   private lastRevolutionMs = Number.NEGATIVE_INFINITY;
+  // Kept across resets: they describe the sensor, not a ride.
+  private powerSent = false;
+  private pedaledWithoutPower = false;
+  private powerSeen = false;
 
   update(data: ParsedData, nowMs: number): void {
     let { cadence } = this.reading;
@@ -31,6 +35,17 @@ export class ReadingTracker {
     }
     this.reading = { cadence, power: data.power ?? this.reading.power };
     this.lastUpdateMs = nowMs;
+    if (data.power !== undefined) this.powerSent = true;
+    if (this.reading.power > 0) this.powerSeen = true;
+    else if (cadence > 0) this.pedaledWithoutPower = true;
+  }
+
+  /**
+   * Power is measured if the sensor sends it, unless pedaling never moved it
+   * from 0: some trainers send the field without measuring anything.
+   */
+  measuresPower(): boolean {
+    return this.powerSent && (this.powerSeen || !this.pedaledWithoutPower);
   }
 
   read(nowMs: number): SensorReading {

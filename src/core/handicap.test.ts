@@ -21,7 +21,7 @@ const tom = { id: "tom", name: "Tom" };
 const kmh = (metresPerSecond: number) => metresPerSecond * 3.6;
 
 /** A game of Léa then Tom, after the given average powers ride in turn. */
-function played(avgPowers: number[], slope: Slope = "flat"): Game {
+function played(avgPowers: number[], slope: Slope = "own"): Game {
   const actions: Action[] = [{ type: "gameStarted" }];
   for (const avgPower of avgPowers) {
     actions.push(
@@ -36,7 +36,7 @@ function played(avgPowers: number[], slope: Slope = "flat"): Game {
   }
   const { game } = actions.reduce(
     reducer,
-    initialState([lea, tom], { ...DEFAULT_SETTINGS, metric: "slope", slope }),
+    initialState([lea, tom], { ...DEFAULT_SETTINGS, metric: "distance", slope }),
   );
   if (!game) throw new Error("game did not start");
   return game;
@@ -46,7 +46,7 @@ function played(avgPowers: number[], slope: Slope = "flat"): Game {
 function distance(course: Course, power: number, seconds = 30): number {
   let progress = startRide(course.startSpeed);
   for (let t = 0; t < seconds; t += 0.05) {
-    progress = stepRide(progress, { cadence: 90, power }, "slope", 0.05, seconds, course);
+    progress = stepRide(progress, { cadence: 90, power }, "distance", 0.05, seconds, course);
   }
   return progress.points / course.weight;
 }
@@ -73,15 +73,28 @@ describe("physics", () => {
 });
 
 describe("courseFor", () => {
-  it("measures everyone in round 1, on the common slope, for half the points", () => {
-    const course = courseFor(played([], "hill"));
-    expect(course).toEqual({
+  it("measures everyone in round 1, on the flat, for half the points", () => {
+    expect(courseFor(played([]))).toEqual({
+      baseGradePct: 0,
+      gradePct: 0,
+      startSpeed: steadySpeed(100, 0),
+      weight: CALIBRATION_WEIGHT,
+      targetPower: null,
+      measuring: true,
+    });
+  });
+
+  it("on a common slope, puts everyone on the same road, every round", () => {
+    const course = {
       baseGradePct: 5,
       gradePct: 5,
       startSpeed: steadySpeed(100, 5),
-      weight: CALIBRATION_WEIGHT,
+      weight: 1,
       targetPower: null,
-    });
+      measuring: false,
+    };
+    expect(courseFor(played([], "hill"))).toEqual(course);
+    expect(courseFor(played([150, 350, 150], "hill"))).toEqual(course);
   });
 
   it("from round 2, gives the stronger a steeper slope at the weakest's speed", () => {
@@ -105,12 +118,6 @@ describe("courseFor", () => {
       const tomRides = courseFor(played([weak, strong, weak]));
       expect(distance(tomRides, strong)).toBeCloseTo(distance(leaRides, weak), 0);
     }
-  });
-
-  it("adds the handicap on top of the common slope", () => {
-    const tomRides = courseFor(played([150, 350, 150], "gentle"));
-    expect(tomRides.baseGradePct).toBe(2);
-    expect(tomRides.gradePct).toBeGreaterThan(4);
   });
 
   it("caps the handicap", () => {

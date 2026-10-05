@@ -2,19 +2,38 @@
 
 Status: implemented. Grades and feel still to be checked on a real trainer.
 
-## Step 1: a common slope instead of a resistance
+## Settings and default
 
-The ⚙ setting is a slope, shown with its value: Flat 0 %, Gentle 2 %,
-Hill 5 %, Wall 10 %. Every player rides it; scoring is unchanged. It is
-sent as a simulated grade (FTMS opcode `0x11`) or, on trainers without
-simulation, as a resistance level: 2.5 % of the range per percent, which
-keeps the Suito values tested with a child (0, 10, 25, 50). The grades
-still have to be checked on the bike with a child, against those levels.
+Two choices in ⚙:
 
-The handicap is a third "What counts" choice, **Own slope each**, next to
-leg speed and strength: with those two, everyone rides the common slope;
-with it, each player gets the common slope + `θ_i` (computed on the common
-slope instead of flat), and the score is metres.
+| What counts        | Scores                     | Needs                     |
+| ------------------ | -------------------------- | ------------------------- |
+| Distance (default) | metres from measured power | a power meter             |
+| Leg speed          | pedal turns                | any sensor (CSC included) |
+
+| Slope                    | Grade                                   |
+| ------------------------ | --------------------------------------- |
+| Flat, Gentle, Hill, Wall | 0, 2, 5, 10 % for everyone              |
+| Own slope each (default) | each their own, the weakest on the flat |
+
+Own slope each needs Distance: with Leg speed it is greyed out (and a
+stored combination falls back to Gentle). The default is Distance + Own
+slope each: fair between a child's 50 W and an adult's 300 W.
+
+**Without power**, a game by distance is played by leg speed instead (the
+settings stay as chosen, for the next bike), and the home screen says so.
+A sensor measures power if it sends the field and pedaling ever moved it
+from 0: a CSC sensor, or a trainer stuck at 0 W, does not.
+
+**Stored settings are versioned** (`version` in the stored JSON, see
+`migrateSettings` in `src/storage/storage.ts`). Settings are saved as soon
+as the game opens, so stored values are mostly past defaults: version 2
+moves everyone to the new default, keeping ride length and rounds.
+
+**On the trainer**, the slope is a simulated grade (FTMS opcode `0x11`) or,
+on trainers without simulation, a resistance level: 2.5 % of the range per
+percent, which keeps the Suito values tested with a child (0, 10, 25, 50).
+The grades still have to be checked on the bike with a child.
 
 ## What the players see
 
@@ -22,11 +41,13 @@ Little text, nothing hidden:
 
 - **Every ride**: the track leans with the slope ridden, held up at its far
   end by a little strongman with stretchy arms (sweating from 5 %, red and
-  shaking from 8 %), the grade written next to him. Same for the common
-  slope in the other modes.
+  shaking from 8 %), the grade written next to him. Same for a common
+  slope, whatever counts.
 - **Round 1**: a "Measuring round · points ×½" badge.
-- **Next rounds**: during the 3/2/1, a gauge of power against the
-  player's level, green from 95 % to 115 %.
+- **Next rounds**: from the 3/2/1 to the end, a gauge of power against
+  the player's level (a mark). The needle turns green from 95 %; no upper
+  limit is shown, since going above one's level is what pays (and showing
+  the 110 % raise threshold would invite riding just under it).
 - **Results**: the grade ridden under the score, the next rider's grade,
   and each player's latest grade in the ranking.
 

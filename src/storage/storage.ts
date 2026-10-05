@@ -31,7 +31,25 @@ export const saveRoster = (roster: readonly Player[]): void => {
   writeJson(KEYS.roster, roster);
 };
 
-export const loadSettings = (): Settings => parseSettings(readJson(KEYS.settings));
+/** Bumped when stored settings need a migration: see `migrateSettings`. */
+export const SETTINGS_VERSION = 2;
+
+/**
+ * Brings stored settings up to the current version. Settings are saved as
+ * soon as the game opens, so a stored value is often a past default rather
+ * than a choice: a new default reaches everyone through a migration.
+ */
+export function migrateSettings(stored: unknown): unknown {
+  if (typeof stored !== "object" || stored === null) return stored;
+  let settings = stored as Record<string, unknown>;
+  const version = typeof settings.version === "number" ? settings.version : 1;
+  // v2: each on their own slope by default; "power" became "distance" and
+  // the trainer resistance a slope.
+  if (version < 2) settings = { ...settings, metric: "distance", slope: "own" };
+  return settings;
+}
+
+export const loadSettings = (): Settings => parseSettings(migrateSettings(readJson(KEYS.settings)));
 export const saveSettings = (settings: Settings): void => {
-  writeJson(KEYS.settings, settings);
+  writeJson(KEYS.settings, { version: SETTINGS_VERSION, ...settings });
 };

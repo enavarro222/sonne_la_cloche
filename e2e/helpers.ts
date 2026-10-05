@@ -3,9 +3,32 @@ import { expect, type Page } from "@playwright/test";
 // Mirrors the countdown in src/ui/RideScreen.tsx (3 × 800 ms + 450 ms).
 const COUNTDOWN_MS = 3 * 800 + 450;
 
-/** Opens the game with the fake clock installed, so rides take no real time. */
-export async function openGame(page: Page, path = "/fr/"): Promise<void> {
+/** Settings for tests of the game flow: pedal turns, simple to reason about. */
+const CADENCE_SETTINGS = {
+  version: 2,
+  metric: "cadence",
+  durationSec: 30,
+  rounds: 4,
+  slope: "gentle",
+};
+
+/**
+ * Opens the game with the fake clock installed, so rides take no real time.
+ * Scored on pedal turns unless `defaults` (then the game's own defaults).
+ */
+export async function openGame(
+  page: Page,
+  path = "/fr/",
+  { defaults = false }: { defaults?: boolean } = {},
+): Promise<void> {
   await page.clock.install();
+  if (!defaults) {
+    // Only on a first visit: a reload must find what the test changed.
+    await page.addInitScript((settings) => {
+      const key = "sonne-la-cloche.settings";
+      if (localStorage.getItem(key) === null) localStorage.setItem(key, settings);
+    }, JSON.stringify(CADENCE_SETTINGS));
+  }
   await page.goto(path);
 }
 

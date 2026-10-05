@@ -1,8 +1,8 @@
-// "Each their own slope": players are scored on the distance their measured
-// power takes a virtual bike, each on their own slope, steeper for the
-// stronger. Round 1 measures everyone on the common slope; from round 2 each
-// player's slope makes their round-1 power hold the same speed as the
-// weakest's. See docs/handicap.md.
+// Scoring by distance: measured power drives a virtual bike, and the score is
+// the metres it covers. On a common slope everyone rides the same road. On
+// "own" slopes, round 1 measures everyone on the flat; from round 2 each
+// player's slope, steeper for the stronger, makes their power hold the same
+// speed as the weakest's. See docs/handicap.md.
 
 import { currentPlayer, type Game } from "./game";
 import { SLOPE_PERCENT } from "./settings";
@@ -76,8 +76,10 @@ export interface Course {
   startSpeed: number;
   /** Points per metre. */
   weight: number;
-  /** The power that holds `startSpeed` on this slope; null while calibrating. */
+  /** The power that holds `startSpeed` on this slope; null without a handicap. */
   targetPower: number | null;
+  /** Round 1 of own slopes: it measures everyone, for fewer points. */
+  measuring: boolean;
 }
 
 /**
@@ -92,13 +94,15 @@ export function referencePowers(game: Game): Map<string, number> {
   return refs;
 }
 
-function calibrationCourse(baseGradePct: number): Course {
+/** The same road for everyone: on a common slope, or while measuring. */
+function commonCourse(baseGradePct: number, measuring: boolean): Course {
   return {
     baseGradePct,
     gradePct: baseGradePct,
     startSpeed: steadySpeed(CALIBRATION_POWER, baseGradePct),
-    weight: CALIBRATION_WEIGHT,
+    weight: measuring ? CALIBRATION_WEIGHT : 1,
     targetPower: null,
+    measuring,
   };
 }
 
@@ -111,6 +115,7 @@ function handicapCourse(baseGradePct: number, commonSpeed: number, power: number
     startSpeed: commonSpeed,
     weight: 1,
     targetPower: power,
+    measuring: false,
   };
 }
 
@@ -120,10 +125,11 @@ export const courseFor = (game: Game): Course => courseOf(game, currentPlayer(ga
 /** A player's course in a round, from the rides so far (e.g. for whoever rides next). */
 export function courseOf(game: Game, playerId: string, round: number): Course {
   const base = SLOPE_PERCENT[game.settings.slope];
+  if (game.settings.slope !== "own") return commonCourse(base, false);
   const refs = referencePowers(game);
   const own = refs.get(playerId);
-  // Round 1, or a player without a ride yet: calibration.
-  if (round === 1 || own === undefined) return calibrationCourse(base);
+  // Round 1, or a player without a ride yet: measuring.
+  if (round === 1 || own === undefined) return commonCourse(base, true);
   const weakest = Math.max(MIN_REFERENCE_POWER, Math.min(...refs.values()));
   return handicapCourse(base, steadySpeed(weakest, base), Math.max(MIN_REFERENCE_POWER, own));
 }

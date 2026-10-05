@@ -51,6 +51,29 @@ describe("ReadingTracker", () => {
   });
 });
 
+describe("ReadingTracker.measuresPower", () => {
+  it("says yes once power is sent and moves", () => {
+    const tracker = new ReadingTracker();
+    expect(tracker.measuresPower()).toBe(false);
+    tracker.update({ cadence: 0, power: 0 }, 0);
+    expect(tracker.measuresPower()).toBe(true);
+    tracker.update({ cadence: 80, power: 0 }, 100);
+    tracker.update({ cadence: 85, power: 120 }, 200);
+    tracker.reset();
+    expect(tracker.measuresPower()).toBe(true);
+  });
+
+  it("says no for cadence alone, or a power stuck at 0 while pedaling", () => {
+    const cadenceOnly = new ReadingTracker();
+    cadenceOnly.update({ cadence: 80 }, 0);
+    expect(cadenceOnly.measuresPower()).toBe(false);
+
+    const stuck = new ReadingTracker();
+    stuck.update({ cadence: 80, power: 0 }, 0);
+    expect(stuck.measuresPower()).toBe(false);
+  });
+});
+
 describe("DemoSensor", () => {
   /** Alternating steps every `intervalMs`, starting at 0. */
   const pedal = (sensor: DemoSensor, intervalMs: number, steps: number, start = 0) => {

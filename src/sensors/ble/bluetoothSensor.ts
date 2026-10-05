@@ -140,6 +140,7 @@ export async function connectTrainer(
       kind: "bluetooth",
       device,
       read: (nowMs) => tracker.read(nowMs),
+      measuresPower: () => tracker.measuresPower(),
       reset: () => {
         tracker.reset();
       },

@@ -118,6 +118,8 @@ interface Props {
   settings: Settings;
   sensor: BikeCardSensor;
   bluetoothSupported: boolean;
+  /** Whether the connected bike measures power, as far as can be told. */
+  measuresPower?: boolean;
   onAddPlayer: (name: string) => void;
   onRemovePlayer: (id: string) => void;
   onStart: () => void;
@@ -129,6 +131,7 @@ export function HomeScreen({
   settings,
   sensor,
   bluetoothSupported,
+  measuresPower = true,
   onAddPlayer,
   onRemovePlayer,
   onStart,
@@ -160,8 +163,11 @@ export function HomeScreen({
     t(`settings.metric.${settings.metric}`),
     t("settings.duration.value", { count: settings.durationSec }),
     t("settings.rounds.value", { count: settings.rounds }),
-    t("settings.slope.short", { percent: SLOPE_PERCENT[settings.slope] }),
+    settings.slope === "own"
+      ? t("settings.slope.own")
+      : t("settings.slope.short", { percent: SLOPE_PERCENT[settings.slope] }),
   ].join(" · ");
+  const noPower = settings.metric === "distance" && !measuresPower;
 
   return (
     <div className={styles.home}>
@@ -236,6 +242,7 @@ export function HomeScreen({
           <span className="visually-hidden">{t("home.settings")}</span>
           <span>{settingsSummary}</span>
         </button>
+        {noPower && <p className={styles.help}>{t("home.noPower")}</p>}
 
         <p className={styles.credits}>
           <span>{t("home.madeBy", { author: AUTHOR })}</span>

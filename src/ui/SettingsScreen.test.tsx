@@ -34,12 +34,29 @@ describe("SettingsScreen", () => {
 
   it("shows the current choices, and changes only the one picked", async () => {
     const onChange = renderSettings(false);
-    expect(group("What counts").getByRole("button", { name: "Leg speed" })).toHaveAttribute(
+    expect(group("What counts").getByRole("button", { name: "Distance" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    await userEvent.click(group("What counts").getByRole("button", { name: "Strength (watts)" }));
+    expect(group("Slope").getByRole("button", { name: "Own slope each" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(group("What counts").getByRole("button", { name: "Leg speed" }));
     await userEvent.click(group("Rounds").getByRole("button", { name: "5 rounds" }));
-    expect(onChange.mock.calls).toEqual([[{ metric: "power" }], [{ rounds: 5 }]]);
+    expect(onChange.mock.calls).toEqual([[{ metric: "cadence" }], [{ rounds: 5 }]]);
+  });
+
+  it("offers own slopes by distance only", () => {
+    render(
+      <SettingsScreen
+        settings={{ ...DEFAULT_SETTINGS, metric: "cadence", slope: "gentle" }}
+        testMode={false}
+        onChange={() => undefined}
+        onDone={() => undefined}
+      />,
+    );
+    expect(group("Slope").getByRole("button", { name: "Own slope each" })).toBeDisabled();
+    expect(group("Slope").getByRole("button", { name: /^Wall/ })).toBeEnabled();
   });
 });

@@ -43,13 +43,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.countdownBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gap);
-}
-
 .countdown {
   font-size: clamp(6rem, 28vmin, 16rem);
   color: var(--yellow);
@@ -228,9 +221,10 @@
   white-space: nowrap;
 }
 
-/* Before "Go": the needle should stay in the green zone. */
+/* Power against the player's level: the mark is their level. */
 .gauge {
   position: relative;
+  flex-shrink: 0;
   width: min(22rem, 70vw);
   height: 1.4rem;
   border-radius: 999px;
@@ -238,23 +232,24 @@
   border: 3px solid var(--line);
 }
 
-.gaugeZone {
+.gaugeLevel {
   position: absolute;
-  inset-block: 0;
-  background: var(--mint);
-  opacity: 0.45;
+  inset-block: -0.3rem;
+  width: 4px;
+  background: var(--yellow);
+  transform: translateX(-50%);
 }
 
 .gaugeNeedle {
   position: absolute;
   top: -0.5rem;
   bottom: -0.5rem;
-  width: 6px;
-  border-radius: 3px;
+  width: 8px;
+  border-radius: 4px;
   background: var(--cream);
   transform: translateX(-50%);
 }
 
-.inZone {
+.good {
   background: var(--mint);
 }

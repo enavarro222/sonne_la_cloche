@@ -107,15 +107,33 @@ describe("starting a game", () => {
   it("uses the current settings", () => {
     const state = run(
       initialState([lea, tom], DEFAULT_SETTINGS),
-      { type: "settingsChanged", settings: { durationSec: 20, metric: "power" } },
+      { type: "settingsChanged", settings: { durationSec: 20, slope: "hill" } },
       { type: "gameStarted" },
     );
     expect(state.game?.settings).toEqual({
-      metric: "power",
+      metric: "distance",
       durationSec: 20,
       rounds: 4,
-      slope: "gentle",
+      slope: "hill",
     });
+  });
+
+  it("counts pedal turns when the bike measures no power", () => {
+    const state = run(initialState([lea, tom], DEFAULT_SETTINGS), {
+      type: "gameStarted",
+      measuresPower: false,
+    });
+    expect(state.game?.settings).toMatchObject({ metric: "cadence", slope: "gentle" });
+    // The settings themselves stay as chosen, for the next bike.
+    expect(state.settings).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it("keeps the slope consistent with the metric", () => {
+    const state = run(initialState([lea, tom], DEFAULT_SETTINGS), {
+      type: "settingsChanged",
+      settings: { metric: "cadence" },
+    });
+    expect(state.settings).toMatchObject({ metric: "cadence", slope: "gentle" });
   });
 });
 

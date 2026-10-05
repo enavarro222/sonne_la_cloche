@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../core/settings";
-import { loadRoster, loadSettings, saveRoster, saveSettings } from "./storage";
+import { loadRoster, loadSettings, migrateSettings, saveRoster, saveSettings } from "./storage";
 
 describe("storage", () => {
   afterEach(() => {
@@ -9,14 +9,23 @@ describe("storage", () => {
 
   it("round-trips roster and settings", () => {
     saveRoster([{ id: "1", name: "Léa" }]);
-    saveSettings({ metric: "power", durationSec: 45, rounds: 3, slope: "hill" });
+    saveSettings({ metric: "cadence", durationSec: 45, rounds: 3, slope: "hill" });
     expect(loadRoster()).toEqual([{ id: "1", name: "Léa" }]);
     expect(loadSettings()).toEqual({
-      metric: "power",
+      metric: "cadence",
       durationSec: 45,
       rounds: 3,
       slope: "hill",
     });
+  });
+
+  it("moves settings saved by 0.1 to the new default, keeping length and rounds", () => {
+    localStorage.setItem(
+      "sonne-la-cloche.settings",
+      JSON.stringify({ metric: "cadence", durationSec: 45, rounds: 3, resistance: "hard" }),
+    );
+    expect(loadSettings()).toEqual({ ...DEFAULT_SETTINGS, durationSec: 45, rounds: 3 });
+    expect(migrateSettings(null)).toBeNull();
   });
 
   it("falls back to defaults when nothing or garbage is stored", () => {

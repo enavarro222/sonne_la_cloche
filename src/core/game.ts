@@ -4,7 +4,7 @@
 
 import { canStart, normalizeName, type Player, validateName } from "./players";
 import { cleanStats, type RideSample, type RideStats } from "./ride";
-import type { Settings } from "./settings";
+import { consistent, forSensor, type Settings } from "./settings";
 
 /** The ride as it happened, for the activity export. */
 export interface RideTrace {
@@ -46,7 +46,8 @@ export type Action =
   | { type: "playerAdded"; player: Player }
   | { type: "playerRemoved"; id: string }
   | { type: "settingsChanged"; settings: Partial<Settings> }
-  | { type: "gameStarted" }
+  /** `measuresPower: false` turns a game by distance into one by pedal turns. */
+  | { type: "gameStarted"; measuresPower?: boolean }
   | {
       type: "rideFinished";
       points: number;
@@ -64,10 +65,10 @@ export const initialState = (roster: readonly Player[], settings: Settings): App
   game: null,
 });
 
-function newGame(state: AppState): Game {
+function newGame(state: AppState, measuresPower: boolean): Game {
   return {
     players: state.roster,
-    settings: state.settings,
+    settings: forSensor(state.settings, measuresPower),
     round: 1,
     turn: 0,
     phase: "riding",
@@ -90,10 +91,10 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, roster: state.roster.filter((p) => p.id !== action.id) };
     case "settingsChanged":
       if (game) return state;
-      return { ...state, settings: { ...state.settings, ...action.settings } };
+      return { ...state, settings: consistent({ ...state.settings, ...action.settings }) };
     case "gameStarted":
       if (!canStart(state.roster) || (game && !isGameOver(game))) return state;
-      return { ...state, game: newGame(state) };
+      return { ...state, game: newGame(state, action.measuresPower ?? true) };
     case "rideFinished": {
       if (game?.phase !== "riding") return state;
       const player = currentPlayer(game);
