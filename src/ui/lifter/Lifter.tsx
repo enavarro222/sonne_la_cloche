@@ -52,11 +52,7 @@ export function Lifter({ hold, gradePct, fleeing = false }: Props) {
 
   return (
     <svg
-      className={cx(
-        styles.lifter,
-        lifting && gradePct >= SHAKE_FROM && styles.shaking,
-        fleeing && styles.fleeing,
-      )}
+      className={styles.lifter}
       // Holding a steep track, he breathes hard.
       style={
         { "--breath": `${lifting ? Math.max(0.5, 1.4 - gradePct * 0.1) : 1.6}s` } as CSSProperties
@@ -76,26 +72,35 @@ export function Lifter({ hold, gradePct, fleeing = false }: Props) {
           <circle cx={rightHand.x} cy={rightHand.y + 1} r={3} />
         </g>
       )}
-      <g className={styles.legs}>
-        <polyline points={`32,${hip} 21,52 19,62`} />
-        <polyline points={`32,${hip} 43,52 45,62`} />
-      </g>
-      <line className={styles.shirt} x1={32} y1={24} x2={32} y2={hip} />
-      <circle
-        className={cx(styles.head, gradePct >= SHAKE_FROM && styles.red)}
-        cx={head.x}
-        cy={head.y}
-        r={9}
-      />
-      <circle className={styles.eye} cx={head.x - 3.5} cy={head.y - 1} r={1.2} />
-      <circle className={styles.eye} cx={head.x + 3.5} cy={head.y - 1} r={1.2} />
-      <path className={styles.mouth} d={mouth} />
-      {gradePct >= SWEAT_FROM && (
-        <g className={styles.sweat}>
-          <path d={`M ${head.x + 12} ${head.y - 8} q 2 4 0 5 q -2 -1 0 -5`} />
-          <path d={`M ${head.x - 13} ${head.y - 4} q 2 4 0 5 q -2 -1 0 -5`} />
+      {/* Only his body breathes and shakes: his hands stay on the track. */}
+      <g
+        className={cx(
+          styles.body,
+          lifting && gradePct >= SHAKE_FROM && styles.shaking,
+          fleeing && styles.still,
+        )}
+      >
+        <g className={styles.legs}>
+          <polyline points={`32,${hip} 21,52 19,62`} />
+          <polyline points={`32,${hip} 43,52 45,62`} />
         </g>
-      )}
+        <line className={styles.shirt} x1={32} y1={24} x2={32} y2={hip} />
+        <circle
+          className={cx(styles.head, gradePct >= SHAKE_FROM && styles.red)}
+          cx={head.x}
+          cy={head.y}
+          r={9}
+        />
+        <circle className={styles.eye} cx={head.x - 3.5} cy={head.y - 1} r={1.2} />
+        <circle className={styles.eye} cx={head.x + 3.5} cy={head.y - 1} r={1.2} />
+        <path className={styles.mouth} d={mouth} />
+        {gradePct >= SWEAT_FROM && (
+          <g className={styles.sweat}>
+            <path d={`M ${head.x + 12} ${head.y - 8} q 2 4 0 5 q -2 -1 0 -5`} />
+            <path d={`M ${head.x - 13} ${head.y - 4} q 2 4 0 5 q -2 -1 0 -5`} />
+          </g>
+        )}
+      </g>
     </svg>
   );
 }

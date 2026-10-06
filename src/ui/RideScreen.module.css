@@ -1,4 +1,6 @@
 .ride {
+  /* Nothing in a ride may make the screen scroll, even for a frame. */
+  overflow: clip;
   display: flex;
   flex-direction: column;
   align-items: center;

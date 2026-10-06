@@ -1,7 +1,4 @@
-/* Always alive: he breathes, faster as the slope he holds gets steeper. */
 .lifter {
-  animation: breathe var(--breath, 1.6s) ease-in-out infinite;
-  transform-origin: 50% 100%;
   display: block;
   overflow: visible;
   stroke-linecap: round;
@@ -45,6 +42,13 @@
   fill: var(--mint);
 }
 
+/* Always alive: he breathes, faster as the slope he holds gets steeper. */
+.body {
+  animation: breathe var(--breath, 1.6s) ease-in-out infinite;
+  transform-box: view-box;
+  transform-origin: 32px 64px;
+}
+
 @keyframes breathe {
   0%,
   100% {
@@ -73,12 +77,12 @@
 }
 
 /* Out of the way of the falling seconds. */
-.fleeing {
+.still {
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lifter,
+  .body,
   .shaking {
     animation: none;
   }
