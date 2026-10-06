@@ -56,8 +56,8 @@ from the tablet.
 ## Without a bike
 
 _Try without a bike_ turns the keyboard into pedals: press ← and → in turn,
-the faster the rhythm the faster you go (on a touch screen, tap the _Left
-foot_ and _Right foot_ buttons in turn). Same rules, same bell, same pictures
+the faster the rhythm the faster you go (on a touch screen, tap the _Left_
+and _Right_ buttons in turn). Same rules, same bell, same pictures
 to share: a real game on a laptop or a tablet. Only Strava is kept for rides
 on a real bike.
 

@@ -491,7 +491,15 @@ export function RideScreen({
               {t("ride.round", { round, rounds: settings.rounds })}
             </span>
           </p>
-          {course?.measuring && <p className={styles.calibration}>{t("ride.calibration")}</p>}
+          {/* Its room is kept in every round, so nothing moves when it goes. */}
+          {course && (
+            <p
+              className={cx(styles.calibration, !course.measuring && styles.unseen)}
+              aria-hidden={!course.measuring}
+            >
+              {t("ride.calibration")}
+            </p>
+          )}
         </div>
       </div>
 

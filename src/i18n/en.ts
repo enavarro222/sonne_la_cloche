@@ -182,8 +182,8 @@ export const en = {
     speedUnit: "km/h",
     slope: "{{percent}}\u00a0%",
     gauge: "Your power against your level",
-    leftFoot: "← Left foot",
-    rightFoot: "Right foot →",
+    leftFoot: "← Left",
+    rightFoot: "Right →",
   },
   result: {
     personalBest: "{{name}}, new personal best!",

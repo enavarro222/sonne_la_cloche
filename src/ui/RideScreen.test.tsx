@@ -183,6 +183,6 @@ describe("RideScreen", { timeout: 20_000 }, () => {
       advance(170);
     }
     expect(Number(screen.getByTestId("ride-score").textContent)).toBeGreaterThan(80);
-    expect(screen.getByRole("button", { name: "← Left foot" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "← Left" })).toBeInTheDocument();
   });
 });

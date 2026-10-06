@@ -42,6 +42,11 @@
   color: var(--cream-dim);
 }
 
+/* Takes its room without showing. */
+.unseen {
+  visibility: hidden;
+}
+
 /* Round 1 of "own slope each": it measures everyone's level. */
 .calibration {
   font-family: var(--font-text);
@@ -188,12 +193,14 @@
   left: 10px;
 }
 
+/* As tall with or without the pedal buttons: nothing above it moves. */
 .bottom {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: calc(var(--gap) * 2);
+  min-height: 4.5rem;
 }
 
 .sensors {

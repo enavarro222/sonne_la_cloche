@@ -185,8 +185,8 @@ export const fr: Translation = {
     speedUnit: "km/h",
     slope: "{{percent}}\u00a0%",
     gauge: "Ta puissance par rapport à ton niveau",
-    leftFoot: "← Pied gauche",
-    rightFoot: "Pied droit →",
+    leftFoot: "← Gauche",
+    rightFoot: "Droite →",
   },
   result: {
     personalBest: "{{name}}, nouveau record perso !",
