@@ -322,6 +322,8 @@ const tiltDeg = (gradePct: number) =>
  * same column, onto his head.
  */
 const LIFTER_COLUMN = 55;
+/** Height left above a full hourglass for the seconds on its surface. */
+const HOURGLASS_LABEL_ROOM = "4.5rem";
 /** The track stops where his left hand holds it. */
 const TRACK_END = LIFTER_COLUMN + LIFTER_WIDTH / 2 - HAND_X;
 /** The gauge goes up to this share of the player's level… */
@@ -396,7 +398,7 @@ export function RideScreen({
   const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
   const tilt = tiltDeg(gradePct);
   // The track leans around its middle: its far end rises by half its length.
-  const rise = ((sceneWidth - TRACK_END) / 2) * Math.sin((tilt * Math.PI) / 180);
+  const rise = ((sceneWidth - 2 * TRACK_END) / 2) * Math.sin((tilt * Math.PI) / 180);
   const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
     gradePct,
   );
@@ -461,7 +463,12 @@ export function RideScreen({
       <div className={styles.scene} ref={sceneRef}>
         <div
           className={styles.track}
-          style={{ width: `calc(100% - ${TRACK_END}px)`, transform: `rotate(${-tilt}deg)` }}
+          // Centred: the same margin on the left as the strongman's on the right.
+          style={{
+            width: `calc(100% - ${2 * TRACK_END}px)`,
+            marginLeft: `${TRACK_END}px`,
+            transform: `rotate(${-tilt}deg)`,
+          }}
         >
           <div
             className={cx(styles.bell, rung && styles.rung)}
@@ -519,7 +526,11 @@ export function RideScreen({
       */}
       <div
         className={cx(styles.hourglass, secondsLeft <= TICK_FROM_SEC && styles.urgent)}
-        style={{ height: `${(secondsLeft / settings.durationSec) * 100}%` }}
+        // Room is kept above a full hourglass for the seconds, which ride on
+        // top of its surface: readable down to the very bottom.
+        style={{
+          height: `calc((100% - ${HOURGLASS_LABEL_ROOM}) * ${secondsLeft / settings.durationSec})`,
+        }}
       >
         <p className={styles.timer}>
           <FixedDigits>{seconds}</FixedDigits>

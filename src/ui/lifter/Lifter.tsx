@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cx } from "../cx";
 import styles from "./Lifter.module.css";
 
@@ -60,6 +61,10 @@ export function Lifter({ rise, gradePct, fleeing = false }: Props) {
         lifting && gradePct >= SHAKE_FROM && styles.shaking,
         fleeing && styles.fleeing,
       )}
+      // Holding a steep track, he breathes hard.
+      style={
+        { "--breath": `${lifting ? Math.max(0.5, 1.4 - gradePct * 0.1) : 1.6}s` } as CSSProperties
+      }
       width={WIDTH}
       height={(BODY_HEIGHT + y) * SCALE}
       viewBox={`0 0 ${DRAWING_WIDTH} ${BODY_HEIGHT + y}`}

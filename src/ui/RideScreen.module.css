@@ -73,7 +73,7 @@
 /* Centred on the strongman's column (LIFTER_COLUMN in RideScreen.tsx). */
 .timer {
   position: absolute;
-  top: 0.3rem;
+  bottom: calc(100% + 0.3rem);
   right: calc(clamp(1rem, 3vw, 2.5rem) + 55px);
   transform: translateX(50%);
   font-family: var(--font-display);
