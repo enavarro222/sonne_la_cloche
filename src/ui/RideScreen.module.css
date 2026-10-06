@@ -77,14 +77,13 @@
   border-top-color: rgb(255 59 119 / 0.45);
 }
 
-/* Centred on the strongman's column: `right` is set in RideScreen.tsx. */
+/* Against the right edge, over the strongman's column: `right` is set in RideScreen.tsx. */
 .timer {
   position: absolute;
   bottom: calc(100% + 0.3rem);
-  transform: translateX(50%);
   font-family: var(--font-display);
   /* Not too big: the track gives way to the column the seconds come down. */
-  font-size: clamp(1.5rem, 4.5vmin, 2.4rem);
+  font-size: clamp(1.2rem, 3.6vmin, 2rem);
   line-height: 1;
   color: var(--mint);
   font-variant-numeric: tabular-nums;

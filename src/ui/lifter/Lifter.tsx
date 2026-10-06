@@ -6,8 +6,11 @@ import styles from "./Lifter.module.css";
 // of the track with stretchy arms: the steeper the slope, the redder his face.
 // Drawn in pixels; his arms reach outside his own box, up to the track.
 
-/** His box: head, body and legs, px. Smaller than the cyclist. */
-export const SIZE = 64;
+/** His drawing is 64 units square… */
+const DRAWING = 64;
+/** …shown this big (px): a bit smaller than the cyclist. */
+export const SIZE = 80;
+const SCALE = SIZE / DRAWING;
 
 /** From this grade (%) he sweats… */
 const SWEAT_FROM = 5;
@@ -24,8 +27,9 @@ interface Props {
   fleeing?: boolean;
 }
 
-export function Lifter({ hold, gradePct, fleeing = false }: Props) {
+export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
   const lifting = gradePct > 0 && !fleeing;
+  const hold = { x: holdPx.x / SCALE, y: holdPx.y / SCALE };
   const head = { x: 32, y: 14 };
   const shoulders = { left: { x: 24, y: 26 }, right: { x: 40, y: 26 } };
   const hip = 44;
@@ -59,7 +63,7 @@ export function Lifter({ hold, gradePct, fleeing = false }: Props) {
       }
       width={SIZE}
       height={SIZE}
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      viewBox={`0 0 ${DRAWING} ${DRAWING}`}
       aria-hidden="true"
     >
       <g className={styles.arms}>

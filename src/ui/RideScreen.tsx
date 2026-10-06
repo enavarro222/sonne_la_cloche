@@ -363,7 +363,7 @@ const MAIN_PADDING = "clamp(1rem, 3vw, 2.5rem)";
  * they are plus this margin (px); the strongman stands at its foot and the
  * track stops short of it, whatever the screen size.
  */
-const COLUMN_MARGIN = 20;
+const COLUMN_MARGIN = 8;
 /** Where his hands hold the track, short of its end, px. */
 const HOLD_INSET = 14;
 /** How far he runs right when he lets go: off the screen (px). */
@@ -600,11 +600,7 @@ export function RideScreen({
           height: `calc((100% - ${HOURGLASS_LABEL_ROOM}) * ${secondsLeft / settings.durationSec})`,
         }}
       >
-        <p
-          className={styles.timer}
-          ref={timerRef}
-          style={{ right: `calc(${MAIN_PADDING} + ${column / 2}px)` }}
-        >
+        <p className={styles.timer} ref={timerRef} style={{ right: MAIN_PADDING }}>
           <FixedDigits>{seconds}</FixedDigits>
           <small>{t("ride.secondsUnit")}</small>
         </p>
