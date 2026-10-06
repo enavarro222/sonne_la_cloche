@@ -294,22 +294,26 @@ function useLiveReading(active: boolean, sensor: Sensor): SensorReading {
 }
 
 /** An element's width in pixels, kept up to date. */
-function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
+function useWidth<T extends HTMLElement>({ widest = false } = {}): [RefObject<T | null>, number] {
   const ref = useRef<T>(null);
   const [width, setWidth] = useState(0);
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    setWidth(element.getBoundingClientRect().width);
+    // `widest`: the largest width seen so far, never shrinking.
+    const update = (next: number) => {
+      setWidth((current) => (widest ? Math.max(current, next) : next));
+    };
+    update(element.getBoundingClientRect().width);
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) setWidth(entry.contentRect.width);
+      if (entry) update(entry.contentRect.width);
     });
     observer.observe(element);
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [widest]);
   return [ref, width];
 }
 
@@ -434,7 +438,9 @@ export function RideScreen({
   const reading = stage.name === "racing" ? ride.reading : live;
   const { gradePct, finale } = ride;
   const [rideRef, sceneRef, layout] = useRideLayout();
-  const [timerRef, timerWidth] = useWidth<HTMLParagraphElement>();
+  // The widest the seconds have been ("20,0 s" before "9,9 s"): the column,
+  // and so the track, must not change size as digits drop.
+  const [timerRef, timerWidth] = useWidth<HTMLParagraphElement>({ widest: true });
   const tilt = tiltDeg(gradePct);
   const column = Math.max(timerWidth, LIFTER_SIZE) + COLUMN_MARGIN;
   // The last seconds come down his column: he gets out of the way. He steps
