@@ -74,8 +74,7 @@
 
 /* Out of the way of the falling seconds. */
 .fleeing {
-  translate: 45% 0;
-  transition: translate 0.3s ease-out;
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

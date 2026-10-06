@@ -322,6 +322,10 @@ const tiltDeg = (gradePct: number) =>
  * same column, onto his head.
  */
 const LIFTER_COLUMN = 55;
+/** How far he steps left, under the track, to let the last seconds by (px). */
+const DODGE_SHIFT = 70;
+/** How far he runs right when he lets go: off the screen (px). */
+const FLEE_SHIFT = 200;
 /** Height left above a full hourglass for the seconds on its surface. */
 const HOURGLASS_LABEL_ROOM = "4.5rem";
 /** The track stops where his left hand holds it. */
@@ -397,8 +401,16 @@ export function RideScreen({
   const { gradePct, finale } = ride;
   const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
   const tilt = tiltDeg(gradePct);
-  // The track leans around its middle: its far end rises by half its length.
-  const rise = ((sceneWidth - 2 * TRACK_END) / 2) * Math.sin((tilt * Math.PI) / 180);
+  // The last seconds come down his column: he gets out of the way. He steps
+  // under the track and holds on, unless the finale sends him running.
+  const dodging =
+    stage.name === "racing" && remainingSec(progress, settings.durationSec) <= FINALE_SEC;
+  const fleeing = finale === "flee";
+  const shift = fleeing ? FLEE_SHIFT : dodging ? -DODGE_SHIFT : 0;
+  // The track leans around its middle: where his hand holds it, it rises by
+  // that distance from the middle.
+  const handFromMiddle = (sceneWidth - 2 * TRACK_END) / 2 + Math.min(0, shift);
+  const rise = handFromMiddle * Math.sin((tilt * Math.PI) / 180);
   const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
     gradePct,
   );
@@ -497,9 +509,10 @@ export function RideScreen({
           style={{
             right: `${LIFTER_COLUMN - LIFTER_WIDTH / 2}px`,
             top: `calc(100% - ${rise}px)`,
+            translate: `${shift}px 0`,
           }}
         >
-          <Lifter rise={rise} gradePct={gradePct} fleeing={finale === "flee"} />
+          <Lifter rise={rise} gradePct={gradePct} fleeing={fleeing} />
         </div>
       </div>
 

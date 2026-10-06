@@ -273,6 +273,7 @@
 .lifter {
   position: absolute;
   pointer-events: none;
+  transition: translate 0.35s ease-out;
 }
 
 /* Power against the player's level: the mark is their level. */
