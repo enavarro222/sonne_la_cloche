@@ -32,8 +32,9 @@
   stroke-width: 4;
 }
 
+/* Like the cyclist's shorts: they must show on the indigo background. */
 .shorts {
-  stroke: var(--night-light);
+  stroke: var(--pink-dark);
   stroke-width: 7;
 }
 
