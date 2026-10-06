@@ -47,8 +47,11 @@ speed and slope; the gauge; the track; cadence and watts.
   end by a little strongman with stretchy arms (sweating from 5 %, red and
   shaking from 8 %). Same for a common slope, whatever counts.
 - **Before "Go"**: the speed shown is the one the flying start will give.
-- **Last 5 s**: the seconds come down the strongman's column; he steps
-  left under the track and holds on, so they pass him by.
+- **The strongman** stands at the bottom of the screen, at the foot of the
+  column the seconds come down (as wide as they are, so the track stops
+  short of it on any screen), and holds the track's end with stretchy arms.
+- **Last 5 s**: as the seconds reach him, he steps left under the track and
+  holds on, so they pass him by.
 - **Last-seconds twist** (option in ⚙, off by default): as the last 5 s
   start (the seconds reach the strongman, standing right of the track), the
   game compares the rider with the bell's pace, once. Ahead: he lifts the

@@ -30,7 +30,7 @@ import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
 import { advanceCrank } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
-import { HAND_X, Lifter, WIDTH as LIFTER_WIDTH } from "./lifter/Lifter";
+import { Lifter, SIZE as LIFTER_SIZE } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
@@ -313,23 +313,57 @@ function useWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
   return [ref, width];
 }
 
+/**
+ * The ride screen's geometry: the scene's width, and the gap between the
+ * bottom of the track's scene and the bottom of the screen, where the
+ * strongman stands.
+ */
+function useRideLayout(): [
+  RefObject<HTMLDivElement | null>,
+  RefObject<HTMLDivElement | null>,
+  { sceneWidth: number; gap: number },
+] {
+  const rideRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState({ sceneWidth: 0, gap: 0 });
+  useEffect(() => {
+    const ride = rideRef.current;
+    const scene = sceneRef.current;
+    if (!ride || !scene) return;
+    const measure = () => {
+      const r = ride.getBoundingClientRect();
+      const s = scene.getBoundingClientRect();
+      setLayout({ sceneWidth: s.width, gap: r.bottom - s.bottom });
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(ride);
+    observer.observe(scene);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  return [rideRef, sceneRef, layout];
+}
+
 /** The track leans twice the real angle, up to 8°: a 2 % slope must show. */
 const tiltDeg = (gradePct: number) =>
   Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
-/**
- * The strongman stands right of the track, in a column whose middle is this
- * far from the right edge (px): the seconds of the hourglass come down that
- * same column, onto his head.
- */
-const LIFTER_COLUMN = 55;
-/** How far he steps left, under the track, to let the last seconds by (px). */
-const DODGE_SHIFT = 70;
-/** How far he runs right when he lets go: off the screen (px). */
-const FLEE_SHIFT = 200;
 /** Height left above a full hourglass for the seconds on its surface. */
 const HOURGLASS_LABEL_ROOM = "4.5rem";
-/** The track stops where his left hand holds it. */
-const TRACK_END = LIFTER_COLUMN + LIFTER_WIDTH / 2 - HAND_X;
+/** Same as the horizontal padding of `.main` (App.module.css). */
+const MAIN_PADDING = "clamp(1rem, 3vw, 2.5rem)";
+/**
+ * The seconds of the hourglass come down a column on the right, as wide as
+ * they are plus this margin (px); the strongman stands at its foot and the
+ * track stops short of it, whatever the screen size.
+ */
+const COLUMN_MARGIN = 20;
+/** Where his hands hold the track, short of its end, px. */
+const HOLD_INSET = 14;
+/** How far he runs right when he lets go: off the screen (px). */
+const FLEE_SHIFT = 240;
 /** The gauge goes up to this share of the player's level… */
 const GAUGE_MAX = 1.5;
 /** …and its needle turns green from this share on. */
@@ -399,18 +433,25 @@ export function RideScreen({
   const live = useLiveReading(stage.name !== "racing" && target !== null, sensor);
   const reading = stage.name === "racing" ? ride.reading : live;
   const { gradePct, finale } = ride;
-  const [sceneRef, sceneWidth] = useWidth<HTMLDivElement>();
+  const [rideRef, sceneRef, layout] = useRideLayout();
+  const [timerRef, timerWidth] = useWidth<HTMLParagraphElement>();
   const tilt = tiltDeg(gradePct);
+  const column = Math.max(timerWidth, LIFTER_SIZE) + COLUMN_MARGIN;
   // The last seconds come down his column: he gets out of the way. He steps
-  // under the track and holds on, unless the finale sends him running.
+  // left under the track and holds on, unless the finale sends him running.
   const dodging =
     stage.name === "racing" && remainingSec(progress, settings.durationSec) <= FINALE_SEC;
   const fleeing = finale === "flee";
-  const shift = fleeing ? FLEE_SHIFT : dodging ? -DODGE_SHIFT : 0;
-  // The track leans around its middle: where his hand holds it, it rises by
-  // that distance from the middle.
-  const handFromMiddle = (sceneWidth - 2 * TRACK_END) / 2 + Math.min(0, shift);
-  const rise = handFromMiddle * Math.sin((tilt * Math.PI) / 180);
+  const shift = fleeing ? FLEE_SHIFT : dodging ? -(column / 2 + LIFTER_SIZE / 2 + 8) : 0;
+  // He stands at the foot of the column, at the bottom of the screen.
+  const left = layout.sceneWidth - column / 2 - LIFTER_SIZE / 2;
+  const trackEnd = layout.sceneWidth - column;
+  // His hands hold the track near its end, or straight above him once under it.
+  const holdX = Math.min(trackEnd - HOLD_INSET, left + shift + LIFTER_SIZE / 2);
+  // The track leans around its middle: at his hands it rises by their
+  // distance from the middle.
+  const rise = (holdX - layout.sceneWidth / 2) * Math.sin((tilt * Math.PI) / 180);
+  const hold = { x: holdX - (left + shift), y: LIFTER_SIZE - layout.gap - rise };
   const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
     gradePct,
   );
@@ -435,7 +476,7 @@ export function RideScreen({
   const speed = stage.name === "racing" ? progress.speed : (course?.startSpeed ?? 0);
 
   return (
-    <div className={styles.ride}>
+    <div className={styles.ride} ref={rideRef}>
       <div className={styles.top}>
         <div className={styles.heading}>
           <p className={styles.who}>
@@ -477,8 +518,8 @@ export function RideScreen({
           className={styles.track}
           // Centred: the same margin on the left as the strongman's on the right.
           style={{
-            width: `calc(100% - ${2 * TRACK_END}px)`,
-            marginLeft: `${TRACK_END}px`,
+            width: `calc(100% - ${2 * column}px)`,
+            marginLeft: `${column}px`,
             transform: `rotate(${-tilt}deg)`,
           }}
         >
@@ -507,12 +548,12 @@ export function RideScreen({
         <div
           className={styles.lifter}
           style={{
-            right: `${LIFTER_COLUMN - LIFTER_WIDTH / 2}px`,
-            top: `calc(100% - ${rise}px)`,
+            left: `${left}px`,
+            top: `calc(100% + ${layout.gap - LIFTER_SIZE}px)`,
             translate: `${shift}px 0`,
           }}
         >
-          <Lifter rise={rise} gradePct={gradePct} fleeing={fleeing} />
+          <Lifter hold={hold} gradePct={gradePct} fleeing={fleeing} />
         </div>
       </div>
 
@@ -545,7 +586,11 @@ export function RideScreen({
           height: `calc((100% - ${HOURGLASS_LABEL_ROOM}) * ${secondsLeft / settings.durationSec})`,
         }}
       >
-        <p className={styles.timer}>
+        <p
+          className={styles.timer}
+          ref={timerRef}
+          style={{ right: `calc(${MAIN_PADDING} + ${column / 2}px)` }}
+        >
           <FixedDigits>{seconds}</FixedDigits>
           <small>{t("ride.secondsUnit")}</small>
         </p>
