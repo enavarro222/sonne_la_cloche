@@ -1,4 +1,4 @@
-import { type SubmitEvent, useState } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   canStart,
@@ -10,6 +10,8 @@ import {
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
+import { Cyclist } from "./cyclist/Cyclist";
+import { advanceCrank } from "./cyclist/geometry";
 import styles from "./HomeScreen.module.css";
 import type { SensorState } from "./useSensor";
 
@@ -109,6 +111,39 @@ function BikeCard({
       ) : (
         connection.kind === "none" && <p className={styles.help}>{t("home.bike.help")}</p>
       )}
+    </div>
+  );
+}
+
+/** Gentle pedaling for the drawing on the home screen, in rpm. */
+const IDLE_CADENCE = 45;
+
+/**
+ * The cyclist on a sheet of paper, as on the track: it pedals gently while
+ * the screen waits (still, if the device asks for less motion).
+ */
+function PaperRider() {
+  const [crankAngle, setCrankAngle] = useState(0);
+  useEffect(() => {
+    const still =
+      typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still) return;
+    let last = performance.now();
+    let raf = 0;
+    const step = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      setCrankAngle((angle) => advanceCrank(angle, IDLE_CADENCE, dt));
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return (
+    <div className={styles.paper} aria-hidden="true">
+      <Cyclist crankAngle={crankAngle} moving />
     </div>
   );
 }
@@ -214,6 +249,7 @@ export function HomeScreen({
             </li>
           ))}
         </ul>
+        <PaperRider />
       </section>
 
       <section className={styles.side}>

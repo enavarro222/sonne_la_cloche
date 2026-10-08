@@ -34,7 +34,7 @@ export const fr: Translation = {
       connect: "Connecter le vélo",
       demo: "Essayer sans vélo",
       demoOn:
-        "Mode démo : pendant la course, pédale en appuyant tour à tour sur ← et →. Sur écran tactile, touche tour à tour les boutons « Pied gauche » et « Pied droit ».",
+        "Mode démo : pendant la course, pédale en appuyant tour à tour sur ← et →. Sur écran tactile, touche tour à tour les boutons « Gauche » et « Droite ».",
       connected: "✓ {{name}} connecté ({{protocol}})",
       connectedControlled: "✓ {{name}} connecté ({{protocol}}), pente pilotée par le jeu",
       change: "Changer de vélo",

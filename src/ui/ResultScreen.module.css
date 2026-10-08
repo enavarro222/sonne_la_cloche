@@ -82,9 +82,15 @@
   margin-bottom: 0.6rem;
 }
 
+/* A paper score sheet, like the track the riders ride on. */
 .tableScroll {
   min-height: 0;
   overflow-y: auto;
+  padding: 0.4rem 0.8rem;
+  border-radius: 22px;
+  background: var(--paper);
+  border: 4px solid var(--paper-edge);
+  color: var(--night);
 }
 
 .ranking {
@@ -97,7 +103,7 @@
 
 .ranking thead th {
   font-size: 0.8em;
-  color: var(--cream-faint);
+  color: rgb(27 20 100 / 0.55);
   font-weight: 900;
 }
 
@@ -108,7 +114,7 @@
 .ranking td,
 .ranking tbody th {
   padding: 0.5rem 0.6rem;
-  background: var(--surface);
+  background: rgb(255 255 255 / 0.3);
   font-size: 1.1em;
   text-align: center;
 }
@@ -135,7 +141,7 @@
 .rank {
   font-family: var(--font-display);
   font-weight: 400;
-  color: var(--yellow);
+  color: var(--pink-dark);
 }
 
 .me .rank {
@@ -151,7 +157,7 @@
 }
 
 .roundCol {
-  color: var(--cream-dim);
+  color: rgb(27 20 100 / 0.7);
 }
 
 .ranking td.roundCol {
@@ -159,7 +165,7 @@
 }
 
 .nowCol {
-  color: var(--cream);
+  color: var(--night);
 }
 
 .totalCol {
@@ -263,6 +269,10 @@
   font-family: var(--font-text);
   font-weight: 700;
   font-size: 0.75em;
-  color: var(--cream-faint);
+  color: rgb(27 20 100 / 0.55);
   white-space: nowrap;
+}
+
+.me .nameSlope {
+  color: rgb(255 255 255 / 0.75);
 }

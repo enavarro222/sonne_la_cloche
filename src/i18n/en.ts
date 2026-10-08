@@ -33,7 +33,7 @@ export const en = {
       connect: "Connect the bike",
       demo: "Try without a bike",
       demoOn:
-        "Demo mode: during the ride, pedal by pressing ← and → in turn. On a touch screen, tap the “Left foot” and “Right foot” buttons in turn.",
+        "Demo mode: during the ride, pedal by pressing ← and → in turn. On a touch screen, tap the “Left” and “Right” buttons in turn.",
       connected: "✓ {{name}} connected ({{protocol}})",
       connectedControlled: "✓ {{name}} connected ({{protocol}}), slope set by the game",
       change: "Change bike",
