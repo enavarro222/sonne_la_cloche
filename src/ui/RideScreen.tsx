@@ -556,7 +556,7 @@ export function RideScreen({
             className={styles.bike}
             style={{ left: lane(trackPosition(progress.points, track.target)) }}
           >
-            <Cyclist crankAngle={crankAngle} />
+            <Cyclist crankAngle={crankAngle} moving={reading.cadence > 0} />
           </div>
         </div>
         <div
