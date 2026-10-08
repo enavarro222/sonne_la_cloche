@@ -62,13 +62,20 @@ interface Props {
   /** Where his pole holds the track, px from the top left of his box (y < 0: above him). */
   hold: { x: number; y: number };
   gradePct: number;
+  /** He sees the finale coming: eyes up at the falling seconds, he panics. */
+  alarmed?: boolean;
   /** The time is falling on his head: he lets go and runs, arms over his head. */
   fleeing?: boolean;
 }
 
-export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
+export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = false }: Props) {
   const lifting = gradePct > 0 && !fleeing;
   const straining = lifting && gradePct >= SHAKE_FROM;
+  const scared = alarmed || fleeing;
+  const sweating = scared || (lifting && gradePct >= SWEAT_FROM);
+  // Scared, he looks up at the seconds coming down, eyes wide.
+  const eyeY = scared ? HEAD.y - 2 : HEAD.y - 0.5;
+  const eyeR = scared ? 1.4 : 1;
   const hold = { x: holdPx.x / SCALE, y: holdPx.y / SCALE };
   // The pole goes from just below his grip up to the track.
   const toTrack = { x: hold.x - GRIP.x, y: hold.y - GRIP.y };
@@ -88,7 +95,7 @@ export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
     left: elbow(SHOULDERS.left, hands.left, -1),
     right: elbow(SHOULDERS.right, hands.right, 1),
   };
-  const mouth = fleeing
+  const mouth = scared
     ? `M ${HEAD.x - 1.6} ${HEAD.y + 4.5} a 1.6 1.6 0 1 0 3.2 0 a 1.6 1.6 0 1 0 -3.2 0`
     : gradePct < 3
       ? `M ${HEAD.x - 3} ${HEAD.y + 4.5} q 3 2.5 6 0`
@@ -116,7 +123,14 @@ export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
         <polyline points={points(SHOULDERS.right, elbows.right, hands.right)} />
       </g>
       {/* Only his body breathes and shakes: his hands stay on the pole. */}
-      <g className={cx(styles.body, straining && styles.shaking, fleeing && styles.still)}>
+      <g
+        className={cx(
+          styles.body,
+          straining && styles.shaking,
+          alarmed && styles.panicking,
+          fleeing && styles.running,
+        )}
+      >
         <g className={styles.legs}>
           <polyline points={points(HIPS.left, { x: 22, y: 51 }, { x: 22, y: 60 })} />
           <polyline points={points(HIPS.right, { x: 42, y: 51 }, { x: 42, y: 60 })} />
@@ -137,9 +151,9 @@ export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
           r={7}
         />
         <path className={styles.hair} d={`M ${HEAD.x - 6} ${HEAD.y - 3} q 6 -7 12 0`} />
-        <circle className={styles.eye} cx={HEAD.x - 2.6} cy={HEAD.y - 0.5} r={1} />
-        <circle className={styles.eye} cx={HEAD.x + 2.6} cy={HEAD.y - 0.5} r={1} />
-        {lifting && gradePct >= SWEAT_FROM && (
+        <circle className={styles.eye} cx={HEAD.x - 2.6} cy={eyeY} r={eyeR} />
+        <circle className={styles.eye} cx={HEAD.x + 2.6} cy={eyeY} r={eyeR} />
+        {lifting && gradePct >= SWEAT_FROM && !scared && (
           <g className={styles.cheeks}>
             <circle cx={HEAD.x - 4.2} cy={HEAD.y + 2.5} r={1.4} />
             <circle cx={HEAD.x + 4.2} cy={HEAD.y + 2.5} r={1.4} />
@@ -151,13 +165,20 @@ export function Lifter({ hold: holdPx, gradePct, fleeing = false }: Props) {
           d={`M ${HEAD.x} ${HEAD.y + 2.6} q -2.5 -1.5 -4.5 0.5 q 1 -0.2 1.5 0.8 M ${HEAD.x} ${HEAD.y + 2.6} q 2.5 -1.5 4.5 0.5 q -1 -0.2 -1.5 0.8`}
         />
         <path className={styles.mouth} d={mouth} />
-        {lifting && gradePct >= SWEAT_FROM && (
-          <g className={styles.sweat}>
+        {sweating && (
+          <g className={cx(styles.sweat, scared && styles.dripping)}>
             <path d={`M ${HEAD.x + 9} ${HEAD.y - 6} q 1.6 3.2 0 4 q -1.6 -0.8 0 -4`} />
             <path d={`M ${HEAD.x - 9.5} ${HEAD.y - 3} q 1.6 3.2 0 4 q -1.6 -0.8 0 -4`} />
           </g>
         )}
       </g>
+      {/* A big "!" by his head: something is coming. */}
+      {alarmed && (
+        <g className={styles.alarm}>
+          <line x1={HEAD.x + 14} y1={HEAD.y - 14} x2={HEAD.x + 13} y2={HEAD.y - 4} />
+          <circle cx={HEAD.x + 12.8} cy={HEAD.y + 0.5} r={1.6} />
+        </g>
+      )}
       <g className={styles.hands}>
         <circle cx={hands.left.x} cy={hands.left.y} r={2.6} />
         <circle cx={hands.right.x} cy={hands.right.y} r={2.6} />

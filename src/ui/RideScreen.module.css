@@ -1,6 +1,8 @@
 .ride {
-  /* Nothing in a ride may make the screen scroll, even for a frame. */
-  overflow: clip;
+  /* Nothing in a ride may make the screen scroll, even for a frame. Sideways,
+     the strongman may run past it to the screen's edge (`main` clips there). */
+  overflow-x: visible;
+  overflow-y: clip;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -308,7 +310,13 @@
 .lifter {
   position: absolute;
   pointer-events: none;
-  transition: translate 0.35s ease-out;
+  /* Slow enough to be seen stepping aside. */
+  transition: translate 0.6s ease-out;
+}
+
+/* Running away: he takes off, then runs flat out (to the screen's edge, or off it). */
+.fleeing {
+  transition: translate 1.5s cubic-bezier(0.5, 0, 0.4, 1);
 }
 
 /* Power against the player's level: the mark is their level. */

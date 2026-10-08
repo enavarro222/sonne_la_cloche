@@ -320,18 +320,18 @@ function useWidth<T extends HTMLElement>({ widest = false } = {}): [RefObject<T 
 }
 
 /**
- * The ride screen's geometry: the scene's width, and the gap between the
- * bottom of the track's scene and the bottom of the screen, where the
- * strongman stands.
+ * The ride screen's geometry: the scene's width, the gap between the bottom
+ * of the track's scene and the bottom of the screen, where the strongman
+ * stands, and the room on the right of the scene before the screen's edge.
  */
 function useRideLayout(): [
   RefObject<HTMLDivElement | null>,
   RefObject<HTMLDivElement | null>,
-  { sceneWidth: number; gap: number },
+  { sceneWidth: number; gap: number; roomRight: number },
 ] {
   const rideRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const [layout, setLayout] = useState({ sceneWidth: 0, gap: 0 });
+  const [layout, setLayout] = useState({ sceneWidth: 0, gap: 0, roomRight: 0 });
   useEffect(() => {
     const ride = rideRef.current;
     const scene = sceneRef.current;
@@ -339,7 +339,9 @@ function useRideLayout(): [
     const measure = () => {
       const r = ride.getBoundingClientRect();
       const s = scene.getBoundingClientRect();
-      setLayout({ sceneWidth: s.width, gap: r.bottom - s.bottom });
+      // `main` clips what goes past it: the screen's edge, as it is full width.
+      const edge = (scene.closest("main") ?? document.documentElement).getBoundingClientRect();
+      setLayout({ sceneWidth: s.width, gap: r.bottom - s.bottom, roomRight: edge.right - s.right });
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
@@ -356,6 +358,37 @@ function useRideLayout(): [
 /** The track leans twice the real angle, up to 8°: a 2 % slope must show. */
 const tiltDeg = (gradePct: number) =>
   Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
+/** How long the track takes to tilt to a new slope, e.g. at the finale (ms). */
+const TILT_MS = 1100;
+/** Ease out with a little overshoot: the track bounces as it settles. */
+const easeOutBack = (t: number) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;
+
+/**
+ * `target`, reached over `durationMs` instead of at once: the track lifts or
+ * falls where everyone can see it (at once if the device asks for less motion).
+ */
+function useEased(target: number, durationMs: number): number {
+  const [shown, setShown] = useState(target);
+  const shownRef = useLatest(shown);
+  const still =
+    typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  useEffect(() => {
+    const from = shownRef.current;
+    if (still || from === target) return;
+    const start = performance.now();
+    let raf = 0;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      setShown(from + (target - from) * easeOutBack(t));
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, [target, durationMs, still, shownRef]);
+  return still ? target : shown;
+}
 /** Height left above a full hourglass for the seconds on its surface. */
 const HOURGLASS_LABEL_ROOM = "4.5rem";
 /** The horizontal padding of `.main` (App.module.css). */
@@ -368,8 +401,12 @@ const MAIN_PADDING = "var(--main-padding-inline)";
 const COLUMN_MARGIN = 8;
 /** Where his hands hold the track, short of its end, px. */
 const HOLD_INSET = 14;
-/** How far he runs right when he lets go: off the screen (px). */
-const FLEE_SHIFT = 240;
+/** He sees the finale coming this many seconds ahead: he panics. */
+const FINALE_WARNING_SEC = 3;
+/** When he runs away, he stops this far from the screen's edge (px)… */
+const EDGE_MARGIN = 12;
+/** …if he can get that far from the falling seconds; if not, he runs off the screen. */
+const FLEE_MIN = LIFTER_SIZE;
 /** The gauge goes up to this share of the player's level… */
 const GAUGE_MAX = 1.5;
 /** …and its needle turns green from this share on. */
@@ -443,23 +480,31 @@ export function RideScreen({
   // The widest the seconds have been ("20,0 s" before "9,9 s"): the column,
   // and so the track, must not change size as digits drop.
   const [timerRef, timerWidth] = useWidth<HTMLParagraphElement>({ widest: true });
-  const tilt = tiltDeg(gradePct);
+  const tilt = useEased(tiltDeg(gradePct), TILT_MS);
   const column = Math.max(timerWidth, LIFTER_SIZE) + COLUMN_MARGIN;
   // The last seconds come down his column: he gets out of the way. He steps
   // left under the track and holds on, unless the finale sends him running.
-  const dodging =
-    stage.name === "racing" && remainingSec(progress, settings.durationSec) <= FINALE_SEC;
+  // With the finale on, he sees it coming: he panics a few seconds before.
+  const timeLeft = remainingSec(progress, settings.durationSec);
+  const racing = stage.name === "racing";
+  const dodging = racing && timeLeft <= FINALE_SEC;
+  const alarmed =
+    racing && settings.finale === "on" && !finale && timeLeft <= FINALE_SEC + FINALE_WARNING_SEC;
   const fleeing = finale === "flee";
-  const shift = fleeing ? FLEE_SHIFT : dodging ? -(column / 2 + LIFTER_SIZE / 2 + 8) : 0;
   // He stands at the foot of the column, at the bottom of the screen.
-  const left = layout.sceneWidth - column / 2 - LIFTER_SIZE / 2;
+  const x = layout.sceneWidth - column / 2 - LIFTER_SIZE / 2;
+  // Running away, he stops at the screen's edge if that is far enough from
+  // the falling seconds (a wide screen); if not, he runs off the screen.
+  const toEdge = layout.sceneWidth - (x + LIFTER_SIZE) + layout.roomRight - EDGE_MARGIN;
+  const fleeShift = toEdge >= FLEE_MIN ? toEdge : toEdge + LIFTER_SIZE + 2 * EDGE_MARGIN;
+  const shift = fleeing ? fleeShift : dodging ? -(column / 2 + LIFTER_SIZE / 2 + 8) : 0;
   const trackEnd = layout.sceneWidth - column;
   // His hands hold the track near its end, or straight above him once under it.
-  const holdX = Math.min(trackEnd - HOLD_INSET, left + shift + LIFTER_SIZE / 2);
+  const holdX = Math.min(trackEnd - HOLD_INSET, x + shift + LIFTER_SIZE / 2);
   // The track leans around its middle: at his hands it rises by their
   // distance from the middle.
   const rise = (holdX - layout.sceneWidth / 2) * Math.sin((tilt * Math.PI) / 180);
-  const hold = { x: holdX - (left + shift), y: LIFTER_SIZE - layout.gap - rise };
+  const hold = { x: holdX - (x + shift), y: LIFTER_SIZE - layout.gap - rise };
   const percent = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 }).format(
     gradePct,
   );
@@ -568,14 +613,14 @@ export function RideScreen({
           </div>
         </div>
         <div
-          className={styles.lifter}
+          className={cx(styles.lifter, fleeing && styles.fleeing)}
           style={{
-            left: `${left}px`,
+            left: `${x}px`,
             top: `calc(100% + ${layout.gap - LIFTER_SIZE}px)`,
             translate: `${shift}px 0`,
           }}
         >
-          <Lifter hold={hold} gradePct={gradePct} fleeing={fleeing} />
+          <Lifter hold={hold} gradePct={gradePct} alarmed={alarmed} fleeing={fleeing} />
         </div>
       </div>
 
