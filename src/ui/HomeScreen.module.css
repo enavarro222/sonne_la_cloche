@@ -97,7 +97,7 @@
   font-size: 1.1em;
 }
 
-/* The first to ride: pedaling, underlined in pink felt pen. */
+/* The first to ride: underlined in pink felt pen. */
 .next .riderName {
   text-decoration: underline wavy var(--pink) 2px;
   text-underline-offset: 0.25em;
