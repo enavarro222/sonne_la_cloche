@@ -194,7 +194,8 @@
 
 .bell > span:first-child {
   position: absolute;
-  bottom: 4px;
+  /* Hung at the top of the line, the label below. */
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
   width: 2.1em;
@@ -204,7 +205,7 @@
 /* The bell usually sits near the end: label on the left of the line. */
 .bellLabel {
   position: absolute;
-  top: 6px;
+  bottom: 6px;
   right: 10px;
   font-weight: 900;
   font-size: 0.85em;
