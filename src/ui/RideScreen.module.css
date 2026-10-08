@@ -34,6 +34,7 @@
   justify-content: center;
   gap: 0 1.2rem;
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-size: clamp(1.5rem, 4vmin, 2.6rem);
   color: var(--yellow);
   text-align: center;
@@ -57,7 +58,7 @@
   color: var(--night);
   background: var(--mint);
   padding: 0.2em 0.7em;
-  border-radius: 999px;
+  border-radius: var(--radius);
 }
 
 /* The hourglass: behind everything, its height is the time left. */
@@ -66,15 +67,25 @@
   inset-inline: 0;
   bottom: 0;
   z-index: -1;
-  background: rgb(255 255 255 / 0.07);
   /* Faint: the surface passes behind text, it must not cross it out. */
-  border-top: 2px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.07);
   pointer-events: none;
+}
+
+/* A sheet of paper torn across: its ragged top edge. */
+.hourglass::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  height: 9px;
+  background: inherit;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='9'%3E%3Cpath d='M0 9 V4 L7 2 L13 5 L21 1 L28 4 L34 3 L41 6 L49 2 L55 4 L63 1 L70 5 L77 3 L85 6 L92 2 L99 4 L106 1 L114 5 L121 2 L128 4 L136 1 L143 5 L150 3 L160 4 V9 Z'/%3E%3C/svg%3E")
+    left bottom / 160px 9px repeat-x;
 }
 
 .hourglass.urgent {
   background: rgb(255 59 119 / 0.14);
-  border-top-color: rgb(255 59 119 / 0.45);
 }
 
 /* Against the right edge, over the strongman's column: `right` is set in RideScreen.tsx. */
@@ -82,6 +93,7 @@
   position: absolute;
   bottom: calc(100% + 0.3rem);
   font-family: var(--font-display);
+  text-transform: uppercase;
   /* Not too big: the track gives way to the column the seconds come down. */
   font-size: clamp(1.2rem, 3.6vmin, 2rem);
   line-height: 1;
@@ -101,6 +113,7 @@
   justify-content: center;
   height: 0.95em;
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-size: clamp(5rem, 22vmin, 13rem);
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
@@ -110,11 +123,12 @@
   color: var(--yellow);
 }
 
-/* Units in the text font: the display font only has capitals ("M", "KM/H"). */
+/* Units in the text font and lowercase: the numbers are set in capitals ("m", not "M"). */
 .timer small,
 .score small {
   margin-left: 0.15em;
   font-family: var(--font-text);
+  text-transform: none;
   font-weight: 900;
   font-size: 0.35em;
   color: var(--cream-dim);
@@ -146,10 +160,12 @@
   height: clamp(90px, 16vmin, 140px);
   /* Leans around the middle of its bottom edge, by the slope ridden. */
   transform-origin: 50% 100%;
-  border-radius: 22px;
+  border-radius: var(--paper-corner);
   /* Paper, like the sheet the cyclist was drawn on. */
   background: var(--paper);
-  border: 4px solid var(--paper-edge);
+  /* Same width as before, so the layout keeps its measures. */
+  border: 4px solid var(--paper);
+  box-shadow: var(--paper-shadow);
   overflow: hidden;
 }
 
@@ -166,9 +182,11 @@
 .bell {
   position: absolute;
   inset-block: 0;
-  width: 4px;
-  /* Pink and dark ink: the yellow garland would not show on paper. */
-  background: var(--pink);
+  width: 6px;
+  /* Pink and dark ink: the yellow garland would not show on paper. A felt-pen
+     line, a little wavy. */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='90'%3E%3Cpath d='M3 0 C1.6 20 4.4 32 3 45 S1.8 72 3 90' fill='none' stroke='%23ff3b77' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E")
+    center top / 6px 90px repeat-y;
   transform: translateX(-50%);
 }
 
@@ -177,7 +195,8 @@
   bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.6em;
+  width: 2.1em;
+  line-height: 0;
 }
 
 /* The bell usually sits near the end: label on the left of the line. */
@@ -219,6 +238,7 @@
   min-width: 3ch;
   text-align: right;
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   font-size: 1.5em;
   color: var(--cream);
@@ -272,6 +292,7 @@
 
 .beaten {
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   font-size: 1.1em;
   animation: pop 0.4s ease-out;
@@ -296,7 +317,7 @@
   flex-shrink: 0;
   width: min(22rem, 70vw);
   height: 1.4rem;
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: var(--surface-dark);
   border: 3px solid var(--line);
 }

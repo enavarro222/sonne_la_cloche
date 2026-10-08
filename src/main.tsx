@@ -1,7 +1,6 @@
-import "@fontsource/bungee/400.css";
-import "@fontsource/nunito/400.css";
-import "@fontsource/nunito/700.css";
-import "@fontsource/nunito/900.css";
+import "@fontsource/luckiest-guy/400.css";
+import "@fontsource/mali/400.css";
+import "@fontsource/mali/700.css";
 import "./ui/theme.css";
 
 import { StrictMode } from "react";

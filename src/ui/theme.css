@@ -9,22 +9,35 @@
   --cream: #fff3e0;
   --cream-dim: rgb(255 243 224 / 0.72);
   --cream-faint: rgb(255 243 224 / 0.5);
-  --surface: rgb(255 255 255 / 0.08);
-  --surface-dark: rgb(0 0 0 / 0.28);
+  /* Fine paper grain (SVG noise, tiled), laid over every sheet of indigo paper. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0.35 0 0 0 -0.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  /* Scraps of indigo paper, lighter and darker than the sheet: matt, not glass. */
+  --surface: var(--grain), #31278a;
+  --surface-dark: var(--grain), #150f4f;
+  --scrap-shadow: 0 2px 0 rgb(0 0 0 / 0.3);
+  /* A line traced by hand with a felt pen, to lay along an edge (repeat-x). */
+  --hand-line: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='6'%3E%3Cpath d='M0 3 C50 1.4 110 4.6 190 3.2 S330 1.6 420 3' fill='none' stroke='%23fff3e0' stroke-opacity='0.22' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
   --line: rgb(255 255 255 / 0.18);
   /* The paper the cyclist was drawn on: the track, so the drawing shows as is. */
   --paper: #d8ccb0;
-  --paper-edge: #b5a37c;
   /* Strava's brand orange, for the buttons that lead to Strava only. */
   --strava: #fc4c02;
   --strava-dark: #b83700;
 
-  --font-display: "Bungee", "Impact", "Haettenschweiler", sans-serif;
-  --font-text: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  --font-display: "Luckiest Guy", "Impact", "Haettenschweiler", sans-serif;
+  --font-text: "Mali", "Trebuchet MS", system-ui, sans-serif;
 
   /* One layout for a landscape tablet (≈1280×800) and a PC/TV (1920×1080). */
   --gap: clamp(0.75rem, 2vmin, 1.5rem);
-  --radius: 18px;
+  /*
+   * Drawn by hand: uneven radii make the outline wobble a little, like a line
+   * traced with a felt pen (CSS scales them down to fit each box).
+   */
+  --radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --radius-small: 120px 8px 100px 8px / 8px 100px 8px 120px;
+  /* A sheet of paper: sharp corners, no outline, lying on the table. */
+  --paper-corner: 3px;
+  --paper-shadow: 0 2px 0 rgb(0 0 0 / 0.18), 0 10px 22px rgb(0 0 0 / 0.35);
   --tap: 48px;
 
   color-scheme: dark;
@@ -44,9 +57,15 @@ body,
   height: 100%;
 }
 
+/*
+ * A sheet of indigo construction paper, like the cream one the cyclist was
+ * drawn on: a fine grain and an uneven tint.
+ */
 body {
   background:
-    repeating-linear-gradient(115deg, rgb(255 255 255 / 0.035) 0 34px, transparent 34px 68px),
+    var(--grain), radial-gradient(60% 50% at 15% 80%, rgb(10 6 50 / 0.35), transparent 70%),
+    radial-gradient(45% 40% at 85% 65%, rgb(255 255 255 / 0.04), transparent 70%),
+    radial-gradient(50% 45% at 70% 20%, rgb(10 6 50 / 0.2), transparent 70%),
     radial-gradient(120% 90% at 50% 0%, var(--night-light), var(--night) 70%);
   background-color: var(--night);
   color: var(--cream);
@@ -90,6 +109,7 @@ button:disabled {
   background: var(--pink);
   color: #fff;
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   font-size: 1.3em;
   padding: 0.7em 1.6em;

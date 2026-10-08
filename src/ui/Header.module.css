@@ -4,11 +4,14 @@
   gap: var(--gap);
   flex-wrap: wrap;
   padding: 0.6rem clamp(1rem, 2vw, 1.6rem);
-  border-bottom: 3px solid rgb(255 255 255 / 0.12);
+  /* Underlined by hand; the transparent border keeps the room it took. */
+  border-bottom: 3px solid transparent;
+  background: var(--hand-line) left bottom / 420px 6px repeat-x border-box;
 }
 
 .brand {
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-size: 1.4em;
   color: var(--yellow);
 }
@@ -33,7 +36,7 @@
   gap: 0.25rem;
   background: var(--surface-dark);
   padding: 0.25rem;
-  border-radius: 12px;
+  border-radius: var(--radius);
 }
 
 .languages a {
@@ -41,7 +44,7 @@
   place-items: center;
   min-width: var(--tap);
   min-height: 40px;
-  border-radius: 9px;
+  border-radius: var(--radius-small);
   color: var(--cream-dim);
   font-weight: 900;
   text-decoration: none;
@@ -59,7 +62,7 @@
   min-height: var(--tap);
   padding: 0;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--surface-dark);
   color: var(--cream-dim);
   cursor: pointer;

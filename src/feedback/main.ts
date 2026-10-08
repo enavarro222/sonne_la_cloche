@@ -1,9 +1,8 @@
 // The page the home screen's "Your opinion?" link opens, in a new tab so the
 // game keeps its Bluetooth connection: /feedback/?lang=fr&bike=FTMS&trainer=KICKR
 
-import "@fontsource/bungee/400.css";
-import "@fontsource/nunito/700.css";
-import "@fontsource/nunito/900.css";
+import "@fontsource/luckiest-guy/400.css";
+import "@fontsource/mali/700.css";
 import "../ui/theme.css";
 import "../strava/strava.css";
 import "./feedback.css";

@@ -26,6 +26,7 @@
 
 .settings h1 {
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   font-size: clamp(1.8rem, 4vw, 3rem);
 }
@@ -36,6 +37,7 @@
 
 .field legend {
   font-family: var(--font-display);
+  text-transform: uppercase;
   color: var(--yellow);
   margin-bottom: 0.6rem;
 }
@@ -46,13 +48,13 @@
   gap: 0.4rem;
   background: var(--surface-dark);
   padding: 0.35rem;
-  border-radius: 16px;
+  border-radius: var(--radius);
 }
 
 .choice button {
   min-height: var(--tap);
   padding: 0.5rem 1.1rem;
-  border-radius: 12px;
+  border-radius: var(--radius);
   color: var(--cream-dim);
   font-weight: 900;
 }

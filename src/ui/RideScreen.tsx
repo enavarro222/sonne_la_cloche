@@ -26,6 +26,7 @@ import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import { DemoSensor, type Foot } from "../sensors/demo/demoSensor";
 import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types";
+import { Bell } from "./Bell";
 import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
 import { advanceCrank } from "./cyclist/geometry";
@@ -356,8 +357,8 @@ const tiltDeg = (gradePct: number) =>
   Math.min(8, (2 * Math.atan(Math.max(0, gradePct) / 100) * 180) / Math.PI);
 /** Height left above a full hourglass for the seconds on its surface. */
 const HOURGLASS_LABEL_ROOM = "4.5rem";
-/** Same as the horizontal padding of `.main` (App.module.css). */
-const MAIN_PADDING = "clamp(1rem, 3vw, 2.5rem)";
+/** The horizontal padding of `.main` (App.module.css). */
+const MAIN_PADDING = "var(--main-padding-inline)";
 /**
  * The seconds of the hourglass come down a column on the right, as wide as
  * they are plus this margin (px); the strongman stands at its foot and the
@@ -541,7 +542,9 @@ export function RideScreen({
             className={cx(styles.bell, rung && styles.rung)}
             style={{ left: lane(bellPosition) }}
           >
-            <span aria-hidden="true">🔔</span>
+            <span aria-hidden="true">
+              <Bell />
+            </span>
             <span
               className={cx(
                 styles.bellLabel,

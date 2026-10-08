@@ -23,6 +23,7 @@
 
 .dialog h2 {
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   color: var(--yellow);
 }
@@ -48,7 +49,7 @@
   width: 100%;
   min-height: 2.9rem;
   padding: 0.3rem 1.2rem;
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: var(--surface);
   font-weight: 900;
   font-size: 1.2em;
@@ -94,7 +95,7 @@
 .placeholder {
   width: min(52vmin, 22rem);
   aspect-ratio: 1;
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: #fff;
 }
 

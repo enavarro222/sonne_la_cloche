@@ -3,9 +3,8 @@
 // real bike, publish it on their Strava account or download it as a .fit file.
 // The path says "strava" because Strava's OAuth sends players back to it.
 
-import "@fontsource/bungee/400.css";
-import "@fontsource/nunito/700.css";
-import "@fontsource/nunito/900.css";
+import "@fontsource/luckiest-guy/400.css";
+import "@fontsource/mali/700.css";
 import "../ui/theme.css";
 import "./strava.css";
 import "../feedback/feedback.css";

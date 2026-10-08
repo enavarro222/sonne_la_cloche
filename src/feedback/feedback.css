@@ -13,7 +13,7 @@
   min-width: var(--tap);
   min-height: var(--tap);
   font-size: 1.8em;
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--surface-dark);
   border: 3px solid transparent;
   filter: grayscale(0.6);
@@ -40,7 +40,7 @@
   width: 100%;
   font: inherit;
   padding: 0.7rem 0.9rem;
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 3px solid var(--line);
   background: var(--surface);
   color: var(--cream);

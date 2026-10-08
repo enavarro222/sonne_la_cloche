@@ -7,12 +7,15 @@
 .main {
   /* Holds screen-wide layers, such as the ride's hourglass. */
   position: relative;
+  /*
+   * Full width, so screen-wide layers span the whole screen; the content stays
+   * within 1600px through the side padding, also read by the ride's timer.
+   */
+  --main-padding-inline: calc(max(0px, (100% - 1600px) / 2) + clamp(1rem, 3vw, 2.5rem));
   width: 100%;
-  max-width: 1600px;
-  margin-inline: auto;
   min-height: 0;
   overflow-y: auto;
   /* Nothing scrolls sideways: e.g. the strongman running off the screen. */
   overflow-x: hidden;
-  padding: clamp(1rem, 3vmin, 2rem) clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(1rem, 3vmin, 2rem) var(--main-padding-inline);
 }

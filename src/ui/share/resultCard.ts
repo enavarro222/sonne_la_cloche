@@ -17,8 +17,9 @@ const COLORS = {
   creamDim: "rgb(255 243 224 / 0.72)",
   surface: "rgb(255 255 255 / 0.08)",
 };
-const DISPLAY = '"Bungee", Impact, sans-serif';
-const TEXT = '"Nunito", "Trebuchet MS", sans-serif';
+// Capitals only, as on screen (text-transform: uppercase).
+const DISPLAY = '"Luckiest Guy", Impact, sans-serif';
+const TEXT = '"Mali", "Trebuchet MS", sans-serif';
 
 function fitText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
   if (ctx.measureText(text).width <= maxWidth) return text;
@@ -68,11 +69,15 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
   ctx.textAlign = "center";
   ctx.fillStyle = COLORS.yellow;
   ctx.font = `76px ${DISPLAY}`;
-  ctx.fillText(fitText(ctx, `🔔 ${content.title}`, width), WIDTH / 2, PAD + 70);
+  ctx.fillText(fitText(ctx, `🔔 ${content.title.toUpperCase()}`, width), WIDTH / 2, PAD + 70);
 
   // Measure the middle block first, to center it between title and footer.
   ctx.font = `52px ${DISPLAY}`;
-  const winnerLines = wrapText((t) => ctx.measureText(t).width, content.winner, width).slice(0, 3);
+  const winnerLines = wrapText(
+    (t) => ctx.measureText(t).width,
+    content.winner.toUpperCase(),
+    width,
+  ).slice(0, 3);
   const winnerLineHeight = 66;
   const rows = content.ranking.slice(0, 8);
   const awardHeight = 52;
@@ -98,7 +103,7 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
     const first = row.rank === 1;
     ctx.fillStyle = first ? COLORS.pink : COLORS.surface;
     ctx.beginPath();
-    ctx.roundRect(PAD, y, width, rowHeight - 14 * scale, 22 * scale);
+    ctx.roundRect(PAD, y, width, rowHeight - 14 * scale, 3 * scale);
     ctx.fill();
     const baseline = y + (rowHeight - 14 * scale) / 2 + 16 * scale;
     ctx.textAlign = "left";
@@ -106,7 +111,7 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
     ctx.font = `${String(Math.round(44 * scale))}px ${DISPLAY}`;
     ctx.fillText(String(row.rank), PAD + 32, baseline);
     ctx.fillStyle = COLORS.cream;
-    ctx.font = `900 ${String(Math.round(46 * scale))}px ${TEXT}`;
+    ctx.font = `700 ${String(Math.round(46 * scale))}px ${TEXT}`;
     ctx.fillText(fitText(ctx, row.name, width - 360), PAD + 120, baseline);
     ctx.textAlign = "right";
     ctx.fillText(String(row.total), WIDTH - PAD - 32, baseline);
@@ -114,7 +119,7 @@ export function drawResultCard(ctx: CanvasRenderingContext2D, content: ShareCont
   }
 
   y += 40;
-  ctx.font = `900 34px ${TEXT}`;
+  ctx.font = `700 34px ${TEXT}`;
   for (const award of content.awards) {
     y += awardHeight;
     const label = `${award.label}  `;
@@ -140,7 +145,7 @@ export async function renderResultCard(content: ShareContent): Promise<Blob | nu
   // The game's fonts must be ready, or the canvas falls back to system ones.
   await Promise.all([
     document.fonts.load(`76px ${DISPLAY}`),
-    document.fonts.load(`900 46px ${TEXT}`),
+    document.fonts.load(`700 46px ${TEXT}`),
     document.fonts.load(`700 30px ${TEXT}`),
   ]).catch(() => undefined);
 

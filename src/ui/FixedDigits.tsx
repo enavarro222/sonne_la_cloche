@@ -1,7 +1,7 @@
 import styles from "./FixedDigits.module.css";
 
 /**
- * Bungee has no tabular figures ("1" is much narrower than "0"): each digit
+ * Luckiest Guy has no tabular figures ("1" is much narrower than "0"): each digit
  * gets the same box so a running score or timer does not jitter.
  */
 export function FixedDigits({ children }: { children: string | number }) {

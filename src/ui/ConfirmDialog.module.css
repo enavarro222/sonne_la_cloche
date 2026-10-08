@@ -19,6 +19,7 @@
 
 .dialog h2 {
   font-family: var(--font-display);
+  text-transform: uppercase;
   font-weight: 400;
   color: var(--yellow);
   margin-bottom: 0.5rem;
