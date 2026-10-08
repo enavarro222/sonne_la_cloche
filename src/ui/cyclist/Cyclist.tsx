@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { type Livery, ORIGINAL_LIVERY } from "../../core/livery";
 import { cx } from "../cx";
-import { kneePosition, pedalPosition, type Point } from "./geometry";
+import { GEAR_RATIO, kneePosition, pedalPosition, type Point } from "./geometry";
 import styles from "./Cyclist.module.css";
 
 // The cyclist, drawn by a young rider: a green bike, red jersey, yellow
@@ -17,8 +17,6 @@ const FOOT_RADIUS = 95;
 const CRANK_CENTRE: Point = { x: 1212, y: 1141 };
 const THIGH = 340;
 const SHIN = 325;
-/** The wheels turn faster than the cranks. */
-const GEAR_RATIO = 1.875;
 /** How far the chain runs per turn of the cranks. */
 const CHAIN_PER_TURN = 340;
 
@@ -114,17 +112,20 @@ function Leg({ angle, colours }: { angle: number; colours: LegColours }) {
  */
 export function Cyclist({
   crankAngle,
+  wheelAngle = crankAngle * GEAR_RATIO,
   moving = false,
   livery = ORIGINAL_LIVERY,
 }: {
   crankAngle: number;
+  /** Radians. By default the wheels turn with the cranks, as when pedaling. */
+  wheelAngle?: number;
   moving?: boolean;
   livery?: Livery;
 }) {
   const id = useId();
   const clipRear = `${id}-rear`;
   const clipFront = `${id}-front`;
-  const wheelTurn = (crankAngle * GEAR_RATIO * 180) / Math.PI;
+  const wheelTurn = (wheelAngle * 180) / Math.PI;
   const chainOffset = -((crankAngle / TURN) * CHAIN_PER_TURN);
 
   return (

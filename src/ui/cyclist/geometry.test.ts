@@ -1,8 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { advanceCrank, kneePosition, pedalPosition } from "./geometry";
+import { advanceCrank, advanceWheel, kneePosition, pedalPosition } from "./geometry";
 
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
   Math.hypot(a.x - b.x, a.y - b.y);
+
+describe("advanceWheel", () => {
+  it("rolls at the bike's speed, pedaling or not", () => {
+    // 0.34 m wheels: at 2.136 m/s, one turn per second.
+    let angle = 0;
+    for (let i = 0; i < 4; i++) angle = advanceWheel(angle, 2 * Math.PI * 0.34, 0.125);
+    expect(angle).toBeCloseTo(Math.PI);
+  });
+
+  it("does not move when stopped, and ignores bad input", () => {
+    expect(advanceWheel(1, 0, 0.1)).toBe(1);
+    expect(advanceWheel(1, Number.NaN, 0.1)).toBe(1);
+    expect(advanceWheel(1, -3, 0.1)).toBe(1);
+  });
+});
 
 describe("advanceCrank", () => {
   it("turns at the cadence: 60 rpm is one turn per second", () => {

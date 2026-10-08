@@ -7,6 +7,9 @@ export interface Point {
 
 const TURN = 2 * Math.PI;
 
+/** The wheels turn faster than the cranks. */
+export const GEAR_RATIO = 1.875;
+
 /** Longest time step taken into account, like the ride itself (backgrounded tab). */
 const MAX_STEP_SEC = 0.25;
 
@@ -15,6 +18,17 @@ export function advanceCrank(angle: number, cadence: number, dtSec: number): num
   const rpm = Number.isFinite(cadence) ? Math.max(0, cadence) : 0;
   const dt = Math.min(Math.max(0, dtSec), MAX_STEP_SEC);
   const next = (angle + (rpm / 60) * TURN * dt) % TURN;
+  return next < 0 ? next + TURN : next;
+}
+
+/** A road bike's wheel radius (m): the wheels roll at the bike's speed. */
+const WHEEL_RADIUS_M = 0.34;
+
+/** Wheel angle after `dtSec` at `speed` m/s, in radians within [0, 2π). */
+export function advanceWheel(angle: number, speed: number, dtSec: number): number {
+  const v = Number.isFinite(speed) ? Math.max(0, speed) : 0;
+  const dt = Math.min(Math.max(0, dtSec), MAX_STEP_SEC);
+  const next = (angle + (v / WHEEL_RADIUS_M) * dt) % TURN;
   return next < 0 ? next + TURN : next;
 }
 

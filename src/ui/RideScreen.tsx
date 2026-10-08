@@ -30,7 +30,7 @@ import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types"
 import { Bell } from "./Bell";
 import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
-import { advanceCrank } from "./cyclist/geometry";
+import { advanceCrank, advanceWheel, GEAR_RATIO } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
 import { Lifter, SIZE as LIFTER_SIZE } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
@@ -105,6 +105,8 @@ interface Frame {
   rung: boolean;
   /** Radians, turning with the measured cadence. */
   crankAngle: number;
+  /** Radians, rolling at the bike's speed (by distance), even when not pedaling. */
+  wheelAngle: number;
   course: Course | null;
   /** The slope ridden right now, in percent. */
   gradePct: number;
@@ -126,6 +128,7 @@ function useRideLoop(
     track: startTrack(bellMark(recordPoints, settings), settings),
     rung: false,
     crankAngle: 0,
+    wheelAngle: 0,
     course: initialCourse,
     gradePct: initialCourse?.gradePct ?? SLOPE_PERCENT[settings.slope],
     finale: null,
@@ -150,6 +153,7 @@ function useRideLoop(
     let track = startTrack(mark, settings);
     let rung = false;
     let crankAngle = 0;
+    let wheelAngle = 0;
     const startedAt = new Date().toISOString();
     let last = performance.now();
     let lastTick = TICK_FROM_SEC + 1;
@@ -183,12 +187,27 @@ function useRideLoop(
       }
       track = stepTrack(track, progress.points, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
+      // Without a speed (pedal turns), the wheels turn with the cranks.
+      wheelAngle =
+        metric === "distance"
+          ? advanceWheel(wheelAngle, progress.speed, dtSec)
+          : crankAngle * GEAR_RATIO;
       last = now;
       if (!rung && ringsBell(progress.points, mark)) {
         rung = true;
         sounds.bell();
       }
-      setFrame({ progress, reading, track, rung, crankAngle, course, gradePct: ridden(), finale });
+      setFrame({
+        progress,
+        reading,
+        track,
+        rung,
+        crankAngle,
+        wheelAngle,
+        course,
+        gradePct: ridden(),
+        finale,
+      });
 
       const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
       if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
@@ -471,7 +490,7 @@ export function RideScreen({
     course,
     onFinish,
   );
-  const { progress, track, rung, crankAngle } = ride;
+  const { progress, track, rung, crankAngle, wheelAngle } = ride;
   const target = ride.course?.targetPower ?? null;
   const live = useLiveReading(stage.name !== "racing" && target !== null, sensor);
   const reading = stage.name === "racing" ? ride.reading : live;
@@ -607,7 +626,9 @@ export function RideScreen({
           >
             <Cyclist
               crankAngle={crankAngle}
-              moving={reading.cadence > 0}
+              wheelAngle={wheelAngle}
+              // Rolling, even without pedaling: the air rushes past.
+              moving={byDistance ? progress.speed > 0.5 && racing : reading.cadence > 0}
               livery={liveryOf(player)}
             />
           </div>
