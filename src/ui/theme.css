@@ -13,8 +13,8 @@
   --surface-dark: rgb(0 0 0 / 0.28);
   --line: rgb(255 255 255 / 0.18);
   /* The paper the cyclist was drawn on: the track, so the drawing shows as is. */
-  --paper: #f3e9d2;
-  --paper-edge: #d9c9a3;
+  --paper: #d8ccb0;
+  --paper-edge: #b5a37c;
   /* Strava's brand orange, for the buttons that lead to Strava only. */
   --strava: #fc4c02;
   --strava-dark: #b83700;
