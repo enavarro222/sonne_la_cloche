@@ -1,10 +1,11 @@
 import { useId } from "react";
+import { type Livery, ORIGINAL_LIVERY } from "../../core/livery";
 import { cx } from "../cx";
 import { kneePosition, pedalPosition, type Point } from "./geometry";
 import styles from "./Cyclist.module.css";
 
 // The cyclist, drawn by a young rider: a green bike, red jersey, yellow
-// helmet. In the original drawing's units (bike facing right, y down); the
+// helmet, recoloured to each player's livery (core/livery.ts). In the original drawing's units (bike facing right, y down); the
 // legs, wheels and chain follow the crank angle instead of a fixed loop. It
 // rides on a paper-coloured track, so it shows as drawn.
 
@@ -107,8 +108,19 @@ function Leg({ angle, colours }: { angle: number; colours: LegColours }) {
   );
 }
 
-/** A young rider on a green bike; legs, wheels and chain turn with the crank angle (radians). */
-export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; moving?: boolean }) {
+/**
+ * A young rider on a bike; legs, wheels and chain turn with the crank angle
+ * (radians). Jersey, helmet and frame wear the player's colours.
+ */
+export function Cyclist({
+  crankAngle,
+  moving = false,
+  livery = ORIGINAL_LIVERY,
+}: {
+  crankAngle: number;
+  moving?: boolean;
+  livery?: Livery;
+}) {
   const id = useId();
   const clipRear = `${id}-rear`;
   const clipFront = `${id}-front`;
@@ -197,7 +209,7 @@ export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; mo
               />
               <path
                 d="M440 1600 L485 1580 L535 1600 L545 1650 L520 1690 L470 1695 L438 1660 Z"
-                fill="#1d7a34"
+                fill={livery.frame}
                 stroke="#151515"
                 strokeWidth={9}
               />
@@ -220,7 +232,7 @@ export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; mo
             <path d="M840 1380 L895 1445" />
             <path d="M795 880 L872 872" />
           </g>
-          <g stroke="#1d7a34">
+          <g stroke={livery.frame}>
             <path d="M485 815 L720 930" strokeWidth={18} />
             <path d="M790 880 L540 1215" strokeWidth={18} />
             <path d="M800 880 L830 1360" strokeWidth={18} />
@@ -231,20 +243,20 @@ export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; mo
           </g>
           <path d="M790 1395 L860 1420" stroke="#3d5aa8" strokeWidth={14} opacity={0.6} />
           {/* Chainring. */}
-          <circle cx={520} cy={1212} r={45} fill="#1d7a34" stroke="#151515" strokeWidth={9} />
+          <circle cx={520} cy={1212} r={45} fill={livery.frame} stroke="#151515" strokeWidth={9} />
           <circle cx={520} cy={1212} r={22} fill="#5fb8d8" stroke="#151515" strokeWidth={5} />
         </g>
 
         {/* Saddle. */}
         <path
           d="M790 776 C788 754 836 748 880 754 L962 766 C978 770 978 788 962 791 L884 798 C840 806 792 800 790 776 Z"
-          fill="#1d7a34"
+          fill={livery.frame}
           stroke="#151515"
           strokeWidth={9}
         />
         <path
           d="M808 770 C830 762 860 762 890 766"
-          stroke="#5fae6e"
+          stroke={livery.frameLight}
           strokeWidth={5}
           opacity={0.7}
         />
@@ -280,13 +292,13 @@ export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; mo
           />
           <path
             d="M1080 815 C1130 800 1180 825 1210 880 C1250 950 1300 1060 1310 1130 C1300 1170 1260 1200 1225 1180 C1180 1165 1120 1175 1065 1110 C1040 1080 1045 1030 1070 980 C1090 930 1100 870 1080 815 Z"
-            fill="#c62f2a"
+            fill={livery.jersey}
             stroke="#151515"
             strokeWidth={9}
           />
           <path
             d="M1110 860 L1170 1080 M1150 870 L1220 1100 M1190 900 L1260 1110"
-            stroke="#e8673d"
+            stroke={livery.jerseyLight}
             strokeWidth={4}
             opacity={0.55}
           />
@@ -346,12 +358,12 @@ export function Cyclist({ crankAngle, moving = false }: { crankAngle: number; mo
           />
           <path
             d="M86 140 C92 108 148 96 180 98 C214 98 244 116 274 128 C308 142 334 180 334 218 C334 244 302 252 270 248 L200 246 C158 248 126 242 112 218 C98 192 82 166 86 140 Z"
-            fill="#f0dd2a"
+            fill={livery.helmet}
             strokeWidth={16}
           />
           <path
             d="M110 148 C130 128 168 118 196 124 M118 206 C140 226 186 232 230 234 M262 140 C290 158 306 180 312 204"
-            stroke="#fffbd0"
+            stroke={livery.helmetLight}
             strokeWidth={5}
             opacity={0.8}
           />

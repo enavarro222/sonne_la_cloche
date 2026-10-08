@@ -37,8 +37,19 @@ describe("players", () => {
         { id: "5", name: " Zoé " },
       ]),
     ).toEqual([
-      { id: "1", name: "Léa" },
-      { id: "5", name: "Zoé" },
+      { id: "1", name: "Léa", livery: 0 },
+      { id: "5", name: "Zoé", livery: 1 },
     ]);
+  });
+
+  it("keeps each stored player's colours, unless already taken or unknown", () => {
+    expect(
+      parseRoster([
+        { id: "1", name: "Léa", livery: 4 },
+        { id: "2", name: "Tom", livery: 4 },
+        { id: "3", name: "Zoé", livery: 99 },
+        { id: "4", name: "Sam", livery: 6 },
+      ]).map((p) => p.livery),
+    ).toEqual([4, 0, 1, 6]);
   });
 });

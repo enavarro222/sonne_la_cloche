@@ -1,8 +1,10 @@
 import { type SubmitEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { type Livery, liveryOf } from "../core/livery";
 import {
   canStart,
   MAX_NAME_LENGTH,
+  MIN_PLAYERS,
   normalizeName,
   type Player,
   validateName,
@@ -118,16 +120,27 @@ function BikeCard({
 /** Gentle pedaling for the drawing on the home screen, in rpm. */
 const IDLE_CADENCE = 45;
 
+/** Where the cranks of a rider who waits stand: each one a little differently. */
+const restingCrank = (index: number) => 0.7 + index * 2.1;
+
 /**
- * The cyclist on a sheet of paper, as on the track: it pedals gently while
+ * A player's cyclist, in their colours. The first to ride pedals gently while
  * the screen waits (still, if the device asks for less motion).
  */
-function PaperRider() {
-  const [crankAngle, setCrankAngle] = useState(0);
+function RiderDrawing({
+  livery,
+  pedaling,
+  index,
+}: {
+  livery: Livery;
+  pedaling: boolean;
+  index: number;
+}) {
+  const [crankAngle, setCrankAngle] = useState(() => restingCrank(index));
   useEffect(() => {
     const still =
       typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (still) return;
+    if (still || !pedaling) return;
     let last = performance.now();
     let raf = 0;
     const step = (now: number) => {
@@ -140,12 +153,8 @@ function PaperRider() {
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, []);
-  return (
-    <div className={styles.paper} aria-hidden="true">
-      <Cyclist crankAngle={crankAngle} moving />
-    </div>
-  );
+  }, [pedaling]);
+  return <Cyclist crankAngle={crankAngle} moving={pedaling} livery={livery} />;
 }
 
 interface Props {
@@ -233,10 +242,18 @@ export function HomeScreen({
             {t("home.players.duplicate", { name: duplicate })}
           </p>
         )}
+        {/* Each player on their own sheet, with their bike; empty sheets until there are enough. */}
         <ul className={styles.roster}>
-          {roster.map((player) => (
-            <li key={player.id}>
-              {player.name}
+          {roster.map((player, index) => (
+            <li key={player.id} className={cx(styles.rider, player === firstUp && styles.next)}>
+              <span className={styles.riderDrawing} aria-hidden="true">
+                <RiderDrawing
+                  livery={liveryOf(player)}
+                  pedaling={player === firstUp}
+                  index={index}
+                />
+              </span>
+              <span className={styles.riderName}>{player.name}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -248,8 +265,15 @@ export function HomeScreen({
               </button>
             </li>
           ))}
+          {Array.from({ length: Math.max(0, MIN_PLAYERS - roster.length) }, (_, i) => (
+            <li key={`empty-${String(i)}`} className={styles.emptySeat} aria-hidden="true">
+              <span className={styles.riderDrawing}>
+                <Cyclist crankAngle={restingCrank(roster.length + i)} />
+              </span>
+              <span className={styles.riderName} />
+            </li>
+          ))}
         </ul>
-        <PaperRider />
       </section>
 
       <section className={styles.side}>

@@ -1,6 +1,10 @@
+import { freeLivery, isLivery } from "./livery";
+
 export interface Player {
   id: string;
   name: string;
+  /** Index in LIVERIES: their colours. Given when they join the roster. */
+  livery?: number;
 }
 
 export const MIN_PLAYERS = 2;
@@ -28,11 +32,13 @@ export function parseRoster(value: unknown): Player[] {
   const roster: Player[] = [];
   for (const item of value) {
     if (typeof item !== "object" || item === null) continue;
-    const { id, name } = item as Record<string, unknown>;
+    const { id, name, livery } = item as Record<string, unknown>;
     if (typeof id !== "string" || typeof name !== "string") continue;
     const clean = normalizeName(name);
     if (validateName(clean, roster) === null && !roster.some((p) => p.id === id)) {
-      roster.push({ id, name: clean });
+      const taken = roster.map((p) => p.livery);
+      const own = isLivery(livery) && !taken.includes(livery) ? livery : freeLivery(taken);
+      roster.push({ id, name: clean, livery: own });
     }
   }
   return roster;

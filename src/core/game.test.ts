@@ -56,7 +56,22 @@ describe("roster", () => {
       type: "playerAdded",
       player: { id: "a", name: "  Léa   Marie " },
     });
-    expect(state.roster).toEqual([{ id: "a", name: "Léa Marie" }]);
+    expect(state.roster).toEqual([{ id: "a", name: "Léa Marie", livery: 0 }]);
+  });
+
+  it("gives each new player colours nobody wears", () => {
+    const state = run(
+      initialState(
+        [
+          { ...lea, livery: 0 },
+          { ...tom, livery: 2 },
+        ],
+        DEFAULT_SETTINGS,
+      ),
+      { type: "playerAdded", player: { id: "c", name: "Zoé" } },
+      { type: "playerAdded", player: { id: "d", name: "Sam" } },
+    );
+    expect(state.roster.map((p) => p.livery)).toEqual([0, 2, 1, 3]);
   });
 
   it("rejects empty and duplicate names (case-insensitive)", () => {

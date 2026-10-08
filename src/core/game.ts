@@ -2,6 +2,7 @@
 // A "round" means every player rides once; the ranking is the sum of every
 // ride over all rounds.
 
+import { freeLivery } from "./livery";
 import { canStart, normalizeName, type Player, validateName } from "./players";
 import { cleanStats, type RideSample, type RideStats } from "./ride";
 import { consistent, forSensor, type Settings } from "./settings";
@@ -82,7 +83,11 @@ export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case "playerAdded": {
       if (game) return state;
-      const player = { ...action.player, name: normalizeName(action.player.name) };
+      const player = {
+        ...action.player,
+        name: normalizeName(action.player.name),
+        livery: freeLivery(state.roster.map((p) => p.livery)),
+      };
       if (validateName(player.name, state.roster) !== null) return state;
       return { ...state, roster: [...state.roster, player] };
     }

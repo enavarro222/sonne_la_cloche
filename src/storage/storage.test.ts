@@ -8,9 +8,9 @@ describe("storage", () => {
   });
 
   it("round-trips roster and settings", () => {
-    saveRoster([{ id: "1", name: "Léa" }]);
+    saveRoster([{ id: "1", name: "Léa", livery: 3 }]);
     saveSettings({ metric: "cadence", durationSec: 45, rounds: 3, slope: "hill", finale: "on" });
-    expect(loadRoster()).toEqual([{ id: "1", name: "Léa" }]);
+    expect(loadRoster()).toEqual([{ id: "1", name: "Léa", livery: 3 }]);
     expect(loadSettings()).toEqual({
       metric: "cadence",
       durationSec: 45,

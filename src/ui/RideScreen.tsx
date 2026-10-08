@@ -22,6 +22,7 @@ import {
 } from "../core/ride";
 import type { RideTrace } from "../core/game";
 import { type Course, raiseCourse } from "../core/handicap";
+import { liveryOf } from "../core/livery";
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import { DemoSensor, type Foot } from "../sensors/demo/demoSensor";
@@ -559,7 +560,11 @@ export function RideScreen({
             className={styles.bike}
             style={{ left: lane(trackPosition(progress.points, track.target)) }}
           >
-            <Cyclist crankAngle={crankAngle} moving={reading.cadence > 0} />
+            <Cyclist
+              crankAngle={crankAngle}
+              moving={reading.cadence > 0}
+              livery={liveryOf(player)}
+            />
           </div>
         </div>
         <div
