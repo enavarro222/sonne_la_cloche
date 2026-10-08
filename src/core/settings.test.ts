@@ -17,7 +17,7 @@ describe("parseSettings", () => {
       durationSec: DEFAULT_SETTINGS.durationSec,
       rounds: 5,
       slope: DEFAULT_SETTINGS.slope,
-      finale: "off",
+      finale: DEFAULT_SETTINGS.finale,
     });
     expect(parseSettings({ slope: "hill" }).slope).toBe("hill");
   });

@@ -53,7 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   durationSec: 30,
   rounds: 4,
   slope: "own",
-  finale: "off",
+  finale: "on",
 };
 
 /** Where the slope goes when the metric no longer allows it. */
