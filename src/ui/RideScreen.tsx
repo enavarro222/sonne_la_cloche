@@ -585,17 +585,16 @@ export function RideScreen({
 
       <p className={styles.stats}>
         {byDistance && (
-          <span>
+          <span data-testid="ride-speed">
             <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
           </span>
         )}
-        <span data-testid="ride-grade">{t("settings.slope.short", { percent })}</span>
       </p>
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 
       <div className={styles.scene} ref={sceneRef}>
         <div
-          className={styles.track}
+          className={styles.road}
           // Centred: the same margin on the left as the strongman's on the right.
           style={{
             width: `calc(100% - ${2 * column}px)`,
@@ -603,34 +602,40 @@ export function RideScreen({
             transform: `rotate(${-tilt}deg)`,
           }}
         >
-          <div
-            className={cx(styles.bell, rung && styles.rung)}
-            style={{ left: lane(bellPosition) }}
-          >
-            <span aria-hidden="true">
-              <Bell />
-            </span>
-            <span
-              className={cx(
-                styles.bellLabel,
-                bellPosition < 0.5 && styles.bellLabelAfter,
-                rung && styles.beaten,
-              )}
+          {/* The slope is the game's doing, not the rider's: it goes with the track. */}
+          <p className={styles.grade} data-testid="ride-grade">
+            {t("settings.slope.short", { percent })}
+          </p>
+          <div className={styles.track}>
+            <div
+              className={cx(styles.bell, rung && styles.rung)}
+              style={{ left: lane(bellPosition) }}
             >
-              {bellLabel}
-            </span>
-          </div>
-          <div
-            className={styles.bike}
-            style={{ left: lane(trackPosition(progress.points, track.target)) }}
-          >
-            <Cyclist
-              crankAngle={crankAngle}
-              wheelAngle={wheelAngle}
-              // Rolling, even without pedaling: the air rushes past.
-              moving={byDistance ? progress.speed > 0.5 && racing : reading.cadence > 0}
-              livery={liveryOf(player)}
-            />
+              <span aria-hidden="true">
+                <Bell />
+              </span>
+              <span
+                className={cx(
+                  styles.bellLabel,
+                  bellPosition < 0.5 && styles.bellLabelAfter,
+                  rung && styles.beaten,
+                )}
+              >
+                {bellLabel}
+              </span>
+            </div>
+            <div
+              className={styles.bike}
+              style={{ left: lane(trackPosition(progress.points, track.target)) }}
+            >
+              <Cyclist
+                crankAngle={crankAngle}
+                wheelAngle={wheelAngle}
+                // Rolling, even without pedaling: the air rushes past.
+                moving={byDistance ? progress.speed > 0.5 && racing : reading.cadence > 0}
+                livery={liveryOf(player)}
+              />
+            </div>
           </div>
         </div>
         <div

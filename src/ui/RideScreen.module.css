@@ -142,6 +142,8 @@
 
 .stats {
   display: flex;
+  /* Keeps its height when scored on pedal turns (no speed shown). */
+  min-height: 1.4em;
   gap: 2.5rem;
   font-family: var(--font-text);
   font-weight: 900;
@@ -157,11 +159,28 @@
   flex-shrink: 0;
 }
 
+/* The track and its slope sign: they lean together, around the middle of
+   the track's bottom edge, by the slope ridden. */
+.road {
+  position: relative;
+  transform-origin: 50% 100%;
+}
+
+/* Written above the start of the track, leaning with it. */
+.grade {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 0.4rem;
+  font-weight: 900;
+  font-size: clamp(1.1rem, 3.2vmin, 1.8rem);
+  line-height: 1;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
 .track {
   position: relative;
   height: clamp(90px, 16vmin, 140px);
-  /* Leans around the middle of its bottom edge, by the slope ridden. */
-  transform-origin: 50% 100%;
   border-radius: var(--paper-corner);
   /* Paper, like the sheet the cyclist was drawn on. */
   background: var(--paper);

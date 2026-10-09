@@ -143,6 +143,31 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(screen.getByText("Goal reached!")).toBeInTheDocument();
   });
 
+  it("by distance: the score in metres and the bike's speed; the slope by the track", () => {
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={{ ...settings, metric: "distance" }}
+        record={null}
+        sensor={{ ...steadySensor(90), read: () => ({ cadence: 90, power: 200 }) }}
+        onFinish={vi.fn()}
+      />,
+    );
+    advance(COUNTDOWN_MS + 2000);
+    expect(screen.getByTestId("ride-score")).toHaveTextContent(/^\d+m$/);
+    expect(screen.getByTestId("ride-speed")).toHaveTextContent(/^\d+ km\/h$/);
+    expect(screen.getByTestId("ride-grade")).toHaveTextContent("2 % slope");
+  });
+
+  it("on pedal turns: points only, no speed", () => {
+    renderRide(steadySensor(90), vi.fn());
+    advance(COUNTDOWN_MS + 2000);
+    expect(screen.getByTestId("ride-score")).toHaveTextContent(/^\d+$/);
+    expect(screen.queryByTestId("ride-speed")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ride-grade")).toHaveTextContent("2 % slope");
+  });
+
   it("sets the trainer's slope at the start of each ride", () => {
     const sensor = { ...steadySensor(90), setSlope: vi.fn(() => Promise.resolve(true)) };
     render(
