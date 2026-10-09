@@ -139,7 +139,7 @@ export function Cyclist({
         </clipPath>
       </defs>
 
-      {/* Air rushing past, and the speed scribbles behind: only when pedaling. */}
+      {/* Air rushing past, and dust behind: only when moving. */}
       <g className={cx(styles.speed, moving && styles.moving)}>
         <g className={styles.air}>
           <path d="M285 1336 L450 1361" />
@@ -149,12 +149,12 @@ export function Cyclist({
           <path d="M250 1290 L470 1300" />
           <path d="M330 1080 L520 1095" />
         </g>
-        <g className={styles.scribbles}>
-          <g transform="translate(0,1661) rotate(-90)">
-            <path d="M340 600 C300 560 295 470 330 410 C350 375 375 360 380 395 C385 440 345 545 370 585 C395 620 420 540 430 480 C440 420 445 360 470 360 C490 365 480 430 470 500 C462 555 470 600 495 600" />
-            <path d="M512 320 C505 380 500 430 500 470 C505 500 540 520 555 560 C565 600 555 650 550 690" />
-            <path d="M522 445 L528 452" />
-          </g>
+        {/* Puffs of dust kicked up by the rear wheel, left behind. */}
+        <g className={styles.dust}>
+          <circle cx={690} cy={1320} r={55} />
+          <circle cx={670} cy={1335} r={42} />
+          <circle cx={700} cy={1310} r={65} />
+          <circle cx={680} cy={1330} r={48} />
         </g>
       </g>
 
