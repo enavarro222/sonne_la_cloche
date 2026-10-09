@@ -26,6 +26,9 @@ export const en = {
       placeholder: "First name",
       add: "Add",
       remove: "Remove {{name}}",
+      recolour: "Change {{name}}'s colours",
+      recolour_elided: "Change {{name}}'s colours",
+      help: "Tap a rider to change their colours, drag them to change the order.",
       duplicate: "{{name}} is already playing",
     },
     bike: {

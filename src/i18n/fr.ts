@@ -27,6 +27,9 @@ export const fr: Translation = {
       placeholder: "Prénom",
       add: "Ajouter",
       remove: "Retirer {{name}}",
+      recolour: "Changer les couleurs de {{name}}",
+      recolour_elided: "Changer les couleurs d'{{name}}",
+      help: "Touche un cycliste pour changer ses couleurs, fais-le glisser pour changer l'ordre.",
       duplicate: "{{name}} joue déjà",
     },
     bike: {

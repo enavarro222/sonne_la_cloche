@@ -1,0 +1,134 @@
+.roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(7.5rem, 15vmin, 10rem), 1fr));
+  gap: calc(var(--gap) * 1.2) var(--gap);
+  margin-top: calc(var(--gap) * 1.2);
+  list-style: none;
+}
+
+/* A player: their cyclist on a small sheet of paper, their name in ink below. */
+.rider,
+.emptySeat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.5rem 0.4rem;
+  border-radius: var(--paper-corner);
+  background: var(--paper);
+  border: 4px solid var(--paper);
+  box-shadow: var(--paper-shadow);
+  color: var(--night);
+  transform: rotate(-1.5deg);
+}
+
+/* Laid down by hand: not two sheets at the same angle. */
+.rider:nth-child(3n + 2),
+.emptySeat:nth-child(3n + 2) {
+  transform: rotate(1.2deg);
+}
+
+.rider:nth-child(3n),
+.emptySeat:nth-child(3n) {
+  transform: rotate(-0.4deg);
+}
+
+.riderDrawing {
+  display: block;
+  width: 85%;
+}
+
+.riderName {
+  /* Empty seats keep the height of a name. */
+  min-height: 1.5em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 900;
+  font-size: 1.1em;
+}
+
+/* The first to ride: underlined in pink felt pen. */
+.next .riderName {
+  text-decoration: underline wavy var(--pink) 2px;
+  text-underline-offset: 0.25em;
+}
+
+/* The whole drawing is a button: tap it for the next colours. */
+.recolour {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--tap);
+}
+
+/* Their colours, in the corner of the sheet: it shows the drawing can be tapped. */
+.swatch {
+  position: absolute;
+  left: 0.35rem;
+  bottom: 0.4rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--night);
+  border-radius: 50%;
+}
+
+/* Pinned to the corner of the sheet: a pink pin with a white cross. */
+.remove {
+  position: absolute;
+  top: calc(var(--tap) / -2 + 0.35rem);
+  right: calc(var(--tap) / -2 + 0.35rem);
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+}
+
+.remove span {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow: var(--scrap-shadow);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Dragged to change the order: lifted off the table, following the finger. */
+.rider {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.dragging {
+  z-index: 1;
+  cursor: grabbing;
+  scale: 1.06;
+  box-shadow: 0 14px 28px rgb(0 0 0 / 0.45);
+}
+
+.help {
+  margin-top: calc(var(--gap) * 1.2);
+  font-size: 0.9em;
+  color: var(--cream-faint);
+}
+
+/* A seat to fill: a sheet only sketched, until enough players have joined. */
+.emptySeat {
+  background: transparent;
+  border: 3px dashed var(--line);
+  box-shadow: none;
+  color: var(--cream-faint);
+}
+
+.emptySeat .riderDrawing {
+  opacity: 0.25;
+  filter: grayscale(1) brightness(1.6);
+}

@@ -1,10 +1,8 @@
-import { type SubmitEvent, useEffect, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type Livery, liveryOf } from "../core/livery";
 import {
   canStart,
   MAX_NAME_LENGTH,
-  MIN_PLAYERS,
   normalizeName,
   type Player,
   validateName,
@@ -12,9 +10,8 @@ import {
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
-import { Cyclist } from "./cyclist/Cyclist";
-import { advanceCrank, GEAR_RATIO } from "./cyclist/geometry";
 import styles from "./HomeScreen.module.css";
+import { Roster } from "./Roster";
 import type { SensorState } from "./useSensor";
 
 type BikeCardSensor = Pick<
@@ -117,86 +114,6 @@ function BikeCard({
   );
 }
 
-/** How the riders pedal while the screen waits: each at their own pace. */
-const PACE = {
-  /** Cadence (rpm) of a pedaling spell, drawn at random… */
-  cadence: [40, 70],
-  /** …a little brisker for the first to ride, who is getting ready. */
-  eagerCadence: [60, 85],
-  /** Length of a pedaling spell, then of a pause (s). */
-  spell: [2.5, 7],
-  pause: [1, 3.5],
-  eagerPause: [0.6, 1.5],
-  /** How quickly the legs reach a new cadence (s). */
-  ramp: 0.6,
-  /** How long the wheels keep rolling once the legs stop (s). */
-  coast: 3,
-} as const;
-
-const between = ([low, high]: readonly [number, number]) => low + Math.random() * (high - low);
-
-/** Where the cranks of a rider who waits stand: each one a little differently. */
-const restingCrank = (index: number) => 0.7 + index * 2.1;
-
-/**
- * A rider waiting their turn: spells of pedaling at a pace of their own, with
- * pauses where the legs stop and the wheels roll on and slow down. Still if
- * the device asks for less motion.
- */
-function useIdlePedaling(index: number, eager: boolean) {
-  const [motion, setMotion] = useState(() => ({
-    crankAngle: restingCrank(index),
-    wheelAngle: restingCrank(index) * GEAR_RATIO,
-    rolling: false,
-  }));
-  useEffect(() => {
-    const still =
-      typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (still) return;
-    let pedaling = false;
-    // Not all at once: each starts after a pause of their own.
-    let phaseLeft = eager ? 0 : between([0, 2.5]);
-    let target = 0;
-    let cadence = 0;
-    let wheelRate = 0;
-    let last = performance.now();
-    let raf = 0;
-    const step = (now: number) => {
-      const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
-      last = now;
-      phaseLeft -= dt;
-      if (phaseLeft <= 0) {
-        pedaling = !pedaling;
-        target = pedaling ? between(eager ? PACE.eagerCadence : PACE.cadence) : 0;
-        phaseLeft = between(pedaling ? PACE.spell : eager ? PACE.eagerPause : PACE.pause);
-      }
-      cadence += (target - cadence) * Math.min(1, dt / PACE.ramp);
-      // Driven by the legs, or rolling on and slowing down.
-      const driven = (cadence / 60) * 2 * Math.PI * GEAR_RATIO;
-      wheelRate = Math.max(driven, wheelRate * Math.exp(-dt / PACE.coast));
-      setMotion((m) => ({
-        crankAngle: advanceCrank(m.crankAngle, cadence, dt),
-        wheelAngle: (m.wheelAngle + wheelRate * dt) % (2 * Math.PI),
-        rolling: cadence > 20,
-      }));
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => {
-      cancelAnimationFrame(raf);
-    };
-  }, [eager]);
-  return motion;
-}
-
-/** A player's cyclist, in their colours, pedaling now and then while the screen waits. */
-function RiderDrawing({ livery, eager, index }: { livery: Livery; eager: boolean; index: number }) {
-  const { crankAngle, wheelAngle, rolling } = useIdlePedaling(index, eager);
-  return (
-    <Cyclist crankAngle={crankAngle} wheelAngle={wheelAngle} moving={rolling} livery={livery} />
-  );
-}
-
 interface Props {
   roster: readonly Player[];
   settings: Settings;
@@ -206,6 +123,8 @@ interface Props {
   measuresPower?: boolean;
   onAddPlayer: (name: string) => void;
   onRemovePlayer: (id: string) => void;
+  onRecolourPlayer: (id: string) => void;
+  onMovePlayer: (id: string, index: number) => void;
   onStart: () => void;
   onOpenSettings: () => void;
 }
@@ -218,6 +137,8 @@ export function HomeScreen({
   measuresPower = true,
   onAddPlayer,
   onRemovePlayer,
+  onRecolourPlayer,
+  onMovePlayer,
   onStart,
   onOpenSettings,
 }: Props) {
@@ -282,34 +203,13 @@ export function HomeScreen({
             {t("home.players.duplicate", { name: duplicate })}
           </p>
         )}
-        {/* Each player on their own sheet, with their bike; empty sheets until there are enough. */}
-        <ul className={styles.roster}>
-          {roster.map((player, index) => (
-            <li key={player.id} className={cx(styles.rider, player === firstUp && styles.next)}>
-              <span className={styles.riderDrawing} aria-hidden="true">
-                <RiderDrawing livery={liveryOf(player)} eager={player === firstUp} index={index} />
-              </span>
-              <span className={styles.riderName}>{player.name}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  onRemovePlayer(player.id);
-                }}
-                aria-label={t("home.players.remove", { name: player.name })}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-          {Array.from({ length: Math.max(0, MIN_PLAYERS - roster.length) }, (_, i) => (
-            <li key={`empty-${String(i)}`} className={styles.emptySeat} aria-hidden="true">
-              <span className={styles.riderDrawing}>
-                <Cyclist crankAngle={restingCrank(roster.length + i)} />
-              </span>
-              <span className={styles.riderName} />
-            </li>
-          ))}
-        </ul>
+        <Roster
+          roster={roster}
+          firstUp={firstUp}
+          onRemove={onRemovePlayer}
+          onRecolour={onRecolourPlayer}
+          onMove={onMovePlayer}
+        />
       </section>
 
       <section className={styles.side}>

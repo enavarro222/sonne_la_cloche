@@ -27,6 +27,8 @@ function renderHome(connection: Connection = { kind: "none" }, roster: Player[] 
       bluetoothSupported
       onAddPlayer={noop}
       onRemovePlayer={noop}
+      onRecolourPlayer={noop}
+      onMovePlayer={noop}
       onStart={noop}
       onOpenSettings={noop}
     />,

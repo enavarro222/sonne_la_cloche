@@ -74,6 +74,37 @@ describe("roster", () => {
     expect(state.roster.map((p) => p.livery)).toEqual([0, 2, 1, 3]);
   });
 
+  it("gives a player the next colours nobody else wears", () => {
+    const state = run(
+      initialState(
+        [
+          { ...lea, livery: 0 },
+          { ...tom, livery: 1 },
+        ],
+        DEFAULT_SETTINGS,
+      ),
+      { type: "playerRecoloured", id: "lea" },
+    );
+    expect(state.roster.map((p) => p.livery)).toEqual([2, 1]);
+  });
+
+  it("moves a player in the roster, which sets the order of play", () => {
+    const zoe = { id: "zoe", name: "Zoé" };
+    const start = initialState([lea, tom, zoe], DEFAULT_SETTINGS);
+    const names = (s: typeof start) => s.roster.map((p) => p.name);
+    expect(names(run(start, { type: "playerMoved", id: "zoe", index: 0 }))).toEqual([
+      "Zoé",
+      "Léa",
+      "Tom",
+    ]);
+    expect(names(run(start, { type: "playerMoved", id: "lea", index: 9 }))).toEqual([
+      "Tom",
+      "Zoé",
+      "Léa",
+    ]);
+    expect(run(start, { type: "playerMoved", id: "nobody", index: 0 })).toBe(start);
+  });
+
   it("rejects empty and duplicate names (case-insensitive)", () => {
     const state = run(
       initialState([lea], DEFAULT_SETTINGS),

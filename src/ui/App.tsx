@@ -75,6 +75,12 @@ export function App() {
         onRemovePlayer={(id) => {
           dispatch({ type: "playerRemoved", id });
         }}
+        onRecolourPlayer={(id) => {
+          dispatch({ type: "playerRecoloured", id });
+        }}
+        onMovePlayer={(id, index) => {
+          dispatch({ type: "playerMoved", id, index });
+        }}
         onStart={() => {
           dispatch({ type: "gameStarted", measuresPower: sensor?.measuresPower() ?? true });
         }}

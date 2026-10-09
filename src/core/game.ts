@@ -2,7 +2,7 @@
 // A "round" means every player rides once; the ranking is the sum of every
 // ride over all rounds.
 
-import { freeLivery } from "./livery";
+import { freeLivery, nextLivery } from "./livery";
 import { canStart, normalizeName, type Player, validateName } from "./players";
 import { cleanStats, type RideSample, type RideStats } from "./ride";
 import { consistent, forSensor, type Settings } from "./settings";
@@ -46,6 +46,10 @@ export interface AppState {
 export type Action =
   | { type: "playerAdded"; player: Player }
   | { type: "playerRemoved"; id: string }
+  /** The player's next free colours. */
+  | { type: "playerRecoloured"; id: string }
+  /** The player moves to `index` in the roster: the order the game is played in. */
+  | { type: "playerMoved"; id: string; index: number }
   | { type: "settingsChanged"; settings: Partial<Settings> }
   /** `measuresPower: false` turns a game by distance into one by pedal turns. */
   | { type: "gameStarted"; measuresPower?: boolean }
@@ -94,6 +98,23 @@ export function reducer(state: AppState, action: Action): AppState {
     case "playerRemoved":
       if (game) return state;
       return { ...state, roster: state.roster.filter((p) => p.id !== action.id) };
+    case "playerRecoloured": {
+      if (game) return state;
+      const others = state.roster.filter((p) => p.id !== action.id).map((p) => p.livery);
+      return {
+        ...state,
+        roster: state.roster.map((p) =>
+          p.id === action.id ? { ...p, livery: nextLivery(p.livery, others) } : p,
+        ),
+      };
+    }
+    case "playerMoved": {
+      const player = state.roster.find((p) => p.id === action.id);
+      if (game || !player || !Number.isInteger(action.index)) return state;
+      const rest = state.roster.filter((p) => p.id !== action.id);
+      const index = Math.min(Math.max(0, action.index), rest.length);
+      return { ...state, roster: [...rest.slice(0, index), player, ...rest.slice(index)] };
+    }
     case "settingsChanged":
       if (game) return state;
       return { ...state, settings: consistent({ ...state.settings, ...action.settings }) };

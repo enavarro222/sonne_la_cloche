@@ -91,5 +91,21 @@ export function freeLivery(taken: readonly (number | undefined)[]): number {
   return index === -1 ? taken.length % LIVERIES.length : index;
 }
 
+/**
+ * The colours after `current` that nobody else wears, round the palette:
+ * tapping a rider goes through the free ones. Unchanged if none is free.
+ */
+export function nextLivery(
+  current: number | undefined,
+  others: readonly (number | undefined)[],
+): number {
+  const from = isLivery(current) ? current : -1;
+  for (let step = 1; step <= LIVERIES.length; step++) {
+    const index = (from + step) % LIVERIES.length;
+    if (!others.includes(index)) return index;
+  }
+  return from === -1 ? 0 : from;
+}
+
 export const liveryOf = (player: { livery?: number }): Livery =>
   (isLivery(player.livery) ? LIVERIES[player.livery] : undefined) ?? ORIGINAL_LIVERY;
