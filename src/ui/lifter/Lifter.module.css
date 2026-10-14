@@ -1,100 +1,18 @@
+/* Sizes below are in the drawing's units: about 11 to a pixel. */
 .lifter {
   display: block;
   overflow: visible;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-
-/* Bare arms and legs, like the cyclist's. */
-.arms {
-  stroke: var(--cream);
-  stroke-width: 4;
-}
-
-.legs {
-  stroke: var(--cream);
-  stroke-width: 4.5;
-}
-
-.hands {
-  fill: var(--cream);
-}
-
-/* His pole, garland yellow like the bike. */
-.pole {
-  stroke: var(--yellow);
-  stroke-width: 3;
-}
-
-.shoes {
-  stroke: var(--mint);
-  stroke-width: 4;
-}
-
-/* Like the cyclist's shorts: they must show on the indigo background. */
-.shorts {
-  stroke: var(--pink-dark);
-  stroke-width: 7;
-}
-
-/* A fairground strongman's striped singlet. */
-.singlet {
-  fill: var(--pink);
-}
-
-.stripe {
-  stroke: var(--cream);
-  stroke-width: 2.5;
-  opacity: 0.85;
-}
-
-.strap {
-  stroke: var(--pink);
-  stroke-width: 3;
-}
-
-.head {
-  fill: var(--cream);
-}
-
-.red {
-  fill: #ffb0a0;
-}
-
-.hair {
-  stroke: var(--night);
-  stroke-width: 2.5;
-}
-
-.eye {
-  fill: var(--night);
-}
-
-.cheeks {
-  fill: var(--pink);
-  opacity: 0.6;
-}
-
-.moustache {
-  stroke: var(--night);
-  stroke-width: 1.6;
-}
-
-.mouth {
-  stroke: var(--night);
-  stroke-width: 1.2;
 }
 
 .sweat {
-  fill: var(--mint);
+  fill: #7fc4ea;
 }
 
 /* Always alive: he breathes, faster as the slope he holds gets steeper. */
 .body {
   animation: breathe var(--breath, 1.6s) ease-in-out infinite;
   transform-box: view-box;
-  transform-origin: 32px 64px;
+  transform-origin: 1045px 1524px;
 }
 
 @keyframes breathe {
@@ -117,10 +35,10 @@
     transform: translateX(0);
   }
   25% {
-    transform: translateX(-1px);
+    transform: translateX(-12px);
   }
   75% {
-    transform: translateX(1px);
+    transform: translateX(12px);
   }
 }
 
@@ -135,10 +53,10 @@
     transform: translateX(0);
   }
   25% {
-    transform: translateX(-2px) rotate(-2deg);
+    transform: translateX(-24px) rotate(-2deg);
   }
   75% {
-    transform: translateX(2px) rotate(2deg);
+    transform: translateX(24px) rotate(2deg);
   }
 }
 
@@ -153,7 +71,7 @@
     transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-3px) rotate(4deg);
+    transform: translateY(-35px) rotate(4deg);
   }
 }
 
@@ -168,11 +86,11 @@
 
 @keyframes drip {
   from {
-    transform: translateY(-2px);
+    transform: translateY(-20px);
     opacity: 1;
   }
   to {
-    transform: translateY(6px);
+    transform: translateY(70px);
     opacity: 0;
   }
 }
@@ -180,7 +98,8 @@
 /* The "!" he sees coming, garland yellow: it pops, then throbs. */
 .alarm {
   stroke: var(--yellow);
-  stroke-width: 3.5;
+  stroke-width: 40;
+  stroke-linecap: round;
   fill: var(--yellow);
   transform-box: fill-box;
   transform-origin: 50% 100%;

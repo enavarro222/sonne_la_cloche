@@ -1,62 +1,63 @@
-import type { CSSProperties } from "react";
+import { type CSSProperties, useId } from "react";
 import type { Point } from "../cyclist/geometry";
 import { cx } from "../cx";
 import styles from "./Lifter.module.css";
 
-// A fairground strongman standing at the bottom of the screen, holding up the
-// end of the track with a pole: striped singlet, curly moustache, knees bent.
-// He grips the pole above his head, elbows bent; the pole reaches the track,
-// however far. The steeper the slope, the redder his face.
+// The pole bearer, drawn by a young rider: red cap, big round eyes, hatched
+// top, orange legs. He stands at the bottom of the screen and holds up the
+// end of the track with a pole: it turns around his lower fist to reach the
+// track and grows as long as needed; his raised fist slides along it. In the
+// original drawing's units, with its crayon grain and wobbly lines.
 
-/** His drawing is 64 units square… */
-const DRAWING = 64;
-/** …shown this big (px): a bit smaller than the cyclist. */
-export const SIZE = 80;
-const SCALE = SIZE / DRAWING;
+/** His box (feet at the bottom, centred), in the drawing's units… */
+const VIEW = { x: 415, y: 264, size: 1260 };
+/** …shown this big (px). */
+export const SIZE = 110;
+const SCALE = SIZE / VIEW.size;
 
 /** From this grade (%) he sweats… */
 const SWEAT_FROM = 5;
-/** …and from this one he shakes. */
+/** …and from this one he shakes, red in the face. */
 const SHAKE_FROM = 8;
-/** Gap between his two hands on the pole, in drawing units. */
-const HANDS_APART = 4;
-// Long enough to bend at the elbows when gripping above his head.
-const UPPER_ARM = 14;
-const FOREARM = 13;
-/** Where he grips the pole: just above his head. */
-const GRIP: Point = { x: 32, y: 1 };
 
-const HEAD: Point = { x: 32, y: 12 };
-const SHOULDERS = { left: { x: 25, y: 24 }, right: { x: 39, y: 24 } };
-const HIPS = { left: { x: 28, y: 42 }, right: { x: 36, y: 42 } };
+/** The pole's foot, by his belt; his lower fist holds it just above. */
+const POLE_FOOT: Point = { x: 886, y: 700 };
+const LOWER_FIST_ALONG = 38;
+/** His raised fist, this far up the pole from its foot. */
+const UPPER_FIST_ALONG = 320;
+const POLE_WIDTH = { foot: 34, tip: 6 };
+/** Where the raised arm leaves his shoulder, and the short arm his side. */
+const SHOULDER: Point = { x: 995, y: 572 };
+const SIDE: Point = { x: 940, y: 675 };
+const OTHER_SHOULDER: Point = { x: 1150, y: 600 };
 
-/**
- * The elbow between a shoulder and a hand, bent outwards (`side` -1 for the
- * left arm, +1 for the right). Out of reach, the arm stretches straight.
- */
-function elbow(shoulder: Point, hand: Point, side: number): Point {
-  const dx = hand.x - shoulder.x;
-  const dy = hand.y - shoulder.y;
-  const distance = Math.hypot(dx, dy) || 1;
-  const reach = Math.min(distance, UPPER_ARM + FOREARM - 1e-6);
-  const along = (UPPER_ARM ** 2 - FOREARM ** 2 + reach ** 2) / (2 * reach);
-  const across = Math.sqrt(Math.max(0, UPPER_ARM ** 2 - along ** 2));
-  const ux = dx / distance;
-  const uy = dy / distance;
-  // Of the two perpendiculars, the one pointing away from his body (or up).
-  let px = -uy;
-  let py = ux;
-  if (px * side < 0 || (px === 0 && py > 0)) {
-    px = -px;
-    py = -py;
-  }
-  return {
-    x: shoulder.x + ux * along + px * across,
-    y: shoulder.y + uy * along + py * across,
-  };
+/** The fists, as drawn, centred on (0, 0). */
+const FIST =
+  "M-46 25 C-54 5, -52 -17, -40 -29 q 4 -18 22 -14 q 8 -16 25 -8 q 14 -12 26 4 q 16 4 14 24 C50 5, 38 31, 14 39 C-10 45, -36 39, -46 25 Z";
+const KNUCKLES = "M-18 -43 l 2 18 M7 -51 l 1 20 M32 -47 l -1 18";
+const THUMB = "M-38 5 q 26 -12 54 -2 q 10 4 5 14";
+
+const SKIN = "#8b3d2b";
+
+/** A band from `a` (width `wa`) to `b` (width `wb`). */
+function band(a: Point, b: Point, wa: number, wb: number): string {
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const nx = -(b.y - a.y) / len;
+  const ny = (b.x - a.x) / len;
+  const p = (q: Point, w: number, s: number) =>
+    `${(q.x + (nx * w * s) / 2).toFixed(1)} ${(q.y + (ny * w * s) / 2).toFixed(1)}`;
+  return `M${p(a, wa, 1)} L${p(b, wb, 1)} L${p(b, wb, -1)} L${p(a, wa, -1)} Z`;
 }
 
-const points = (...list: Point[]) => list.map((p) => `${p.x},${p.y}`).join(" ");
+function Fist({ at, crayon }: { at: Point; crayon: string }) {
+  return (
+    <g transform={`translate(${at.x.toFixed(1)} ${at.y.toFixed(1)})`}>
+      <path d={FIST} fill={SKIN} filter={crayon} />
+      <path d={KNUCKLES} fill="none" strokeWidth={3} />
+      <path d={THUMB} fill="none" strokeWidth={3.5} />
+    </g>
+  );
+}
 
 interface Props {
   /** Where his pole holds the track, px from the top left of his box (y < 0: above him). */
@@ -64,125 +65,228 @@ interface Props {
   gradePct: number;
   /** He sees the finale coming: eyes up at the falling seconds, he panics. */
   alarmed?: boolean;
-  /** The time is falling on his head: he lets go and runs, arms over his head. */
+  /** The time is falling on his head: he lets go and runs, fists up. */
   fleeing?: boolean;
 }
 
 export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = false }: Props) {
-  const lifting = gradePct > 0 && !fleeing;
-  const straining = lifting && gradePct >= SHAKE_FROM;
-  const scared = alarmed || fleeing;
-  const sweating = scared || (lifting && gradePct >= SWEAT_FROM);
-  // Scared, he looks up at the seconds coming down, eyes wide.
-  const eyeY = scared ? HEAD.y - 2 : HEAD.y - 0.5;
-  const eyeR = scared ? 1.4 : 1;
-  const hold = { x: holdPx.x / SCALE, y: holdPx.y / SCALE };
-  // The pole goes from just below his grip up to the track.
-  const toTrack = { x: hold.x - GRIP.x, y: hold.y - GRIP.y };
-  const length = Math.hypot(toTrack.x, toTrack.y) || 1;
-  const dir = { x: toTrack.x / length, y: toTrack.y / length };
-  const poleFoot = { x: GRIP.x - dir.x * 7, y: GRIP.y - dir.y * 7 };
-  // Hands on the pole when lifting, over his head when fleeing, else on hips.
-  const hands = lifting
-    ? {
-        left: GRIP,
-        right: { x: GRIP.x + dir.x * HANDS_APART, y: GRIP.y + dir.y * HANDS_APART },
-      }
-    : fleeing
-      ? { left: { x: HEAD.x - 4, y: HEAD.y - 9 }, right: { x: HEAD.x + 4, y: HEAD.y - 9 } }
-      : { left: { x: 26, y: 40 }, right: { x: 38, y: 40 } };
-  const elbows = {
-    left: elbow(SHOULDERS.left, hands.left, -1),
-    right: elbow(SHOULDERS.right, hands.right, 1),
+  const id = useId();
+  const ids = {
+    crayon: `${id}-crayon`,
+    wobble: `${id}-wobble`,
+    hatch: `${id}-hatch`,
+    pole: `${id}-pole`,
   };
+  const crayon = `url(#${ids.crayon})`;
+  const straining = !fleeing && gradePct >= SHAKE_FROM;
+  const scared = alarmed || fleeing;
+  const sweating = scared || gradePct >= SWEAT_FROM;
+
+  // The pole, from its foot to the track.
+  const hold = { x: VIEW.x + holdPx.x / SCALE, y: VIEW.y + holdPx.y / SCALE };
+  const length = Math.max(
+    UPPER_FIST_ALONG + 40,
+    Math.hypot(hold.x - POLE_FOOT.x, hold.y - POLE_FOOT.y),
+  );
+  const angle = Math.atan2(hold.y - POLE_FOOT.y, hold.x - POLE_FOOT.x);
+  const along = (d: number): Point => ({
+    x: POLE_FOOT.x + Math.cos(angle) * d,
+    y: POLE_FOOT.y + Math.sin(angle) * d,
+  });
+  // On the pole, or up over his head when he runs away.
+  const fists = fleeing
+    ? { upper: { x: 1030, y: 230 }, lower: { x: 1165, y: 240 } }
+    : { upper: along(UPPER_FIST_ALONG), lower: along(LOWER_FIST_ALONG) };
+  const lowerArmFrom = fleeing ? OTHER_SHOULDER : SIDE;
+  // Scared, he looks up at the seconds coming down.
+  const pupilY = scared ? -9 : 0;
   const mouth = scared
-    ? `M ${HEAD.x - 1.6} ${HEAD.y + 4.5} a 1.6 1.6 0 1 0 3.2 0 a 1.6 1.6 0 1 0 -3.2 0`
-    : gradePct < 3
-      ? `M ${HEAD.x - 3} ${HEAD.y + 4.5} q 3 2.5 6 0`
-      : straining
-        ? `M ${HEAD.x - 3} ${HEAD.y + 5} l 1.5 -1 l 1.5 1 l 1.5 -1 l 1.5 1`
-        : `M ${HEAD.x - 2.5} ${HEAD.y + 5} h 5`;
+    ? "M1086 458 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0"
+    : straining
+      ? "M1078 454 l 9 -7 l 9 7 l 9 -7 l 9 7"
+      : gradePct >= SWEAT_FROM
+        ? "M1080 455 h 34"
+        : "M1080 452 q 18 10 34 -2";
 
   return (
     <svg
       className={styles.lifter}
       // Holding a steep track, he breathes hard.
-      style={
-        { "--breath": `${lifting ? Math.max(0.5, 1.4 - gradePct * 0.1) : 1.6}s` } as CSSProperties
-      }
+      style={{ "--breath": `${Math.max(0.5, 1.4 - gradePct * 0.1)}s` } as CSSProperties}
       width={SIZE}
       height={SIZE}
-      viewBox={`0 0 ${DRAWING} ${DRAWING}`}
+      viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.size} ${VIEW.size}`}
       aria-hidden="true"
     >
-      {lifting && (
-        <line className={styles.pole} x1={poleFoot.x} y1={poleFoot.y} x2={hold.x} y2={hold.y} />
-      )}
-      <g className={styles.arms}>
-        <polyline points={points(SHOULDERS.left, elbows.left, hands.left)} />
-        <polyline points={points(SHOULDERS.right, elbows.right, hands.right)} />
-      </g>
-      {/* Only his body breathes and shakes: his hands stay on the pole. */}
+      <defs>
+        {/* Crayon grain in the colours… */}
+        <filter id={ids.crayon} x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.8"
+            numOctaves="2"
+            seed="4"
+            result="n"
+          />
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.6 1.25"
+            result="grain"
+          />
+          <feComposite in="SourceGraphic" in2="grain" operator="in" />
+        </filter>
+        {/* …and a hand's wobble in the lines. */}
+        <filter id={ids.wobble}>
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.04"
+            numOctaves="2"
+            seed="7"
+            result="w"
+          />
+          <feDisplacementMap in="SourceGraphic" in2="w" scale="5" />
+        </filter>
+        <pattern
+          id={ids.hatch}
+          width="14"
+          height="14"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(-35)"
+        >
+          <rect width="14" height="14" fill="#f7c9a0" />
+          <line x1="0" y1="0" x2="0" y2="14" stroke="#ef9a55" strokeWidth="7" />
+        </pattern>
+        {/* Light on one side of the pole, dark on the other. */}
+        <linearGradient id={ids.pole} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#e3d84f" />
+          <stop offset="0.4" stopColor="#b8b346" />
+          <stop offset="0.75" stopColor="#55553a" />
+          <stop offset="1" stopColor="#2e2e28" />
+        </linearGradient>
+      </defs>
+
       <g
-        className={cx(
-          styles.body,
-          straining && styles.shaking,
-          alarmed && styles.panicking,
-          fleeing && styles.running,
-        )}
+        filter={`url(#${ids.wobble})`}
+        stroke="#45403a"
+        strokeWidth={4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <g className={styles.legs}>
-          <polyline points={points(HIPS.left, { x: 22, y: 51 }, { x: 22, y: 60 })} />
-          <polyline points={points(HIPS.right, { x: 42, y: 51 }, { x: 42, y: 60 })} />
-        </g>
-        <g className={styles.shoes}>
-          <line x1={17} y1={61} x2={24} y2={61} />
-          <line x1={40} y1={61} x2={47} y2={61} />
-        </g>
-        <line className={styles.shorts} x1={26} y1={42} x2={38} y2={42} />
-        {/* Striped singlet, one strap over the shoulder. */}
-        <rect className={styles.singlet} x={25} y={21} width={14} height={20} rx={4} />
-        <line className={styles.stripe} x1={25.5} y1={31} x2={38.5} y2={31} />
-        <line className={styles.strap} x1={28} y1={21} x2={36} y2={21} />
-        <circle
-          className={cx(styles.head, straining && styles.red)}
-          cx={HEAD.x}
-          cy={HEAD.y}
-          r={7}
-        />
-        <path className={styles.hair} d={`M ${HEAD.x - 6} ${HEAD.y - 3} q 6 -7 12 0`} />
-        <circle className={styles.eye} cx={HEAD.x - 2.6} cy={eyeY} r={eyeR} />
-        <circle className={styles.eye} cx={HEAD.x + 2.6} cy={eyeY} r={eyeR} />
-        {lifting && gradePct >= SWEAT_FROM && !scared && (
-          <g className={styles.cheeks}>
-            <circle cx={HEAD.x - 4.2} cy={HEAD.y + 2.5} r={1.4} />
-            <circle cx={HEAD.x + 4.2} cy={HEAD.y + 2.5} r={1.4} />
+        {/* The pole: thick at his fists, thin at the track. Dropped when he runs. */}
+        {!fleeing && (
+          <g
+            transform={`translate(${POLE_FOOT.x} ${POLE_FOOT.y}) rotate(${(angle * 180) / Math.PI})`}
+          >
+            <path
+              d={`M0 ${-POLE_WIDTH.foot / 2} L${length} ${-POLE_WIDTH.tip / 2} L${length} ${POLE_WIDTH.tip / 2} L0 ${POLE_WIDTH.foot / 2} Z`}
+              fill={`url(#${ids.pole})`}
+              stroke="none"
+              filter={crayon}
+            />
+            <path
+              d={`M0 ${-POLE_WIDTH.foot / 2} L${length} ${-POLE_WIDTH.tip / 2}`}
+              fill="none"
+              stroke="#c7bd3a"
+              strokeWidth={5}
+              opacity={0.7}
+            />
           </g>
         )}
-        {/* The curly moustache of a fairground strongman. */}
-        <path
-          className={styles.moustache}
-          d={`M ${HEAD.x} ${HEAD.y + 2.6} q -2.5 -1.5 -4.5 0.5 q 1 -0.2 1.5 0.8 M ${HEAD.x} ${HEAD.y + 2.6} q 2.5 -1.5 4.5 0.5 q -1 -0.2 -1.5 0.8`}
-        />
-        <path className={styles.mouth} d={mouth} />
-        {sweating && (
-          <g className={cx(styles.sweat, scared && styles.dripping)}>
-            <path d={`M ${HEAD.x + 9} ${HEAD.y - 6} q 1.6 3.2 0 4 q -1.6 -0.8 0 -4`} />
-            <path d={`M ${HEAD.x - 9.5} ${HEAD.y - 3} q 1.6 3.2 0 4 q -1.6 -0.8 0 -4`} />
-          </g>
-        )}
+
+        {/* His body breathes, shakes or runs; his fists stay on the pole. */}
+        <g
+          className={cx(
+            styles.body,
+            straining && styles.shaking,
+            alarmed && styles.panicking,
+            fleeing && styles.running,
+          )}
+        >
+          {/* Legs. */}
+          <path d="M918 900 L 1002 900 L 998 1462 L 922 1468 Z" fill="#f28a1a" filter={crayon} />
+          <path
+            d="M1088 900 L 1172 900 L 1176 1290 L 1150 1350 L 1166 1462 L 1092 1468 Z"
+            fill="#f28a1a"
+            filter={crayon}
+          />
+          {/* Yellow-green shoes with rounds. */}
+          <path
+            d="M1000 1460 L 790 1458 Q 778 1490 792 1522 L 1004 1520 Z"
+            fill="#cfd03c"
+            filter={crayon}
+          />
+          <circle cx={840} cy={1492} r={16} fill="none" stroke="#3a3a30" strokeWidth={5} />
+          <path
+            d="M1090 1462 L 1300 1460 Q 1314 1492 1300 1524 L 1092 1522 Z"
+            fill="#cfd03c"
+            filter={crayon}
+          />
+          <circle cx={1240} cy={1494} r={16} fill="none" stroke="#3a3a30" strokeWidth={5} />
+          {/* Hatched top with a flared hem, brown belt. */}
+          <path
+            d="M955 540 C 1010 520, 1080 520, 1150 545 L 1162 860 L 1175 905 L 915 905 L 930 860 Z"
+            fill={`url(#${ids.hatch})`}
+            filter={crayon}
+          />
+          <path d="M930 860 L 1162 860" fill="none" strokeWidth={3} />
+          <path d="M928 655 L 1160 650 L 1162 695 L 926 700 Z" fill="#7a3122" filter={crayon} />
+          {/* Neck and head. */}
+          <path d="M1070 482 L 1108 482 L 1112 548 L 1068 548 Z" fill="#a24a2c" filter={crayon} />
+          <circle
+            cx={1095}
+            cy={398}
+            r={86}
+            fill={straining ? "#b8402c" : "#8f4630"}
+            filter={crayon}
+          />
+          {/* Red cap with its peak. */}
+          <path
+            d="M1015 350 C 1025 300, 1080 280, 1130 290 C 1170 298, 1185 325, 1180 350 Z"
+            fill="#d8383a"
+            filter={crayon}
+          />
+          <path
+            d="M1015 350 L 960 352 Q 955 336 975 332 L 1020 334"
+            fill="#c42f30"
+            filter={crayon}
+          />
+          <path d="M1015 350 L 1180 350" fill="none" strokeWidth={5} />
+          <path
+            d="M1060 292 l -6 -22 M1078 288 l -2 -24 M1096 288 l 2 -22"
+            fill="none"
+            strokeWidth={3}
+          />
+          {/* Big round eyes: looking up when something is coming. */}
+          <circle cx={1065} cy={405} r={26} fill="#f2ebe1" />
+          <circle cx={1065} cy={405 + pupilY} r={12} fill="none" strokeWidth={4} />
+          <circle cx={1065} cy={405 + pupilY} r={3} fill="#45403a" />
+          <circle cx={1125} cy={395} r={26} fill="#f2ebe1" />
+          <circle cx={1125} cy={395 + pupilY} r={12} fill="none" strokeWidth={4} />
+          <circle cx={1125} cy={395 + pupilY} r={3} fill="#45403a" />
+          <path d={mouth} fill="none" strokeWidth={4} />
+          {sweating && (
+            <g className={cx(styles.sweat, scared && styles.dripping)} stroke="none">
+              <path d="M1196 330 q 12 26 0 34 q -12 -8 0 -34" />
+              <path d="M992 360 q 12 26 0 34 q -12 -8 0 -34" />
+            </g>
+          )}
+        </g>
+
+        {/* Arms: the raised one from his shoulder, the short one from his side. */}
+        <path d={band(SHOULDER, fists.upper, 34, 28)} fill={SKIN} filter={crayon} />
+        <path d={band(lowerArmFrom, fists.lower, 30, 28)} fill={SKIN} filter={crayon} />
+        <Fist at={fists.upper} crayon={crayon} />
+        <Fist at={fists.lower} crayon={crayon} />
       </g>
+
       {/* A big "!" by his head: something is coming. */}
       {alarmed && (
         <g className={styles.alarm}>
-          <line x1={HEAD.x + 14} y1={HEAD.y - 14} x2={HEAD.x + 13} y2={HEAD.y - 4} />
-          <circle cx={HEAD.x + 12.8} cy={HEAD.y + 0.5} r={1.6} />
+          <line x1={1250} y1={200} x2={1238} y2={330} />
+          <circle cx={1234} cy={385} r={18} />
         </g>
       )}
-      <g className={styles.hands}>
-        <circle cx={hands.left.x} cy={hands.left.y} r={2.6} />
-        <circle cx={hands.right.x} cy={hands.right.y} r={2.6} />
-      </g>
     </svg>
   );
 }
