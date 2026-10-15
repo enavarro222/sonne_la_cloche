@@ -3,6 +3,7 @@ import { type Action, type Game, initialState, reducer } from "./game";
 import {
   type Course,
   courseFor,
+  courseOf,
   gradeFor,
   MAX_EXTRA_GRADE,
   raiseCourse,
@@ -116,6 +117,37 @@ describe("courseFor", () => {
     }
   });
 
+  it("does not depend on the order of play within a round", () => {
+    // Round 1: Léa 50 W, Tom 300 W. In round 2 Léa rides first and improves.
+    const tomFirst = courseOf(played([50, 300]), "tom", 2);
+    const tomAfterLea = courseFor(played([50, 300, 70]));
+    expect(tomAfterLea).toEqual(tomFirst);
+    // Léa's progress counts from round 3 on, for everyone.
+    const roundThree = courseFor(played([50, 300, 70, 300]));
+    expect(roundThree.startSpeed).toBeGreaterThan(tomFirst.startSpeed);
+  });
+
+  it("gives a retried ride the course of the first attempt", () => {
+    const first = courseFor(played([50, 300]));
+    const retry: Action[] = [
+      {
+        type: "rideFinished",
+        points: 100,
+        stats: { ...NO_STATS, avgPower: 120 },
+        trace: { startedAt: "2026-10-05T15:00:00.000Z", samples: [] },
+      },
+      { type: "rideRetried" },
+    ];
+    const start = played([50, 300]);
+    const { game } = retry.reduce(reducer, {
+      roster: [lea, tom],
+      settings: start.settings,
+      game: start,
+    });
+    expect(game?.phase).toBe("riding");
+    expect(game && courseFor(game)).toEqual(first);
+  });
+
   it("caps the handicap", () => {
     expect(courseFor(played([20, 2000, 20])).gradePct).toBe(MAX_EXTRA_GRADE);
   });
@@ -128,6 +160,15 @@ describe("courseFor", () => {
 });
 
 describe("referencePowers", () => {
+  it("can leave out a round and the ones after it", () => {
+    expect(referencePowers(played([150, 300, 180, 250]), 2)).toEqual(
+      new Map([
+        ["lea", 150],
+        ["tom", 300],
+      ]),
+    );
+  });
+
   it("keeps each player's best average: it only goes up", () => {
     const refs = referencePowers(played([150, 300, 180, 250]));
     expect(refs).toEqual(

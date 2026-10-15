@@ -80,11 +80,13 @@ export interface Course {
 
 /**
  * Each player's reference power: their best average over the rides of this
- * game. It only goes up, so riding easy in round 1 does not pay for long.
+ * game before `beforeRound` (all of them by default). It only goes up, so
+ * riding easy in round 1 does not pay for long.
  */
-export function referencePowers(game: Game): Map<string, number> {
+export function referencePowers(game: Game, beforeRound = Infinity): Map<string, number> {
   const refs = new Map<string, number>();
   for (const ride of game.rides) {
+    if (ride.round >= beforeRound) continue;
     refs.set(ride.playerId, Math.max(refs.get(ride.playerId) ?? 0, ride.stats.avgPower));
   }
   return refs;
@@ -120,7 +122,9 @@ export const courseFor = (game: Game): Course => courseOf(game, currentPlayer(ga
 export function courseOf(game: Game, playerId: string, round: number): Course {
   const base = SLOPE_PERCENT[game.settings.slope];
   if (game.settings.slope !== "own") return commonCourse(base, false);
-  const refs = referencePowers(game);
+  // The levels as the round started: whoever rides first, and a ride being
+  // retried, change nothing for the others in the same round.
+  const refs = referencePowers(game, round);
   const own = refs.get(playerId);
   // Round 1, or a player without a ride yet: measuring.
   if (round === 1 || own === undefined) return commonCourse(base, true);
