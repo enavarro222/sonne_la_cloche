@@ -8,7 +8,7 @@ const samples = (count: number, cadence: number, power: number) =>
 const START = Date.parse("2026-09-29T15:00:00.000Z");
 const rides = [
   { startedAt: START + 120_000, samples: samples(30, 60, 40) },
-  { startedAt: START, samples: samples(30, 90, 70) },
+  { startedAt: START, gradePct: 5, samples: samples(30, 90, 70) },
 ];
 
 async function parse(bytes: Uint8Array<ArrayBuffer>) {
@@ -33,36 +33,49 @@ describe("buildFit", () => {
     expect(fit.records?.some((r) => r.position_lat !== undefined)).toBe(false);
   });
 
-  it("has a lap per ride in time order, and a record per second", async () => {
+  it("has a lap per ride in time order, back to back, and a record per second", async () => {
     const fit = await parse(buildFit(rides));
     expect(fit.laps?.map((l) => [l.start_time?.toISOString(), l.avg_cadence, l.avg_power])).toEqual(
       [
         ["2026-09-29T15:00:00.000Z", 90, 70],
-        ["2026-09-29T15:02:00.000Z", 60, 40],
+        // Right after the first one, not two minutes later.
+        ["2026-09-29T15:00:31.000Z", 60, 40],
       ],
     );
-    // 60 samples, plus a standstill point at each end of both rides.
-    expect(fit.records).toHaveLength(64);
+    // 60 samples, a standstill point at the start of both rides and at the end.
+    expect(fit.records).toHaveLength(63);
     expect(fit.records?.[1]).toMatchObject({ cadence: 90, power: 70 });
   });
 
-  it("counts only ridden time, not the waits between rides", async () => {
+  it("leaves out the waits between rides: they would count as moving time", async () => {
     const session = (await parse(buildFit(rides))).sessions?.[0];
     expect(session?.total_timer_time).toBe(60);
-    expect(session?.total_elapsed_time).toBe(150);
+    expect(session?.total_elapsed_time).toBe(61);
     expect(session?.num_laps).toBe(2);
     // 30 s at 90 rpm (6 m/s) + 30 s at 60 rpm (4 m/s).
     expect(session?.total_distance).toBeCloseTo(300);
+    // 300 m in 60 s.
+    expect(session?.avg_speed).toBeCloseTo(5, 1);
+    expect(session?.max_speed).toBeCloseTo(6, 1);
   });
 
-  it("stands still at the start and end of each ride", async () => {
+  it("climbs the slope of each ride", async () => {
+    const fit = await parse(buildFit(rides));
+    const altitudes = fit.records?.map((r) => r.altitude ?? 0) ?? [];
+    // 180 m at 5 %: 9 m up, then the flat ride.
+    expect((altitudes.at(-1) ?? 0) - (altitudes[0] ?? 0)).toBeCloseTo(9, 0);
+    expect(fit.laps?.map((l) => l.total_ascent)).toEqual([9, 0]);
+    expect(fit.sessions?.[0]?.total_ascent).toBe(9);
+  });
+
+  it("stands still at the start of each ride and at the end", async () => {
     const records = (await parse(buildFit(rides))).records ?? [];
     const times = (i: number) => records[i]?.timestamp?.toISOString();
     expect(records[0]).toMatchObject({ speed: 0, cadence: 0, power: 0 });
     expect(times(0)).toBe("2026-09-29T15:00:00.000Z");
     expect(records[31]).toMatchObject({ speed: 0, cadence: 0, power: 0 });
     expect(times(31)).toBe("2026-09-29T15:00:31.000Z");
-    expect(records[32]).toMatchObject({ speed: 0, cadence: 0 });
-    expect(times(32)).toBe("2026-09-29T15:02:00.000Z");
+    expect(records.at(-1)).toMatchObject({ speed: 0, cadence: 0, power: 0 });
+    expect(records.at(-1)?.timestamp?.toISOString()).toBe("2026-09-29T15:01:02.000Z");
   });
 });

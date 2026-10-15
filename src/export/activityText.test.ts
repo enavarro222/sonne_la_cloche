@@ -9,7 +9,12 @@ const game = (rank: number, rides = 3): PlayerActivity => ({
   rank,
   players: 6,
   total: 1881,
-  rides: Array.from({ length: rides }, () => ({ startedAt: 0, points: 627, samples: [] })),
+  rides: Array.from({ length: rides }, () => ({
+    startedAt: 0,
+    points: 627,
+    gradePct: 0,
+    samples: [],
+  })),
   summary: null,
   strava: true,
 });

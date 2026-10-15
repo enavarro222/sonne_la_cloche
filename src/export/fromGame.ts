@@ -1,4 +1,5 @@
 import { type Game, standings, summarize } from "../core/game";
+import { SLOPE_PERCENT } from "../core/settings";
 import type { Locale } from "../i18n/locales";
 import type { PlayerActivity } from "./playerLink";
 
@@ -23,6 +24,8 @@ export function playerActivities(game: Game, locale: Locale, strava: boolean): P
         .map((r) => ({
           startedAt: Date.parse(r.trace.startedAt),
           points: r.points,
+          // Their own slope, or the one everyone rode.
+          gradePct: r.gradePct ?? SLOPE_PERCENT[game.settings.slope],
           samples: r.trace.samples,
         })),
       summary,

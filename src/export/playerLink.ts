@@ -11,6 +11,8 @@ export interface PlayerRide {
   /** Milliseconds since the epoch (kept to the second). */
   startedAt: number;
   points: number;
+  /** The slope ridden, in percent (0 in older links). */
+  gradePct: number;
   samples: readonly RideSample[];
 }
 
@@ -86,6 +88,10 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
       t: activity.total,
       ...(activity.summary && { s: packSummary(activity.summary) }),
       ...(!activity.strava && { d: 1 }),
+      // The slopes, to a tenth of a percent, if any.
+      ...(activity.rides.some((ride) => ride.gradePct !== 0) && {
+        g: activity.rides.map((ride) => Math.round(ride.gradePct * 10) / 10),
+      }),
     }),
   );
   const size =
@@ -120,7 +126,8 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
     new TextDecoder().decode(bytes.subarray(o, o + headerLength)),
   ) as Record<string, unknown>;
   o += headerLength;
-  const { l, n, r, p, t, s, d } = header;
+  const { l, n, r, p, t, s, d, g } = header;
+  const grades = Array.isArray(g) ? (g as unknown[]) : [];
   if (
     typeof l !== "string" ||
     !isLocale(l) ||
@@ -146,7 +153,13 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
         power: view.getUint8(o++) * POWER_STEP,
       });
     }
-    rides.push({ startedAt, points, samples });
+    const grade = grades[i];
+    rides.push({
+      startedAt,
+      points,
+      gradePct: typeof grade === "number" && Number.isFinite(grade) ? grade : 0,
+      samples,
+    });
   }
   return {
     locale: l,

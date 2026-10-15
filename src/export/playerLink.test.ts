@@ -25,6 +25,7 @@ const activity = (rounds: number, seconds: number, sample: (i: number) => [numbe
   rides: Array.from({ length: rounds }, (_, r) => ({
     startedAt: START + r * 240_000,
     points: 627,
+    gradePct: r * 2.5,
     samples: Array.from({ length: seconds }, (_, s) => {
       const [cadence, power] = sample(r * seconds + s);
       return { second: s + 1, cadence, power };
@@ -43,6 +44,12 @@ describe("player link", () => {
   it("keeps a demo game away from Strava", async () => {
     const original = { ...activity(1, 5, () => [90, 100]), strava: false };
     expect(await decodePlayerActivity(await encodePlayerActivity(original))).toEqual(original);
+  });
+
+  it("reads links made before the slopes were added: flat", async () => {
+    const original = activity(2, 5, () => [90, 100]);
+    const flat = { ...original, rides: original.rides.map((ride) => ({ ...ride, gradePct: 0 })) };
+    expect(await decodePlayerActivity(await encodePlayerActivity(flat))).toEqual(flat);
   });
 
   it("reads links made before the summary was added", async () => {
