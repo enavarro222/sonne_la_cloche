@@ -1,6 +1,6 @@
 // Renders the link preview cards (public/og-fr.jpg, public/og-en.jpg) and the
 // app icons (public/icon.svg and its PNGs) from src/preview/, with the game's
-// own drawings. Run after changing a drawing: pnpm og-image
+// own drawings; also the bell of the end-of-game image (src/ui/share/bell.svg). Run after changing a drawing: pnpm og-image
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "@playwright/test";
@@ -36,6 +36,18 @@ const svg = await icon
   .evaluate((element) => element.outerHTML.replace(/[«»]/g, "").replace(/ data-icon="[^"]*"/, ""));
 await writeFile(out("icon.svg"), `${svg}\n`);
 console.log(out("icon.svg"));
+// The bell alone, for the end-of-game image drawn on a canvas.
+const bell = await icon
+  .locator('svg[viewBox="400 440 780 950"]')
+  .evaluate((element) =>
+    element.outerHTML
+      .replace(/[«»]/g, "")
+      .replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ')
+      .replace('width="100%"', 'width="780" height="950"'),
+  );
+const bellPath = fileURLToPath(new URL("../src/ui/share/bell.svg", import.meta.url));
+await writeFile(bellPath, `${bell}\n`);
+console.log(bellPath);
 const sizes: [string, number, boolean][] = [
   ["icon-512.png", 512, false],
   ["icon-192.png", 192, false],

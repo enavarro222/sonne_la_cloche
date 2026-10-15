@@ -4,9 +4,11 @@ import "../ui/theme.css";
 
 import { createRoot } from "react-dom/client";
 import { Card, Icon } from "./Preview";
+import { ResultPreview } from "./ResultPreview";
 
 // The link preview cards and the app icon, drawn with the game's own drawings.
 // Rendered to public/ by scripts/og-image.ts: ?view=card&lang=fr, ?view=icon.
+// ?view=result shows the end-of-game image for a sample party.
 
 const params = new URLSearchParams(location.search);
 // The icon's rounded corners stay transparent: no paper behind them.
@@ -14,7 +16,9 @@ if (params.get("view") === "icon") document.body.style.background = "none";
 const root = document.getElementById("root");
 if (!root) throw new Error("#root element missing");
 createRoot(root).render(
-  params.get("view") === "icon" ? (
+  params.get("view") === "result" ? (
+    <ResultPreview />
+  ) : params.get("view") === "icon" ? (
     <Icon maskable={params.has("maskable")} />
   ) : (
     <Card lang={params.get("lang") === "en" ? "en" : "fr"} />
