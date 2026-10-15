@@ -1,16 +1,58 @@
-// Renders the link preview images (public/og-fr.jpg, public/og-en.jpg) from
-// og-image.html. Run after changing the card: pnpm og-image
+// Renders the link preview cards (public/og-fr.jpg, public/og-en.jpg) and the
+// app icons (public/icon.svg and its PNGs) from src/preview/, with the game's
+// own drawings. Run after changing a drawing: pnpm og-image
+import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { chromium } from "@playwright/test";
+import { chromium, type Page } from "@playwright/test";
+import { createServer } from "vite";
 
-const pageUrl = new URL("og-image.html", import.meta.url);
+const root = fileURLToPath(new URL("..", import.meta.url));
+const out = (name: string) => fileURLToPath(new URL(`../public/${name}`, import.meta.url));
+
+const server = await createServer({ root, logLevel: "error", server: { port: 0 } });
+await server.listen();
+const base = server.resolvedUrls?.local[0];
+if (!base) throw new Error("Vite did not start");
+
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-for (const lang of ["fr", "en"]) {
-  await page.goto(`${pageUrl}?lang=${lang}`);
+const open = async (page: Page, query: string) => {
+  await page.goto(`${base}scripts/og-image.html?${query}`);
+  await page.locator("#root > *").waitFor();
   await page.evaluate(() => document.fonts.ready);
-  const path = fileURLToPath(new URL(`../public/og-${lang}.jpg`, import.meta.url));
-  await page.screenshot({ path, type: "jpeg", quality: 85 });
-  console.log(path);
+};
+
+const card = await browser.newPage({ viewport: { width: 1200, height: 630 } });
+for (const lang of ["fr", "en"]) {
+  await open(card, `view=card&lang=${lang}`);
+  await card.screenshot({ path: out(`og-${lang}.jpg`), type: "jpeg", quality: 85 });
+  console.log(out(`og-${lang}.jpg`));
 }
+
+const icon = await browser.newPage({ viewport: { width: 512, height: 512 } });
+await open(icon, "view=icon");
+// The favicon: the icon's own markup, with ids a file can hold.
+const svg = await icon
+  .locator("svg[data-icon]")
+  .evaluate((element) => element.outerHTML.replace(/[«»]/g, "").replace(/ data-icon="[^"]*"/, ""));
+await writeFile(out("icon.svg"), `${svg}\n`);
+console.log(out("icon.svg"));
+const sizes: [string, number, boolean][] = [
+  ["icon-512.png", 512, false],
+  ["icon-192.png", 192, false],
+  ["apple-touch-icon.png", 180, true],
+  ["icon-maskable-512.png", 512, true],
+];
+for (const [name, size, maskable] of sizes) {
+  await icon.setViewportSize({ width: 512, height: 512 });
+  await open(icon, maskable ? "view=icon&maskable" : "view=icon");
+  const target = icon.locator("svg[data-icon]");
+  await target.evaluate((element, px) => {
+    element.setAttribute("width", String(px));
+    element.setAttribute("height", String(px));
+  }, size);
+  await target.screenshot({ path: out(name), omitBackground: true });
+  console.log(out(name));
+}
+
 await browser.close();
+await server.close();

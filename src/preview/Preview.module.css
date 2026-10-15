@@ -1,0 +1,57 @@
+/* The link preview card: the size the networks show, 1.91:1. */
+.card {
+  width: 1200px;
+  height: 630px;
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  padding: 0 72px;
+  overflow: hidden;
+}
+
+/* A scrap of the track's paper, lying a little askew on the indigo sheet. */
+.sheet {
+  position: relative;
+  flex: none;
+  width: 470px;
+  height: 330px;
+  rotate: -3deg;
+  border-radius: var(--paper-corner);
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+}
+
+.rider {
+  position: absolute;
+  left: 18px;
+  bottom: 28px;
+  width: 330px;
+}
+
+.bell {
+  position: absolute;
+  right: 26px;
+  top: 0;
+  width: 92px;
+}
+
+.title {
+  margin: 0;
+  font: 400 88px/1 var(--font-display);
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-shadow: 0 6px 0 var(--pink-dark);
+}
+
+.tagline {
+  margin: 32px 0 0;
+  font: 700 36px/1.25 var(--font-text);
+  text-wrap: balance;
+}
+
+.tags {
+  margin: 24px 0 0;
+  font: 700 26px/1.25 var(--font-text);
+  white-space: nowrap;
+  color: var(--mint);
+}
