@@ -18,13 +18,17 @@ the whole game drawn by hand, its characters drawn by a young rider.
   a common slope, then each player rides their own slope, flat for the
   weakest, steeper for the stronger, so that everyone at their own level
   covers the same distance. A player's level only goes up, mid-ride too
-  when they ride well above it. See `docs/handicap.md`.
+  when they ride well above it; the others' slopes come from the levels as
+  the round started, so the order of play changes nothing. See
+  `docs/handicap.md`.
 - The difficulty setting is now a slope (flat 0 %, gentle 2 %, hill 5 %,
   wall 10 %), sent to FTMS trainers as a simulated grade, or as a
   resistance level on the others.
 - During the ride, a gauge shows the player's power against their level.
 - Without a power meter (a CSC sensor, or power stuck at 0) the game scores
-  on leg speed instead, and the home screen says so.
+  on leg speed instead, and the home screen says so. A trainer is taken to
+  measure power until shown otherwise, so a game started right after
+  connecting keeps scoring distance.
 - Saved settings move to the new defaults, keeping ride length and rounds.
 
 ### A last-seconds twist
@@ -53,18 +57,21 @@ the whole game drawn by hand, its characters drawn by a young rider.
 ### Players
 
 - Each player has their own cyclist, in their own colours: tap it for
-  other colours, drag the sheets to change the order of play, a clear pin
-  to remove a player. Every rider pedals on the home screen at their own
-  pace.
+  other colours, drag the sheets (or Alt + ← →) to change the order of
+  play, a clear pin to remove a player. Every rider pedals on the home
+  screen at their own pace.
+- 8 players at most, a full party.
 
 ### Sharing
 
 - The link preview, the app icon and the results picture to share now
   have the hand-drawn look.
-- On Strava, the activity climbs the slope actually ridden, second by
-  second, and its average speed counts only the time ridden. With a map,
-  the rides keep their real times and the rests between them show; without
-  one, they follow one another.
+- On Strava, the activity covers the distance the game counted, climbs the
+  slope actually ridden, second by second, and its average speed counts
+  only the time ridden. With a map, the rides keep their real times and the
+  rests between them show; without one, they follow one another. Power
+  goes up to 1020 W (510 W before).
+- The QR codes' links carry a format version: those of 0.1.0 keep working.
 
 ## 0.1.0 — 2026-10-03
 
