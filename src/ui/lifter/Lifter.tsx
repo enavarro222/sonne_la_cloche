@@ -1,6 +1,7 @@
 import { type CSSProperties, useId } from "react";
 import type { Point } from "../cyclist/geometry";
 import { cx } from "../cx";
+import { type Gaze, gazeOf } from "./gaze";
 import styles from "./Lifter.module.css";
 
 // The pole bearer, drawn by a young rider: red cap, big round eyes, hatched
@@ -39,15 +40,8 @@ const THUMB = "M-38 5 q 26 -12 54 -2 q 10 4 5 14";
 
 const SKIN = "#c8744e";
 
-/** Where he looks, as a unit vector: the seconds come down his column. */
-const GAZE = {
-  up: { x: 0, y: -1 },
-  // Run off to the right, he has them on his left, about level with his head.
-  back: { x: -0.93, y: -0.37 },
-};
-
 /** Drawn from the front, he looks somewhere by sliding his face that way. */
-function lookStyle(gaze: Point): CSSProperties {
+function lookStyle(gaze: Gaze): CSSProperties {
   const px = (k: number, v: number) => `${(k * v).toFixed(1)}px`;
   return {
     "--tilt": `${(gaze.x * 16).toFixed(1)}deg`,
@@ -88,9 +82,20 @@ interface Props {
   alarmed?: boolean;
   /** The time is falling on his head: he lets go and runs, fists up. */
   fleeing?: boolean;
+  /** Seconds left in the ride: he keeps an eye on the cyclist, the player, the seconds. */
+  timeLeft?: number;
+  /** Seconds left when the seconds come for him: he stares at them just before. */
+  eventAt?: number;
 }
 
-export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = false }: Props) {
+export function Lifter({
+  hold: holdPx,
+  gradePct,
+  alarmed = false,
+  fleeing = false,
+  timeLeft = Infinity,
+  eventAt = 0,
+}: Props) {
   const id = useId();
   const ids = {
     crayon: `${id}-crayon`,
@@ -119,9 +124,7 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
     ? { upper: { x: 905, y: 250 }, lower: { x: 1250, y: 245 } }
     : { upper: along(UPPER_FIST_ALONG), lower: along(LOWER_FIST_ALONG) };
   const lowerArmFrom = fleeing ? OTHER_SHOULDER : SIDE;
-  // Where he looks: straight up at the seconds falling on him, or back over
-  // his shoulder at them once he has run off to the right.
-  const gaze = fleeing ? GAZE.back : GAZE.up;
+  const gaze = gazeOf({ timeLeft, eventAt, alarmed, fleeing });
   const mouth = scared
     ? "M1086 458 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0"
     : straining
@@ -256,10 +259,7 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
           {/* Neck and head. */}
           <path d="M1070 482 L 1108 482 L 1112 548 L 1068 548 Z" fill="#d07a52" filter={crayon} />
           {/* Now and then he glances up at the time falling on him; scared, he stares at it. */}
-          <g
-            className={cx(styles.head, scared ? styles.looking : styles.glancing)}
-            style={lookStyle(gaze)}
-          >
+          <g className={styles.head} style={lookStyle(gaze)}>
             <circle
               cx={1095}
               cy={398}

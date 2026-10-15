@@ -87,98 +87,31 @@
   transform-origin: 1090px 500px;
 }
 
+/* The eyes go first, the head follows. */
 .head,
 .cap,
-.face,
-.pupils {
-  transition: transform 0.25s ease-out;
+.face {
+  transition: transform 0.3s ease-in-out 0.08s;
 }
 
-/* Scared: he stares at the seconds coming. */
-.looking {
+.pupils {
+  transition: transform 0.15s ease-out;
+}
+
+.head {
   transform: rotate(var(--tilt));
 }
 
-.looking .cap {
+.cap {
   transform: translate(var(--cap-x), var(--cap-y));
 }
 
-.looking .face {
+.face {
   transform: translate(var(--face-x), var(--face-y));
 }
 
-.looking .pupils {
+.pupils {
   transform: translate(var(--pupil-x), var(--pupil-y));
-}
-
-/* Now and then, a quick look at the seconds falling on him. */
-.glancing {
-  animation: glance-head 6.5s ease-in-out infinite;
-}
-
-.glancing .cap {
-  animation: glance-cap 6.5s ease-in-out infinite;
-}
-
-.glancing .face {
-  animation: glance-face 6.5s ease-in-out infinite;
-}
-
-.glancing .pupils {
-  animation: glance-pupils 6.5s ease-in-out infinite;
-}
-
-@keyframes glance-head {
-  73%,
-  85% {
-    transform: rotate(var(--tilt));
-  }
-  0%,
-  68%,
-  90%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes glance-cap {
-  73%,
-  85% {
-    transform: translate(var(--cap-x), var(--cap-y));
-  }
-  0%,
-  68%,
-  90%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes glance-face {
-  73%,
-  85% {
-    transform: translate(var(--face-x), var(--face-y));
-  }
-  0%,
-  68%,
-  90%,
-  100% {
-    transform: none;
-  }
-}
-
-/* The eyes go first, the head follows. */
-@keyframes glance-pupils {
-  70%,
-  85% {
-    transform: translate(var(--pupil-x), var(--pupil-y));
-  }
-  0%,
-  67%,
-  90%,
-  100% {
-    transform: none;
-  }
 }
 
 /* Help! Both fists wave over his head, one after the other. */
@@ -264,12 +197,15 @@
   .panicking,
   .running,
   .waving,
-  .glancing,
-  .glancing .cap,
-  .glancing .face,
-  .glancing .pupils,
   .dripping path,
   .alarm {
     animation: none;
+  }
+
+  .head,
+  .cap,
+  .face,
+  .pupils {
+    transition: none;
   }
 }

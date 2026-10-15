@@ -646,7 +646,15 @@ export function RideScreen({
             translate: `${shift}px 0`,
           }}
         >
-          <Lifter hold={hold} gradePct={gradePct} alarmed={alarmed} fleeing={fleeing} />
+          <Lifter
+            hold={hold}
+            gradePct={gradePct}
+            alarmed={alarmed}
+            fleeing={fleeing}
+            timeLeft={timeLeft}
+            // When the seconds come for him: he panics (finale) or steps aside.
+            eventAt={settings.finale === "on" ? FINALE_SEC + FINALE_WARNING_SEC : FINALE_SEC}
+          />
         </div>
       </div>
 
