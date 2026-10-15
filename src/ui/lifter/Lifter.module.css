@@ -63,6 +63,8 @@
 /* Running away in a panic: he bobs at every stride. */
 .running {
   animation: run 0.28s ease-in-out infinite;
+  transform-box: view-box;
+  transform-origin: 1045px 1524px;
 }
 
 @keyframes run {
@@ -72,6 +74,25 @@
   }
   50% {
     transform: translateY(-35px) rotate(4deg);
+  }
+}
+
+/* Help! Both fists wave over his head, one after the other. */
+.waving {
+  transform-box: view-box;
+  animation: wave 0.32s ease-in-out infinite alternate;
+}
+
+.otherArm {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes wave {
+  from {
+    transform: rotate(-16deg);
+  }
+  to {
+    transform: rotate(16deg);
   }
 }
 
@@ -125,6 +146,7 @@
   .shaking,
   .panicking,
   .running,
+  .waving,
   .dripping path,
   .alarm {
     animation: none;

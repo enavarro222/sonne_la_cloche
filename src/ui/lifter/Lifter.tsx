@@ -273,11 +273,24 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
           )}
         </g>
 
-        {/* Arms: the raised one from his shoulder, the short one from his side. */}
-        <path d={band(SHOULDER, fists.upper, 34, 28)} fill={SKIN} filter={crayon} />
-        <path d={band(lowerArmFrom, fists.lower, 30, 28)} fill={SKIN} filter={crayon} />
-        <Fist at={fists.upper} crayon={crayon} />
-        <Fist at={fists.lower} crayon={crayon} />
+        {/* Arms: the raised one from his shoulder, the short one from his side.
+            Running away, both wave over his head and bob with his strides. */}
+        <g className={cx(fleeing && styles.running)}>
+          <g
+            className={cx(fleeing && styles.waving)}
+            style={{ transformOrigin: `${SHOULDER.x}px ${SHOULDER.y}px` }}
+          >
+            <path d={band(SHOULDER, fists.upper, 34, 28)} fill={SKIN} filter={crayon} />
+            <Fist at={fists.upper} crayon={crayon} />
+          </g>
+          <g
+            className={cx(fleeing && styles.waving, fleeing && styles.otherArm)}
+            style={{ transformOrigin: `${lowerArmFrom.x}px ${lowerArmFrom.y}px` }}
+          >
+            <path d={band(lowerArmFrom, fists.lower, 30, 28)} fill={SKIN} filter={crayon} />
+            <Fist at={fists.lower} crayon={crayon} />
+          </g>
+        </g>
       </g>
 
       {/* A big "!" by his head: something is coming. */}
