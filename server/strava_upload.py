@@ -56,11 +56,21 @@ class Config:
 
     @staticmethod
     def from_env() -> "Config":
+        # Optional, like the feedback's: a service for feedback alone starts
+        # without them, and says Strava is not set up.
         return Config(
-            client_id=os.environ["STRAVA_CLIENT_ID"],
-            client_secret=os.environ["STRAVA_CLIENT_SECRET"],
-            redirect_uri=os.environ["STRAVA_REDIRECT_URI"],
+            client_id=os.environ.get("STRAVA_CLIENT_ID", ""),
+            client_secret=os.environ.get("STRAVA_CLIENT_SECRET", ""),
+            redirect_uri=os.environ.get("STRAVA_REDIRECT_URI", ""),
         )
+
+
+def body_length(header: str | None) -> int:
+    """The announced body size; 0 (refused) when missing or not a number."""
+    try:
+        return int(header or 0)
+    except ValueError:
+        return 0
 
 
 class UploadError(Exception):
@@ -301,7 +311,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/api/strava/upload":
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
             return
-        length = int(self.headers.get("Content-Length") or 0)
+        length = body_length(self.headers.get("Content-Length"))
         if length <= 0 or length > MAX_BODY_BYTES:
             self.send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "too_large"})
             return
@@ -321,7 +331,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.feedback.complete:
             self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "not_configured"})
             return
-        length = int(self.headers.get("Content-Length") or 0)
+        length = body_length(self.headers.get("Content-Length"))
         if length <= 0 or length > feedback.MAX_BODY_BYTES:
             self.send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "too_large"})
             return

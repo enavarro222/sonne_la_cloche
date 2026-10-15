@@ -3,13 +3,16 @@
 import base64
 import http.client
 import json
+import os
 import threading
 import unittest
+import unittest.mock
 import urllib.error
 import urllib.parse
 import urllib.request
 from http.server import ThreadingHTTPServer
 
+import feedback
 import strava_upload as su
 
 
@@ -172,6 +175,13 @@ class UploadActivityTests(unittest.TestCase):
         self.assertEqual(fake.paths()[-1], "POST /oauth/deauthorize")
 
 
+class ConfigTests(unittest.TestCase):
+    def test_starts_without_strava_credentials(self):
+        with unittest.mock.patch.dict(os.environ, {}, clear=True):
+            config = su.Config.from_env()
+        self.assertFalse(config.complete)
+
+
 class HttpServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -250,6 +260,15 @@ class HttpServerTests(unittest.TestCase):
         self.assertEqual(announced_status(port, "/api/strava/upload", su.MAX_BODY_BYTES + 1), 413)
         status, _, body = self.request("POST", "/api/strava/upload", b"not json")
         self.assertEqual((status, json.loads(body)), (400, {"error": "bad_request"}))
+
+    def test_refuses_an_announced_size_that_is_not_a_number(self):
+        port = self.server.server_address[1]
+        self.assertEqual(announced_status(port, "/api/strava/upload", "lots"), 413)
+        su.Handler.feedback = feedback.Config("token", "owner/repo")
+        try:
+            self.assertEqual(announced_status(port, "/api/feedback", "lots"), 413)
+        finally:
+            su.Handler.feedback = feedback.Config("", "")
 
     def test_unknown_paths(self):
         self.assertEqual(self.request("GET", "/api/strava/other")[0], 404)
