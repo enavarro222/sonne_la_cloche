@@ -77,6 +77,53 @@
   }
 }
 
+/* The head tilts back around his neck: his face (on the left) goes up. */
+.glancing,
+.lookingUp {
+  transform-box: view-box;
+  transform-origin: 1090px 500px;
+}
+
+.lookingUp {
+  transform: rotate(14deg);
+  transition: transform 0.2s ease-out;
+}
+
+/* Now and then, a quick look up at the seconds falling on him. */
+.glancing {
+  animation: glance 6.5s ease-in-out infinite;
+}
+
+.glancing .pupils {
+  animation: glance-eyes 6.5s ease-in-out infinite;
+}
+
+@keyframes glance {
+  0%,
+  68%,
+  90%,
+  100% {
+    transform: rotate(0deg);
+  }
+  73%,
+  85% {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes glance-eyes {
+  0%,
+  68%,
+  90%,
+  100% {
+    transform: translate(0, 0);
+  }
+  73%,
+  85% {
+    transform: translate(4px, -9px);
+  }
+}
+
 /* Help! Both fists wave over his head, one after the other. */
 .waving {
   transform-box: view-box;
@@ -147,6 +194,8 @@
   .panicking,
   .running,
   .waving,
+  .glancing,
+  .glancing .pupils,
   .dripping path,
   .alarm {
     animation: none;
