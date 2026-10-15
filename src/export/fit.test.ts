@@ -78,7 +78,7 @@ describe("buildFit", () => {
   it("covers the ride's score, at the speed recorded each second", async () => {
     // By distance: the speed comes from power, not from the pedal turns.
     const recorded = samples(10, 90, 300).map((s) => ({ ...s, speed: s.second < 5 ? 8 : 10 }));
-    const fit = await parse(buildFit([{ startedAt: START, points: 91, samples: recorded }]));
+    const fit = await parse(buildFit([{ startedAt: START, metres: 91, samples: recorded }]));
     expect(fit.sessions?.[0]?.total_distance).toBeCloseTo(91, 0);
     // The shape kept: 4 s at 8 m/s, then 10 m/s, brought to 91 m in all.
     const speeds = fit.records?.slice(1, 11).map((r) => r.speed ?? 0) ?? [];
@@ -87,7 +87,7 @@ describe("buildFit", () => {
 
   it("covers the score of an older link's ride, from its pedal turns", async () => {
     const fit = await parse(
-      buildFit([{ startedAt: START, points: 150, samples: samples(30, 90, 70) }]),
+      buildFit([{ startedAt: START, metres: 150, samples: samples(30, 90, 70) }]),
     );
     expect(fit.sessions?.[0]?.total_distance).toBeCloseTo(150, 0);
   });

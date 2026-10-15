@@ -15,7 +15,7 @@ const players = [
 
 function gameAfterOneRide(stats: RideStats): Game {
   let state = reducer(initialState(players, DEFAULT_SETTINGS), { type: "gameStarted" });
-  state = reducer(state, { type: "rideFinished", points: 500, stats, trace: TRACE });
+  state = reducer(state, { type: "rideFinished", metres: 500, stats, trace: TRACE });
   if (!state.game) throw new Error("no game");
   return state.game;
 }
@@ -82,7 +82,7 @@ describe("ResultScreen", () => {
       type: "gameStarted",
     });
     for (let i = 0; i < 6; i++) {
-      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS, trace: TRACE });
+      state = reducer(state, { type: "rideFinished", metres: 10, stats: STATS, trace: TRACE });
       if (i < 5) state = reducer(state, { type: "nextTurn" });
     }
     if (!state.game) throw new Error("no game");
@@ -98,7 +98,7 @@ describe("ResultScreen", () => {
       type: "gameStarted",
     });
     for (let i = 0; i < 6; i++) {
-      state = reducer(state, { type: "rideFinished", points: 10, stats: STATS, trace: TRACE });
+      state = reducer(state, { type: "rideFinished", metres: 10, stats: STATS, trace: TRACE });
       if (i < 5) state = reducer(state, { type: "nextTurn" });
     }
     if (!state.game) throw new Error("no game");

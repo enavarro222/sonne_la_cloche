@@ -38,7 +38,7 @@ import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
 
 export interface FinishedRide {
-  points: number;
+  metres: number;
   stats: RideStats;
   trace: RideTrace;
   /** By distance, the slope of the ride's course (own or common), raised mid-ride if it was. */
@@ -53,7 +53,7 @@ interface Props {
   player: Player;
   round: number;
   settings: Settings;
-  record: { player: Player; points: number } | null;
+  record: { player: Player; metres: number } | null;
   sensor: Sensor;
   /**
    * By distance, the course ridden (each their own slope, or the common one):
@@ -121,14 +121,14 @@ function useRideLoop(
   running: boolean,
   sensor: Sensor,
   settings: Settings,
-  recordPoints: number | null,
+  recordMetres: number | null,
   initialCourse: Course | null,
   onFinish: (ride: FinishedRide) => void,
 ): Frame {
   const [frame, setFrame] = useState<Frame>(() => ({
     progress: startRide(initialCourse?.startSpeed),
     reading: ZERO_READING,
-    track: startTrack(bellMark(recordPoints, settings), settings),
+    track: startTrack(bellMark(recordMetres, settings), settings),
     rung: false,
     crankAngle: 0,
     wheelAngle: 0,
@@ -152,7 +152,7 @@ function useRideLoop(
       const grade = course?.gradePct ?? SLOPE_PERCENT[settings.slope];
       return finale ? finaleGrade(grade, finale) : grade;
     };
-    const mark = bellMark(recordPoints, settings);
+    const mark = bellMark(recordMetres, settings);
     let track = startTrack(mark, settings);
     let rung = false;
     let crankAngle = 0;
@@ -186,15 +186,15 @@ function useRideLoop(
         !finale &&
         remainingSec(progress, durationSec) <= FINALE_SEC
       ) {
-        finale = finaleFor(progress.points, mark, progress.elapsedSec, durationSec);
+        finale = finaleFor(progress.metres, mark, progress.elapsedSec, durationSec);
         void currentSensor.current.setSlope?.(ridden());
       }
-      track = stepTrack(track, progress.points, dtSec);
+      track = stepTrack(track, progress.metres, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
       // The wheels roll at the bike's speed, and on when the legs stop.
       wheelAngle = advanceWheel(wheelAngle, progress.speed, dtSec);
       last = now;
-      if (!rung && ringsBell(progress.points, mark)) {
+      if (!rung && ringsBell(progress.metres, mark)) {
         rung = true;
         sounds.bell();
       }
@@ -217,7 +217,7 @@ function useRideLoop(
       }
       if (isRideOver(progress, durationSec)) {
         finish.current({
-          points: progress.points,
+          metres: progress.metres,
           stats: rideStats(progress),
           trace: { startedAt, samples: progress.samples },
           ...(course && { gradePct: course.gradePct }),
@@ -228,7 +228,7 @@ function useRideLoop(
     return () => {
       cancelAnimationFrame(raf);
     };
-  }, [running, settings, recordPoints, initialCourse, currentSensor, finish]);
+  }, [running, settings, recordMetres, initialCourse, currentSensor, finish]);
 
   return frame;
 }
@@ -481,7 +481,7 @@ export function RideScreen({
     stage.name === "racing",
     sensor,
     settings,
-    record?.points ?? null,
+    record?.metres ?? null,
     course,
     onFinish,
   );
@@ -530,8 +530,8 @@ export function RideScreen({
     gradePct,
   );
 
-  const mark = bellMark(record?.points ?? null, settings);
-  const bellPosition = trackPosition(mark.points, track.target);
+  const mark = bellMark(record?.metres ?? null, settings);
+  const bellPosition = trackPosition(mark.metres, track.target);
   // A "record" mark always comes from `record`.
   const recordName = record?.player.name ?? "";
   const recordLabel = rung
@@ -578,7 +578,7 @@ export function RideScreen({
           </p>
         ) : (
           <p className={styles.score} data-testid="ride-score">
-            <FixedDigits>{Math.round(progress.points)}</FixedDigits>
+            <FixedDigits>{Math.round(progress.metres)}</FixedDigits>
             <small>{t("ride.distanceUnit")}</small>
           </p>
         )}
@@ -625,7 +625,7 @@ export function RideScreen({
             </div>
             <div
               className={styles.bike}
-              style={{ left: lane(trackPosition(progress.points, track.target)) }}
+              style={{ left: lane(trackPosition(progress.metres, track.target)) }}
             >
               <Cyclist
                 crankAngle={crankAngle}

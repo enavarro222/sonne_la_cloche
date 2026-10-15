@@ -73,7 +73,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     advance(25_000);
     expect(onFinish).toHaveBeenCalledTimes(1);
     // 90 rpm is 6 m/s: 120 m in 20 s, less the first second picking up speed.
-    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(115, -1);
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.metres).toBeCloseTo(115, -1);
   });
 
   it("hands over the ride's trace: start time and one sample per second", () => {
@@ -112,7 +112,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     advance(10_500);
     expect(onFinish).toHaveBeenCalledTimes(1);
     // 90 rpm is 6 m/s: 120 m in 20 s, less the first second picking up speed.
-    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(115, -1);
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.metres).toBeCloseTo(115, -1);
   });
 
   it("rings the bell once the record is beaten", () => {
@@ -121,7 +121,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
         player={player}
         round={1}
         settings={settings}
-        record={{ player: { id: "tom", name: "Tom" }, points: 15 }}
+        record={{ player: { id: "tom", name: "Tom" }, metres: 15 }}
         sensor={steadySensor(90)}
         onFinish={vi.fn()}
       />,
@@ -205,7 +205,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
         round={1}
         settings={{ ...settings, finale: "on" }}
         // Far behind the bell: the twist lets the track fall 3 %.
-        record={{ player: { id: "tom", name: "Tom" }, points: 10_000 }}
+        record={{ player: { id: "tom", name: "Tom" }, metres: 10_000 }}
         sensor={sensor}
         onFinish={vi.fn()}
       />

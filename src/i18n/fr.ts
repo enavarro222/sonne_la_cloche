@@ -107,7 +107,7 @@ export const fr: Translation = {
     rank_ordinal_two: "{{count}}e",
     rank_ordinal_few: "{{count}}e",
     rank_ordinal_other: "{{count}}e",
-    ride: "Tour {{round}} : {{points}} m en {{seconds}} s",
+    ride: "Tour {{round}} : {{metres}} m en {{seconds}} s",
     map: "Ajouter une carte : un circuit virtuel autour de la position du téléphone",
     mapHelp:
       "Le circuit montre où vous avez joué. Tes zones de confidentialité Strava s'appliquent.",

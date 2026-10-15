@@ -79,7 +79,7 @@ export async function ride(
 }
 
 /** Final score shown on the result screen. */
-export async function resultPoints(page: Page): Promise<number> {
-  const text = await page.getByTestId("result-points").textContent();
+export async function resultMetres(page: Page): Promise<number> {
+  const text = await page.getByTestId("result-metres").textContent();
   return Number(text);
 }

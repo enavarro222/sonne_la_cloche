@@ -11,7 +11,7 @@ const game = (rank: number, rides = 3): PlayerActivity => ({
   total: 1881,
   rides: Array.from({ length: rides }, () => ({
     startedAt: 0,
-    points: 627,
+    metres: 627,
     gradePct: 0,
     samples: [],
   })),

@@ -27,7 +27,7 @@ describe("OAuth state", () => {
 });
 
 describe("fitFileName", () => {
-  const activity = (name: string, rides = [{ startedAt: Date.UTC(2026, 9, 3, 15), points: 0 }]) =>
+  const activity = (name: string, rides = [{ startedAt: Date.UTC(2026, 9, 3, 15), metres: 0 }]) =>
     ({ name, rides }) as unknown as PlayerActivity;
 
   it("names the file after the day and the player, without accents", () => {

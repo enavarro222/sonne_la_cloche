@@ -17,7 +17,7 @@ export interface RideTrace {
 export interface RideResult {
   playerId: string;
   round: number;
-  points: number;
+  metres: number;
   stats: RideStats;
   trace: RideTrace;
   /** By distance, the slope of the ride's course in percent (own or common). */
@@ -55,7 +55,7 @@ export type Action =
   | { type: "gameStarted"; measuresPower?: boolean }
   | {
       type: "rideFinished";
-      points: number;
+      metres: number;
       stats: RideStats;
       trace: RideTrace;
       gradePct?: number;
@@ -124,7 +124,7 @@ export function reducer(state: AppState, action: Action): AppState {
     case "rideFinished": {
       if (game?.phase !== "riding") return state;
       const player = currentPlayer(game);
-      const points = Number.isFinite(action.points) ? Math.max(0, Math.round(action.points)) : 0;
+      const metres = Number.isFinite(action.metres) ? Math.max(0, Math.round(action.metres)) : 0;
       // A retried ride replaces the previous attempt for the same round.
       const rides = game.rides.filter((r) => !(r.playerId === player.id && r.round === game.round));
       return {
@@ -137,7 +137,7 @@ export function reducer(state: AppState, action: Action): AppState {
             {
               playerId: player.id,
               round: game.round,
-              points,
+              metres,
               stats: cleanStats(action.stats),
               trace: action.trace,
               ...(action.gradePct !== undefined &&
@@ -193,7 +193,7 @@ export function upNext(game: Game): { player: Player; round: number } | null {
 export interface Standing {
   player: Player;
   total: number;
-  /** Points of each round, in order; null for a round not ridden yet. */
+  /** Metres of each round, in order; null for a round not ridden yet. */
   rounds: (number | null)[];
   /** The slope of their latest ride, when each player has their own. */
   gradePct?: number;
@@ -211,10 +211,10 @@ export function standings(game: Game): Standing[] {
     return {
       player,
       ...(latest?.gradePct !== undefined && { gradePct: latest.gradePct }),
-      total: own.reduce((s, r) => s + r.points, 0),
+      total: own.reduce((s, r) => s + r.metres, 0),
       rounds: Array.from(
         { length: game.settings.rounds },
-        (_, i) => own.find((r) => r.round === i + 1)?.points ?? null,
+        (_, i) => own.find((r) => r.round === i + 1)?.metres ?? null,
       ),
     };
   });
@@ -227,14 +227,14 @@ export function standings(game: Game): Standing[] {
  * Best single ride so far: the mark to beat on the track. While a ride is
  * being retried, the attempt it will replace does not count.
  */
-export function bestRide(game: Game): { player: Player; points: number } | null {
+export function bestRide(game: Game): { player: Player; metres: number } | null {
   const replaced = game.phase === "riding" ? currentPlayer(game).id : null;
-  let best: { player: Player; points: number } | null = null;
+  let best: { player: Player; metres: number } | null = null;
   for (const ride of game.rides) {
     if (ride.playerId === replaced && ride.round === game.round) continue;
-    if (ride.points <= (best?.points ?? 0)) continue;
+    if (ride.metres <= (best?.metres ?? 0)) continue;
     const player = game.players.find((p) => p.id === ride.playerId);
-    if (player) best = { player, points: ride.points };
+    if (player) best = { player, metres: ride.metres };
   }
   return best;
 }
@@ -242,17 +242,17 @@ export function bestRide(game: Game): { player: Player; points: number } | null 
 /** The ride just finished by the current player, for the result screen. */
 export function lastRide(
   game: Game,
-): { points: number; stats: RideStats; personalBest: boolean; gradePct?: number } | null {
+): { metres: number; stats: RideStats; personalBest: boolean; gradePct?: number } | null {
   if (game.phase !== "result") return null;
   const player = currentPlayer(game);
   const own = game.rides.filter((r) => r.playerId === player.id);
   const ride = own.find((r) => r.round === game.round);
   if (!ride) return null;
-  const earlier = own.filter((r) => r.round !== game.round).map((r) => r.points);
+  const earlier = own.filter((r) => r.round !== game.round).map((r) => r.metres);
   // No "personal best" on a first ride: there is nothing to beat yet.
-  const personalBest = earlier.length > 0 && ride.points > Math.max(...earlier);
+  const personalBest = earlier.length > 0 && ride.metres > Math.max(...earlier);
   return {
-    points: ride.points,
+    metres: ride.metres,
     stats: ride.stats,
     personalBest,
     ...(ride.gradePct !== undefined && { gradePct: ride.gradePct }),
@@ -265,7 +265,7 @@ export interface Feat {
 }
 
 export interface Highlights {
-  /** Best single ride, in points. */
+  /** Best single ride, in metres. */
   bestRide: Feat | null;
   /** Highest cadence peak, in rpm. */
   fastest: Feat | null;
@@ -285,7 +285,7 @@ export function highlights(game: Game): Highlights {
     return best;
   };
   return {
-    bestRide: top((r) => r.points),
+    bestRide: top((r) => r.metres),
     fastest: top((r) => r.stats.maxCadence),
     strongest: top((r) => r.stats.maxPower),
   };

@@ -10,7 +10,7 @@ import { isLocale } from "../i18n/locales";
 export interface PlayerRide {
   /** Milliseconds since the epoch (kept to the second). */
   startedAt: number;
-  points: number;
+  metres: number;
   /** The ride's slope, in percent (0 in older links); samples carry each second's. */
   gradePct: number;
   samples: readonly RideSample[];
@@ -155,7 +155,7 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
   view.setUint8(o++, activity.rides.length);
   for (const ride of activity.rides) {
     view.setUint32(o, Math.floor(ride.startedAt / 1000));
-    view.setUint16(o + 4, Math.min(65535, Math.round(ride.points)));
+    view.setUint16(o + 4, Math.min(65535, Math.round(ride.metres)));
     view.setUint16(o + 6, ride.samples.length);
     o += 8;
     let steps = 0;
@@ -200,7 +200,7 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
   const count = view.getUint8(o++);
   for (let i = 0; i < count; i++) {
     const startedAt = view.getUint32(o) * 1000;
-    const points = view.getUint16(o + 4);
+    const metres = view.getUint16(o + 4);
     const length = view.getUint16(o + 6);
     o += 8;
     const samples: RideSample[] = [];
@@ -223,7 +223,7 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
     const slopes = unpackGrades(grades[i], length);
     rides.push({
       startedAt,
-      points,
+      metres,
       gradePct: slopes?.start ?? 0,
       samples: slopes
         ? samples.map((sample, s) => ({ ...sample, gradePct: slopes.grades[s] ?? slopes.start }))

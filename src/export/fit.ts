@@ -20,7 +20,7 @@ export interface ExportRide {
   /** The slope ridden, in percent, for samples that do not carry theirs. */
   gradePct?: number;
   /** The ride's score, in metres: the distance it covers in the file. */
-  points?: number;
+  metres?: number;
   samples: readonly RideSample[];
 }
 
@@ -35,7 +35,7 @@ export function rideSpeeds(ride: ExportRide): number[] {
     ? recorded
     : ride.samples.map((s) => metresPerSecond(s.cadence));
   const total = raw.reduce((sum, v) => sum + v, 0);
-  const scale = ride.points !== undefined && total > 0 ? ride.points / total : 1;
+  const scale = ride.metres !== undefined && total > 0 ? ride.metres / total : 1;
   return raw.map((v) => v * scale);
 }
 

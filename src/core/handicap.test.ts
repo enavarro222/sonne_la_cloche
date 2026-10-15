@@ -27,7 +27,7 @@ function played(avgPowers: number[], slope: Slope = "own"): Game {
     actions.push(
       {
         type: "rideFinished",
-        points: 100,
+        metres: 100,
         stats: { ...NO_STATS, avgPower },
         trace: { startedAt: "2026-10-05T15:00:00.000Z", samples: [] },
       },
@@ -48,7 +48,7 @@ function distance(course: Course, power: number, seconds = 30): number {
   for (let t = 0; t < seconds; t += 0.05) {
     progress = stepRide(progress, { cadence: 90, power }, "distance", 0.05, seconds, course);
   }
-  return progress.points;
+  return progress.metres;
 }
 
 describe("physics", () => {
@@ -132,7 +132,7 @@ describe("courseFor", () => {
     const retry: Action[] = [
       {
         type: "rideFinished",
-        points: 100,
+        metres: 100,
         stats: { ...NO_STATS, avgPower: 120 },
         trace: { startedAt: "2026-10-05T15:00:00.000Z", samples: [] },
       },

@@ -14,7 +14,7 @@ vi.mock("qrcode", () => ({
 const TRACE = { startedAt: "2026-09-29T15:00:00.000Z", samples: [] };
 const STATS = { avgCadence: 88, avgPower: 70, maxCadence: 104, maxPower: 95 };
 
-/** Léa then Tom, one round each: 500 and 320 points. */
+/** Léa then Tom, one round each: 500 and 320 metres. */
 function finishedGame(): Game {
   const players = [
     { id: "lea", name: "Léa" },
@@ -23,9 +23,9 @@ function finishedGame(): Game {
   let state = reducer(initialState(players, { ...DEFAULT_SETTINGS, rounds: 1 }), {
     type: "gameStarted",
   });
-  state = reducer(state, { type: "rideFinished", points: 500, stats: STATS, trace: TRACE });
+  state = reducer(state, { type: "rideFinished", metres: 500, stats: STATS, trace: TRACE });
   state = reducer(state, { type: "nextTurn" });
-  state = reducer(state, { type: "rideFinished", points: 320, stats: STATS, trace: TRACE });
+  state = reducer(state, { type: "rideFinished", metres: 320, stats: STATS, trace: TRACE });
   if (!state.game) throw new Error("no game");
   return state.game;
 }

@@ -32,7 +32,7 @@ export interface SensorState {
   connection: Connection;
   connecting: boolean;
   error: ConnectionError | null;
-  /** A sensor that can score points right now. */
+  /** A sensor that can score metres right now. */
   ready: boolean;
   /** Picks a trainer in the browser list (needs a user gesture). */
   connect: () => Promise<void>;

@@ -220,7 +220,7 @@ function renderActivity(root: HTMLElement, activity: PlayerActivity, fragment: s
         el(
           "li",
           {},
-          t("strava.ride", { round: i + 1, points: ride.points, seconds: ride.samples.length }),
+          t("strava.ride", { round: i + 1, metres: ride.metres, seconds: ride.samples.length }),
         ),
       ),
     ),

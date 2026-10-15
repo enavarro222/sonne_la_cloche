@@ -12,16 +12,16 @@ const players = [
   { id: "zoe", name: "Zoé" },
 ];
 
-function finishedGame(points: number[]) {
+function finishedGame(metres: number[]) {
   const actions: Action[] = [{ type: "gameStarted" }];
-  points.forEach((p, i) => {
+  metres.forEach((p, i) => {
     actions.push({
       type: "rideFinished",
-      points: p,
+      metres: p,
       stats: { ...NO_STATS, maxCadence: 90 + i, maxPower: 60 },
       trace: { startedAt: "2026-09-29T15:00:00.000Z", samples: [] },
     });
-    if (i < points.length - 1) actions.push({ type: "nextTurn" });
+    if (i < metres.length - 1) actions.push({ type: "nextTurn" });
   });
   const state = actions.reduce(reducer, initialState(players, { ...DEFAULT_SETTINGS, rounds: 3 }));
   if (!state.game) throw new Error("no game");

@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { addPlayers, openGame, resultPoints, startDemoGame } from "./helpers";
+import { addPlayers, openGame, resultMetres, startDemoGame } from "./helpers";
 
 // Mirrors the countdown in src/ui/RideScreen.tsx (3 × 800 ms + 450 ms).
 const COUNTDOWN_MS = 3 * 800 + 450;
@@ -62,12 +62,12 @@ test("by default, each their own slope: round 1 measures, then the stronger clim
   await expect(page.getByRole("meter")).toBeVisible();
   expect(await percentOf(page)).toBe(0);
   await rideAt(page, 260);
-  const lea = await resultPoints(page);
+  const lea = await resultMetres(page);
 
   await page.getByRole("button", { name: /Tom/ }).click();
   expect(await percentOf(page)).toBeGreaterThan(0.5);
   await rideAt(page, 140);
-  const tom = await resultPoints(page);
+  const tom = await resultMetres(page);
 
   // At their own level, both cover about the same distance.
   expect(tom / lea).toBeGreaterThan(0.85);

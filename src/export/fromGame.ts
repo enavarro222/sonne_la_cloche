@@ -23,7 +23,7 @@ export function playerActivities(game: Game, locale: Locale, strava: boolean): P
         .sort((a, b) => a.round - b.round)
         .map((r) => ({
           startedAt: Date.parse(r.trace.startedAt),
-          points: r.points,
+          metres: r.metres,
           // Their own slope, or the one everyone rode.
           gradePct: r.gradePct ?? SLOPE_PERCENT[game.settings.slope],
           samples: r.trace.samples,

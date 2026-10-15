@@ -3,7 +3,7 @@ import { type CrankSample, crankCadence, type ParsedData } from "./parsers";
 
 /**
  * Without a notification for this long, the bike is considered stopped (or
- * gone): the last value must not keep scoring points.
+ * gone): the last value must not keep scoring metres.
  */
 export const STALE_AFTER_MS = 3000;
 

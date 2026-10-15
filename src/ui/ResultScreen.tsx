@@ -138,8 +138,8 @@ export function ResultScreen({
           {ride?.personalBest ? t("result.personalBest", { name: player.name }) : player.name}
         </p>
         <p className={styles.score}>
-          <span data-testid="result-points">
-            <FixedDigits>{ride?.points ?? 0}</FixedDigits>
+          <span data-testid="result-metres">
+            <FixedDigits>{ride?.metres ?? 0}</FixedDigits>
           </span>
           <span className={styles.unit}>{scoreUnit(t)}</span>
         </p>
@@ -286,12 +286,12 @@ export function ResultScreen({
                       </small>
                     )}
                   </th>
-                  {s.rounds.map((points, i) => (
+                  {s.rounds.map((metres, i) => (
                     <td
                       key={i}
                       className={cx(styles.roundCol, i + 1 === game.round && styles.nowCol)}
                     >
-                      {points ?? "–"}
+                      {metres ?? "–"}
                     </td>
                   ))}
                   <td className={styles.totalCol}>{s.total}</td>

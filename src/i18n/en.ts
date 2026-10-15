@@ -107,7 +107,7 @@ export const en = {
     rank_ordinal_two: "{{count}}nd",
     rank_ordinal_few: "{{count}}rd",
     rank_ordinal_other: "{{count}}th",
-    ride: "Round {{round}}: {{points}} m in {{seconds}} s",
+    ride: "Round {{round}}: {{metres}} m in {{seconds}} s",
     map: "Add a map: a virtual track around this phone's position",
     mapHelp: "The track shows where you played. Your Strava privacy zones apply.",
     locating: "Finding your position…",

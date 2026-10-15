@@ -38,15 +38,15 @@ const withGame = (game: Game): AppState => ({
 
 const TRACE = { startedAt: "2026-09-29T15:00:00.000Z", samples: [] };
 
-const finished = (points: number, stats: RideStats = NO_STATS): Action => ({
+const finished = (metres: number, stats: RideStats = NO_STATS): Action => ({
   type: "rideFinished",
-  points,
+  metres,
   stats,
   trace: TRACE,
 });
 
-const ride = (points: number, stats?: RideStats): Action[] => [
-  finished(points, stats),
+const ride = (metres: number, stats?: RideStats): Action[] => [
+  finished(metres, stats),
   { type: "nextTurn" },
 ];
 
@@ -256,9 +256,9 @@ describe("scores", () => {
     expect(state.game && standings(state.game)[0]).toMatchObject({ player: lea, total: 12 });
   });
 
-  it("rounds points and clamps invalid values to zero", () => {
+  it("rounds metres and clamps invalid values to zero", () => {
     const state = run(withGame(started()), ...ride(10.6), ...ride(-5), finished(Number.NaN));
-    expect(state.game?.rides.map((r) => r.points)).toEqual([11, 0, 0]);
+    expect(state.game?.rides.map((r) => r.metres)).toEqual([11, 0, 0]);
   });
 
   it("gives equal totals the same rank, in playing order", () => {
@@ -275,14 +275,14 @@ describe("scores", () => {
     const game = started();
     expect(bestRide(game)).toBeNull();
     const state = run(withGame(game), ...ride(10), ...ride(25), ...ride(25));
-    expect(state.game && bestRide(state.game)).toEqual({ player: tom, points: 25 });
+    expect(state.game && bestRide(state.game)).toEqual({ player: tom, metres: 25 });
   });
 
   it("flags a personal best only when beating an earlier ride", () => {
     let state = run(withGame(started()), finished(10));
-    expect(state.game && lastRide(state.game)).toMatchObject({ points: 10, personalBest: false });
+    expect(state.game && lastRide(state.game)).toMatchObject({ metres: 10, personalBest: false });
     state = run(state, { type: "nextTurn" }, ...ride(5), finished(11));
-    expect(state.game && lastRide(state.game)).toMatchObject({ points: 11, personalBest: true });
+    expect(state.game && lastRide(state.game)).toMatchObject({ metres: 11, personalBest: true });
   });
 
   it("keeps earlier rounds when a later round is retried", () => {
@@ -310,10 +310,10 @@ describe("scores", () => {
 
   it("does not show the attempt being retried as the record", () => {
     const state = run(withGame(started()), ...ride(10), finished(40), { type: "rideRetried" });
-    expect(state.game && bestRide(state.game)).toEqual({ player: lea, points: 10 });
+    expect(state.game && bestRide(state.game)).toEqual({ player: lea, metres: 10 });
   });
 
-  it("lists the points of each round, null for rounds not ridden yet", () => {
+  it("lists the metres of each round, null for rounds not ridden yet", () => {
     const state = run(withGame(started([lea, tom], 3)), ...ride(10), ...ride(20), finished(30));
     const rows = state.game && standings(state.game).map((s) => [s.player.name, s.rounds]);
     expect(rows).toEqual([
@@ -368,9 +368,9 @@ describe("own slopes", () => {
   it("keeps the slope of each ride, for the ranking", () => {
     const { game } = run(
       withGame(started()),
-      { type: "rideFinished", points: 80, stats: NO_STATS, trace: TRACE, gradePct: 0 },
+      { type: "rideFinished", metres: 80, stats: NO_STATS, trace: TRACE, gradePct: 0 },
       { type: "nextTurn" },
-      { type: "rideFinished", points: 90, stats: NO_STATS, trace: TRACE, gradePct: Number.NaN },
+      { type: "rideFinished", metres: 90, stats: NO_STATS, trace: TRACE, gradePct: Number.NaN },
     );
     if (!game) throw new Error("no game");
     expect(game.rides.map((r) => r.gradePct)).toEqual([0, undefined]);

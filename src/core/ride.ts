@@ -58,7 +58,7 @@ export interface RideSample {
 
 export interface RideProgress {
   elapsedSec: number;
-  points: number;
+  metres: number;
   /** Virtual speed, m/s: from power by distance, from the legs by leg speed. */
   speed: number;
   /** Time integrals, for the averages. */
@@ -78,7 +78,7 @@ export interface RideStats {
 
 export const startRide = (speed = 0): RideProgress => ({
   elapsedSec: 0,
-  points: 0,
+  metres: 0,
   speed,
   cadenceSum: 0,
   powerSum: 0,
@@ -132,7 +132,7 @@ export function stepRide(
   }
   return {
     elapsedSec,
-    points: progress.points + gained,
+    metres: progress.metres + gained,
     speed,
     cadenceSum: progress.cadenceSum + cadence * dt,
     powerSum: progress.powerSum + power * dt,
@@ -170,7 +170,7 @@ export const isRideOver = (progress: RideProgress, durationSec: number): boolean
   remainingSec(progress, durationSec) === 0;
 
 // --- track ------------------------------------------------------------------
-// The track shows points on a scale that ends at `target`. It starts sized
+// The track shows metres on a scale that ends at `target`. It starts sized
 // for a good ride, and stretches when the bike gets close to the end so the
 // bike never gets stuck there. The bell marks what there is to beat.
 
@@ -179,7 +179,7 @@ export const REFERENCE_CADENCE = 80;
 /** …or, by distance, this speed (m/s, 25 km/h). */
 export const REFERENCE_SPEED = 7;
 
-export const referencePoints = (settings: Settings): number =>
+export const referenceMetres = (settings: Settings): number =>
   settings.metric === "distance"
     ? REFERENCE_SPEED * settings.durationSec
     : cadenceSpeed(REFERENCE_CADENCE) * settings.durationSec;
@@ -190,16 +190,16 @@ export const referencePoints = (settings: Settings): number =>
  */
 export interface BellMark {
   kind: "record" | "goal";
-  points: number;
+  metres: number;
 }
 
-export const bellMark = (recordPoints: number | null, settings: Settings): BellMark =>
-  recordPoints !== null && recordPoints > 0
-    ? { kind: "record", points: recordPoints }
-    : { kind: "goal", points: referencePoints(settings) };
+export const bellMark = (recordMetres: number | null, settings: Settings): BellMark =>
+  recordMetres !== null && recordMetres > 0
+    ? { kind: "record", metres: recordMetres }
+    : { kind: "goal", metres: referenceMetres(settings) };
 
 /** The bell rings once the ride goes past its mark. */
-export const ringsBell = (points: number, mark: BellMark): boolean => points > mark.points;
+export const ringsBell = (metres: number, mark: BellMark): boolean => metres > mark.metres;
 
 /** Past this position the end of the track starts moving away… */
 export const STRETCH_FROM = 0.85;
@@ -209,7 +209,7 @@ export const STRETCH_TO = 0.6;
 export const STRETCH_TIME_SEC = 0.4;
 
 export interface Track {
-  /** Points at the right end of the track. */
+  /** Metres at the right end of the track. */
   target: number;
   /** Where `target` is heading while the track stretches. */
   heading: number;
@@ -217,16 +217,16 @@ export interface Track {
 
 export function startTrack(mark: BellMark, settings: Settings): Track {
   // The bell sits a bit before the end when it is the harder mark.
-  const target = Math.max(referencePoints(settings), mark.points * 1.05, MIN_TARGET);
+  const target = Math.max(referenceMetres(settings), mark.metres * 1.05, MIN_TARGET);
   return { target, heading: target };
 }
 
-export function stepTrack(track: Track, points: number, dtSec: number): Track {
+export function stepTrack(track: Track, metres: number, dtSec: number): Track {
   let { target, heading } = track;
   // While stretching, the heading keeps up with a fast bike instead of letting
   // it catch up with the end of the track.
-  if (heading > target || points > target * STRETCH_FROM) {
-    heading = Math.max(heading, points / STRETCH_TO);
+  if (heading > target || metres > target * STRETCH_FROM) {
+    heading = Math.max(heading, metres / STRETCH_TO);
   }
   target = heading - (heading - target) * Math.exp(-Math.max(0, dtSec) / STRETCH_TIME_SEC);
   if (heading - target < 0.5) target = heading;
@@ -234,8 +234,8 @@ export function stepTrack(track: Track, points: number, dtSec: number): Track {
 }
 
 /** Position on the track, from 0 (start) to 1 (right end). */
-export const trackPosition = (points: number, target: number): number =>
-  Math.min(1, Math.max(0, points / target));
+export const trackPosition = (metres: number, target: number): number =>
+  Math.min(1, Math.max(0, metres / target));
 
 // --- finale ------------------------------------------------------------------
 // An option: in the last seconds the pole bearer holding the track reacts. A
@@ -253,11 +253,11 @@ export type FinaleMove = "lift" | "flee";
 
 /** Decided once, as the finale starts: ahead of the bell's pace or not. */
 export const finaleFor = (
-  points: number,
+  metres: number,
   mark: BellMark,
   elapsedSec: number,
   durationSec: number,
-): FinaleMove => (points >= (mark.points * elapsedSec) / durationSec ? "lift" : "flee");
+): FinaleMove => (metres >= (mark.metres * elapsedSec) / durationSec ? "lift" : "flee");
 
 export const finaleGrade = (gradePct: number, move: FinaleMove): number =>
   move === "lift" ? gradePct + FINALE_LIFT : gradePct - FINALE_LIFT;

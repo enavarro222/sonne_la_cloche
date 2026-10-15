@@ -9,9 +9,9 @@ const players = [
   { id: "tom", name: "Tom" },
 ];
 const at = (minute: number) => `2026-09-29T15:${String(minute).padStart(2, "0")}:00.000Z`;
-const ride = (points: number, minute: number): Action => ({
+const ride = (metres: number, minute: number): Action => ({
   type: "rideFinished",
-  points,
+  metres,
   stats: NO_STATS,
   trace: { startedAt: at(minute), samples: [{ second: 1, cadence: 90, power: 60 }] },
 });
@@ -30,7 +30,7 @@ describe("playerActivities", () => {
     if (!state.game) throw new Error("no game");
     const [lea, tom] = playerActivities(state.game, "fr", true);
     expect(lea).toMatchObject({ locale: "fr", name: "Léa", rank: 2, players: 2, total: 250 });
-    expect(lea?.rides.map((r) => [r.points, new Date(r.startedAt).toISOString()])).toEqual([
+    expect(lea?.rides.map((r) => [r.metres, new Date(r.startedAt).toISOString()])).toEqual([
       [100, at(0)],
       [150, at(2)],
     ]);

@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { addPlayers, chooseSettings, openGame, resultPoints, ride, startDemoGame } from "./helpers";
+import { addPlayers, chooseSettings, openGame, resultMetres, ride, startDemoGame } from "./helpers";
 
 const start = (page: import("@playwright/test").Page) =>
   page.getByRole("button", { name: "C'est parti !" });
@@ -60,7 +60,7 @@ test("plays a whole game and announces the winner", async ({ page, context }) =>
     await expect(page.getByText(`Tour ${round}/3`)).toBeVisible();
     await ride(page, { durationSec: 20, pedal: true });
     // 20 s of pedaling, 4 m per turn (slowed down by the test's own pace): over 50 m.
-    expect(await resultPoints(page)).toBeGreaterThan(50);
+    expect(await resultMetres(page)).toBeGreaterThan(50);
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
     // Ride details: ← → every 170 ms is about 95 rpm, 150 W in demo mode; a
     // little real time slips in between two key presses, slowing it down.
@@ -70,7 +70,7 @@ test("plays a whole game and announces the winner", async ({ page, context }) =>
 
     await expect(page.getByText(`Au tour de Tom`)).toBeVisible();
     await ride(page, { durationSec: 20, pedal: false });
-    expect(await resultPoints(page)).toBe(0);
+    expect(await resultMetres(page)).toBe(0);
     if (round < 3) {
       await expect(page.getByText("Au suivant : Léa")).toBeVisible();
       await expect(page.getByText(`Tour ${round + 1}/3`)).toBeVisible();
@@ -134,11 +134,11 @@ test("a retried ride replaces the previous one", async ({ page }) => {
   await startDemoGame(page);
 
   await ride(page, { durationSec: 20, pedal: true });
-  expect(await resultPoints(page)).toBeGreaterThan(0);
+  expect(await resultMetres(page)).toBeGreaterThan(0);
 
   await page.getByRole("button", { name: "Refaire le passage" }).click();
   await ride(page, { durationSec: 20, pedal: false });
-  expect(await resultPoints(page)).toBe(0);
+  expect(await resultMetres(page)).toBe(0);
   const lea = page.locator("tbody tr").filter({ hasText: "Léa" });
   await expect(lea.locator("td").last()).toHaveText("0");
 });

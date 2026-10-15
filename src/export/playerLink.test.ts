@@ -28,7 +28,7 @@ const activity = (rounds: number, seconds: number, sample: (i: number) => Sample
   total: 1881,
   rides: Array.from({ length: rounds }, (_, r) => ({
     startedAt: START + r * 240_000,
-    points: 627,
+    metres: 627,
     gradePct: r * 2.5,
     samples: Array.from({ length: seconds }, (_, s) => {
       const [cadence, power, speed = Math.round((cadence / 15) * 10) / 10] = sample(
@@ -164,7 +164,7 @@ describe("player link", () => {
     expect(decoded?.rides).toEqual([
       {
         startedAt: START,
-        points: 900,
+        metres: 900,
         gradePct: 0,
         samples: [
           { second: 1, cadence: 90, power: 150 },
