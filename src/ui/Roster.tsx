@@ -1,4 +1,4 @@
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type Livery, liveryOf } from "../core/livery";
 import { MIN_PLAYERS, type Player } from "../core/players";
@@ -141,6 +141,11 @@ export function Roster({ roster, firstUp, onRemove, onRecolour, onMove }: Props)
   const movePress = (event: PointerEvent<HTMLLIElement>) => {
     const start = press.current;
     if (start?.pointerId !== event.pointerId) return;
+    // Released out of the sheet, unseen: a mouse passing over later must not drag it.
+    if (event.buttons === 0) {
+      endPress(true);
+      return;
+    }
     let current = drag;
     if (!current) {
       if (Math.hypot(event.clientX - start.x, event.clientY - start.y) < DRAG_FROM) return;
@@ -176,6 +181,21 @@ export function Roster({ roster, firstUp, onRemove, onRecolour, onMove }: Props)
     if (drag && !cancelled) onMove(drag.id, drag.index);
     press.current = null;
     setDrag(null);
+    // The click that follows a drag is swallowed (below); once it has gone, or
+    // when none comes (a cancelled drag), the next tap counts again.
+    setTimeout(() => {
+      dragged.current = false;
+    }, 0);
+  };
+
+  // Without a pointer: Alt + ← or → moves a rider one place.
+  const moveByKey = (event: KeyboardEvent<HTMLButtonElement>, id: string) => {
+    if (!event.altKey) return;
+    const step = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
+    const index = roster.findIndex((p) => p.id === id) + step;
+    if (step === 0 || index < 0 || index >= roster.length) return;
+    event.preventDefault();
+    onMove(id, index);
   };
 
   // While dragging, the others make room: the sheet is shown at the slot it would drop into.
@@ -229,6 +249,10 @@ export function Roster({ roster, firstUp, onRemove, onRecolour, onMove }: Props)
                 onClick={() => {
                   onRecolour(player.id);
                 }}
+                onKeyDown={(event) => {
+                  moveByKey(event, player.id);
+                }}
+                aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight"
                 aria-label={t("home.players.recolour", {
                   name: player.name,
                   context: elisionContext(player.name),
