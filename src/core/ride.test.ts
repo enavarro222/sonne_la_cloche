@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { gradeFor, steadySpeed, stepSpeed } from "./handicap";
 import {
   isRideOver,
   MAX_STEP_SEC,
@@ -8,6 +9,7 @@ import {
   bellMark,
   cadenceSpeed,
   FINALE_LIFT,
+  FINALE_SEC,
   finaleFor,
   finaleGrade,
   REFERENCE_CADENCE,
@@ -200,8 +202,36 @@ describe("finale", () => {
     expect(finaleFor(240, record, 25, 30)).toBe("flee");
   });
 
-  it("adds a few percent, or flattens the road", () => {
+  it("adds a few percent, or takes them off, down to a descent", () => {
     expect(finaleGrade(4, "lift")).toBe(4 + FINALE_LIFT);
-    expect(finaleGrade(4, "flee")).toBe(0);
+    expect(finaleGrade(4, "flee")).toBe(4 - FINALE_LIFT);
+    expect(finaleGrade(0, "flee")).toBe(-FINALE_LIFT);
+  });
+
+  it("helps a weak rider on the flat as much as a strong one on a slope", () => {
+    // Own slopes: both hold the same speed at their own level.
+    const speed = steadySpeed(50, 0);
+    const riders = [
+      { power: 50, grade: 0 },
+      { power: 300, grade: gradeFor(300, speed) },
+    ];
+    // Metres gained over the finale's seconds by the gentler road.
+    const gain = ({ power, grade }: { power: number; grade: number }) => {
+      const metres = (gradePct: number) => {
+        let v = speed;
+        let d = 0;
+        for (let t = 0; t < FINALE_SEC; t += 0.05) {
+          v = stepSpeed(v, power, gradePct, 0.05);
+          d += v * 0.05;
+        }
+        return d;
+      };
+      return metres(finaleGrade(grade, "flee")) - metres(grade);
+    };
+    const [weak = 0, strong = 0] = riders.map(gain);
+    expect(weak).toBeGreaterThan(0);
+    expect(strong).toBeGreaterThan(0);
+    expect(weak / strong).toBeGreaterThan(0.8);
+    expect(weak / strong).toBeLessThan(1.25);
   });
 });

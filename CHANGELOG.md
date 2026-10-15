@@ -31,7 +31,8 @@ the whole game drawn by hand, its characters drawn by a young rider.
 
 - As the last 5 seconds start, the rider is compared with the bell's pace:
   ahead, the pole bearer lifts the track 3 % higher; behind, he lets go and
-  runs away, and the track falls flat. On by default, off in the settings.
+  runs away, and the track falls 3 % (a descent for those on the flat).
+  On by default, off in the settings.
 - He sees it coming three seconds ahead: he stares at the timer, panics,
   and a "!" pops by his head.
 

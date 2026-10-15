@@ -88,7 +88,7 @@ export const en = {
       off: "No",
       on: "Yes",
       short: "twist",
-      help: "The last 5 seconds: ahead of the bell, the slope goes up 3 %; behind, it falls flat.",
+      help: "The last 5 seconds: ahead of the bell, the slope goes up 3 %; behind, it goes down 3 %.",
     },
     rounds: {
       label: "Rounds",

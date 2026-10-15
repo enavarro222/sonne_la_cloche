@@ -235,15 +235,17 @@ export const trackPosition = (points: number, target: number): number =>
   Math.min(1, Math.max(0, points / target));
 
 // --- finale ------------------------------------------------------------------
-// An option: in the last seconds the strongman holding the track reacts. A
-// rider ahead of the bell's pace gets a steeper road; one behind, a flat one.
+// An option: in the last seconds the pole bearer holding the track reacts. A
+// rider ahead of the bell's pace gets a steeper road; one behind, a gentler
+// one, by the same few percent: on own slopes, flattening the road would only
+// help those who have a slope (the stronger), not those already on the flat.
 
 /** The finale starts this many seconds before the end, with the ticking. */
 export const FINALE_SEC = 5;
 /** Extra grade (%) for a rider ahead of the bell. */
 export const FINALE_LIFT = 3;
 
-/** "lift": the strongman lifts the track higher; "flee": he runs away, it falls flat. */
+/** "lift": the pole bearer lifts the track higher; "flee": he runs away, it falls. */
 export type FinaleMove = "lift" | "flee";
 
 /** Decided once, as the finale starts: ahead of the bell's pace or not. */
@@ -255,4 +257,4 @@ export const finaleFor = (
 ): FinaleMove => (points >= (mark.points * elapsedSec) / durationSec ? "lift" : "flee");
 
 export const finaleGrade = (gradePct: number, move: FinaleMove): number =>
-  move === "lift" ? gradePct + FINALE_LIFT : 0;
+  move === "lift" ? gradePct + FINALE_LIFT : gradePct - FINALE_LIFT;

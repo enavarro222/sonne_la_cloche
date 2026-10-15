@@ -89,7 +89,7 @@ export const fr: Translation = {
       off: "Non",
       on: "Oui",
       short: "coup de théâtre",
-      help: "Les 5 dernières secondes : en avance sur la cloche, la pente monte de 3 % ; en retard, elle retombe à plat.",
+      help: "Les 5 dernières secondes : en avance sur la cloche, la pente monte de 3 % ; en retard, elle descend de 3 %.",
     },
     rounds: {
       label: "Nombre de tours",

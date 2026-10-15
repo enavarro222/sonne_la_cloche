@@ -53,12 +53,16 @@ speed and slope; the gauge; the track; cadence and watts.
   short of it on any screen), and holds the track's end up with a pole.
 - **Last 5 s**: as the seconds reach him, he steps left under the track and
   holds on, so they pass him by.
-- **Last-seconds twist** (option in ⚙, off by default): as the last 5 s
-  start (the seconds reach the strongman, standing right of the track), the
-  game compares the rider with the bell's pace, once. Ahead: he lifts the
-  track higher, +3 %. Behind: he lets go and runs off the screen, the track falls flat
-  (0 %). In the game model and on the trainer; it tightens the ends of
-  rides, at the cost of the handicap being exact over those 5 s.
+- **Last-seconds twist** (option in ⚙, on by default): as the last 5 s
+  start (the seconds reach the pole bearer, standing right of the track),
+  the game compares the rider with the bell's pace, once. Ahead: he lifts
+  the track higher, +3 %. Behind: he lets go and runs away, the track falls
+  3 % (a descent from the flat; a trainer set by resistance stops at its
+  lowest level). Up or down by the same amount, so that on own slopes it
+  helps a weak rider on the flat about as much as a strong one on a slope
+  (flattening the road would only help those who have a slope). In the
+  game model and on the trainer; it tightens the ends of rides, at the
+  cost of the handicap being exact over those 5 s.
 - **Round 1**: a "Measuring your level" badge.
 - **Next rounds**: from the 3/2/1 to the end, a gauge of power against
   the player's level (a mark). The needle turns green from 95 %; no upper
