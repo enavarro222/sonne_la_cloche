@@ -654,6 +654,7 @@ export function RideScreen({
             timeLeft={timeLeft}
             // When the seconds come for him: he panics (finale) or steps aside.
             eventAt={settings.finale === "on" ? FINALE_SEC + FINALE_WARNING_SEC : FINALE_SEC}
+            timer={timerRef}
           />
         </div>
       </div>

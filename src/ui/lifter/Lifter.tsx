@@ -1,7 +1,7 @@
-import { type CSSProperties, useId } from "react";
+import { type CSSProperties, type RefObject, useEffect, useId, useRef, useState } from "react";
 import type { Point } from "../cyclist/geometry";
 import { cx } from "../cx";
-import { type Gaze, gazeOf } from "./gaze";
+import { AT_TIMER, type Gaze, gazeOf, gazeToward } from "./gaze";
 import styles from "./Lifter.module.css";
 
 // The pole bearer, drawn by a young rider: red cap, big round eyes, hatched
@@ -86,6 +86,45 @@ interface Props {
   timeLeft?: number;
   /** Seconds left when the seconds come for him: he stares at them just before. */
   eventAt?: number;
+  /** The seconds on screen: his eyes follow them as they come down. */
+  timer?: RefObject<HTMLElement | null>;
+}
+
+/** His eyes, in the drawing's units: between them, where he looks from. */
+const EYES: Point = { x: 1095, y: 400 };
+
+/**
+ * Where `target` is from his eyes, measured on screen each frame: it comes
+ * down the screen while he steps aside or runs away.
+ */
+function useGazeAt(
+  svg: RefObject<SVGSVGElement | null>,
+  target: RefObject<HTMLElement | null> | undefined,
+): Gaze | null {
+  const [gaze, setGaze] = useState<Gaze | null>(null);
+  useEffect(() => {
+    if (!target || typeof requestAnimationFrame !== "function") return;
+    let frame = requestAnimationFrame(function measure() {
+      const box = svg.current?.getBoundingClientRect();
+      const to = target.current?.getBoundingClientRect();
+      if (box && to && box.width > 0) {
+        const k = box.width / VIEW.size;
+        const eyes = { x: box.left + (EYES.x - VIEW.x) * k, y: box.top + (EYES.y - VIEW.y) * k };
+        const next = gazeToward(eyes, { x: to.left + to.width / 2, y: to.top + to.height / 2 });
+        // Only when it moves enough to show: no render for nothing.
+        setGaze((current) =>
+          next && current && Math.hypot(next.x - current.x, next.y - current.y) < 0.02
+            ? current
+            : next,
+        );
+      }
+      frame = requestAnimationFrame(measure);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [svg, target]);
+  return gaze;
 }
 
 export function Lifter({
@@ -95,6 +134,7 @@ export function Lifter({
   fleeing = false,
   timeLeft = Infinity,
   eventAt = 0,
+  timer,
 }: Props) {
   const id = useId();
   const ids = {
@@ -124,7 +164,11 @@ export function Lifter({
     ? { upper: { x: 905, y: 250 }, lower: { x: 1250, y: 245 } }
     : { upper: along(UPPER_FIST_ALONG), lower: along(LOWER_FIST_ALONG) };
   const lowerArmFrom = fleeing ? OTHER_SHOULDER : SIDE;
-  const gaze = gazeOf({ timeLeft, eventAt, alarmed, fleeing });
+  const svg = useRef<SVGSVGElement>(null);
+  const toTimer = useGazeAt(svg, timer);
+  // Looking at the seconds, he looks where they really are, if known.
+  const planned = gazeOf({ timeLeft, eventAt, alarmed, fleeing });
+  const gaze = AT_TIMER.has(planned) ? (toTimer ?? planned) : planned;
   const mouth = scared
     ? "M1086 458 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0"
     : straining
@@ -135,6 +179,7 @@ export function Lifter({
 
   return (
     <svg
+      ref={svg}
       className={styles.lifter}
       // Holding a steep track, he breathes hard.
       style={{ "--breath": `${Math.max(0.5, 1.4 - gradePct * 0.1)}s` } as CSSProperties}

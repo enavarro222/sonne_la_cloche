@@ -42,6 +42,17 @@ interface Moment {
   fleeing: boolean;
 }
 
+/** The gazes at the seconds: worth replacing with where they really are. */
+export const AT_TIMER: ReadonlySet<Gaze> = new Set([GAZE.timer, GAZE.timerRight, GAZE.timerBack]);
+
+/** From `from` toward `to` (screen px), as a gaze; null when they are one. */
+export function gazeToward(from: Gaze, to: Gaze): Gaze | null {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy);
+  return length < 1 ? null : { x: dx / length, y: dy / length };
+}
+
 export function gazeOf({ timeLeft, eventAt, alarmed, fleeing }: Moment): Gaze {
   if (fleeing) return GAZE.timerBack;
   if (alarmed) return GAZE.timer;

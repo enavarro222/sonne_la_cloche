@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GAZE, gazeOf, STARE_SEC } from "./gaze";
+import { GAZE, gazeOf, gazeToward, STARE_SEC } from "./gaze";
 
 const at = (timeLeft: number, more: { alarmed?: boolean; fleeing?: boolean } = {}) =>
   gazeOf({ timeLeft, eventAt: 8, alarmed: false, fleeing: false, ...more });
@@ -27,5 +27,13 @@ describe("gazeOf", () => {
     expect(at(3, { fleeing: true })).toBe(GAZE.timerBack);
     // No panic: he has stepped aside, the seconds on his right.
     expect(at(4)).toBe(GAZE.timerRight);
+  });
+});
+
+describe("gazeToward", () => {
+  it("points from his eyes to the seconds", () => {
+    expect(gazeToward({ x: 100, y: 100 }, { x: 100, y: 0 })).toEqual({ x: 0, y: -1 });
+    expect(gazeToward({ x: 100, y: 100 }, { x: 0, y: 100 })).toEqual({ x: -1, y: 0 });
+    expect(gazeToward({ x: 100, y: 100 }, { x: 100.5, y: 100 })).toBeNull();
   });
 });
