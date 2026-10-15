@@ -19,7 +19,24 @@ export interface ExportRide {
   startedAt: number;
   /** The slope ridden, in percent, for samples that do not carry theirs. */
   gradePct?: number;
+  /** The ride's score, in metres: the distance it covers in the file. */
+  points?: number;
   samples: readonly RideSample[];
+}
+
+/**
+ * Each second's speed, m/s: the one recorded (older links: from the pedal
+ * turns), brought to the ride's score so the file covers the same distance
+ * as the game counted.
+ */
+export function rideSpeeds(ride: ExportRide): number[] {
+  const recorded = ride.samples.map((s) => s.speed ?? 0);
+  const raw = recorded.some((v) => v > 0)
+    ? recorded
+    : ride.samples.map((s) => metresPerSecond(s.cadence));
+  const total = raw.reduce((sum, v) => sum + v, 0);
+  const scale = ride.points !== undefined && total > 0 ? ride.points / total : 1;
+  return raw.map((v) => v * scale);
 }
 
 /** Altitude at the start, m: any will do, the track is virtual. */
@@ -33,14 +50,16 @@ const stats = (samples: readonly RideSample[], pick: (s: RideSample) => number) 
 });
 
 /** Average and top speed over the seconds ridden, m/s. */
-const speeds = (samples: readonly RideSample[]) => {
-  const { avg, max } = stats(samples, (s) => metresPerSecond(s.cadence));
+const speeds = (values: readonly number[]) => {
+  const avg = values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+  const max = values.reduce((top, v) => Math.max(top, v), 0);
   return { avg_speed: avg, max_speed: max, enhanced_avg_speed: avg, enhanced_max_speed: max };
 };
 
 export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Array<ArrayBuffer> {
   const ordered = [...rides].sort((a, b) => a.startedAt - b.startedAt);
   const all = ordered.flatMap((r) => r.samples);
+  const rideSpeedsOf = ordered.map(rideSpeeds);
   // A game ride is virtual, with or without a map.
   const sub_sport = "virtual_activity";
   const fit = new FitWriter();
@@ -112,8 +131,9 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
     // zero during the waits instead of joining the rides with a slope.
     record(startedAt, 0, 0, 0);
     const last = index === ordered.length - 1;
-    for (const sample of ride.samples) {
-      const speed = metresPerSecond(sample.cadence);
+    const perSecond = rideSpeedsOf[index] ?? [];
+    for (const [i, sample] of ride.samples.entries()) {
+      const speed = perSecond[i] ?? 0;
       distance += speed;
       // Along the slope: the climb is the distance times the grade.
       const climb = (speed * (sample.gradePct ?? ride.gradePct ?? 0)) / 100;
@@ -140,7 +160,7 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
         total_moving_time: ride.samples.length,
         total_distance: distance - lapStart,
         total_ascent: Math.round(ascent - lapAscent),
-        ...speeds(ride.samples),
+        ...speeds(perSecond),
         avg_cadence: Math.round(cadence.avg),
         max_cadence: Math.round(cadence.max),
         avg_power: Math.round(power.avg),
@@ -157,17 +177,19 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
 
   const cadence = stats(all, (s) => s.cadence);
   const power = stats(all, (s) => s.power);
+  // The session closes on the last record: the standstill after the last ride.
+  const finish = end + 1000;
   fit.writeMessage(
     "session",
     {
-      timestamp: at(end),
+      timestamp: at(finish),
       start_time: at(first),
       total_elapsed_time: (end - first) / 1000,
       total_timer_time: all.length,
       total_moving_time: all.length,
       total_distance: distance,
       total_ascent: Math.round(ascent),
-      ...speeds(all),
+      ...speeds(rideSpeedsOf.flat()),
       avg_cadence: Math.round(cadence.avg),
       max_cadence: Math.round(cadence.max),
       avg_power: Math.round(power.avg),
@@ -186,13 +208,13 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
   fit.writeMessage(
     "activity",
     {
-      timestamp: at(end),
+      timestamp: at(finish),
       total_timer_time: all.length,
       num_sessions: 1,
       type: "manual",
       event: "activity",
       event_type: "stop",
-      local_timestamp: at(end) - new Date(end).getTimezoneOffset() * 60,
+      local_timestamp: at(finish) - new Date(finish).getTimezoneOffset() * 60,
     },
     null,
     true,

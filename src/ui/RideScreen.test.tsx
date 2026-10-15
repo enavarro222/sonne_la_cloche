@@ -84,7 +84,13 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(Date.parse(ride.trace.startedAt)).not.toBeNaN();
     expect(ride.trace.samples).toHaveLength(20);
     // The slope too: the settings ride a 5 % hill.
-    expect(ride.trace.samples[19]).toEqual({ second: 20, cadence: 90, power: 0, gradePct: 5 });
+    expect(ride.trace.samples[19]).toEqual({
+      second: 20,
+      cadence: 90,
+      power: 0,
+      speed: 6,
+      gradePct: 5,
+    });
   });
 
   it("does not restart when the sensor is replaced mid-ride (bike reconnected)", () => {

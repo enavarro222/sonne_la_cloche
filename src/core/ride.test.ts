@@ -101,8 +101,9 @@ describe("ride samples", () => {
       progress = stepRide(progress, effort(i < 30 ? 60 : 90, 100), "cadence", 1 / 30, 20);
     }
     expect(progress.samples).toEqual([
-      { second: 1, cadence: 60, power: 100 },
-      { second: 2, cadence: 90, power: 100 },
+      // With the virtual bike's speed then, picking up from a standstill.
+      { second: 1, cadence: 60, power: 100, speed: 2.9 },
+      { second: 2, cadence: 90, power: 100, speed: 5.1 },
     ]);
   });
 

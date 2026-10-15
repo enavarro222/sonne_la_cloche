@@ -29,9 +29,22 @@ export interface PlayerActivity {
   strava: boolean;
 }
 
-const VERSION = 1;
-/** Power is stored in 2 W steps in one byte: up to 510 W. */
-const POWER_STEP = 2;
+/**
+ * The format's version, first byte of the link: 2 adds the speed of each
+ * second and takes power up to 1020 W. Older versions keep being read.
+ */
+const VERSION = 2;
+/** Power is stored in one byte, in 4 W steps: up to 1020 W, an adult's sprint. */
+const POWER_STEP = 4;
+/** Version 1 stored it in 2 W steps: up to 510 W. */
+const V1_POWER_STEP = 2;
+/**
+ * Speed is stored in tenths of m/s, up to 25.5 m/s (92 km/h), as the change
+ * from the second before (one signed byte): it changes smoothly, so these
+ * small steps compress well.
+ */
+const SPEED_STEP = 0.1;
+const SPEED_MAX_STEPS = 255;
 
 /** Awards in the order they are packed. */
 const AWARDS = ["bestRide", "fastest", "strongest"] as const;
@@ -131,7 +144,7 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
     }),
   );
   const size =
-    3 + header.length + 1 + activity.rides.reduce((sum, r) => sum + 8 + r.samples.length * 2, 0);
+    3 + header.length + 1 + activity.rides.reduce((sum, r) => sum + 8 + r.samples.length * 3, 0);
   const view = new DataView(new ArrayBuffer(size));
   let o = 0;
   view.setUint8(o++, VERSION);
@@ -145,9 +158,17 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
     view.setUint16(o + 4, Math.min(65535, Math.round(ride.points)));
     view.setUint16(o + 6, ride.samples.length);
     o += 8;
+    let steps = 0;
     for (const sample of ride.samples) {
       view.setUint8(o++, clampByte(sample.cadence));
       view.setUint8(o++, clampByte(sample.power / POWER_STEP));
+      const target = Math.min(
+        SPEED_MAX_STEPS,
+        Math.max(0, Math.round((sample.speed ?? 0) / SPEED_STEP)),
+      );
+      const change = Math.min(127, Math.max(-128, target - steps));
+      view.setInt8(o++, change);
+      steps += change;
     }
   }
   return new Uint8Array(view.buffer);
@@ -155,7 +176,8 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
 
 function unpack(bytes: Uint8Array): PlayerActivity | null {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (view.getUint8(0) !== VERSION) return null;
+  const version = view.getUint8(0);
+  if (version !== 1 && version !== VERSION) return null;
   const headerLength = view.getUint16(1);
   let o = 3;
   const header = JSON.parse(
@@ -182,11 +204,20 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
     const length = view.getUint16(o + 6);
     o += 8;
     const samples: RideSample[] = [];
+    let steps = 0;
     for (let s = 0; s < length; s++) {
+      const cadence = view.getUint8(o++);
+      if (version === 1) {
+        samples.push({ second: s + 1, cadence, power: view.getUint8(o++) * V1_POWER_STEP });
+        continue;
+      }
+      const power = view.getUint8(o++) * POWER_STEP;
+      steps += view.getInt8(o++);
       samples.push({
         second: s + 1,
-        cadence: view.getUint8(o++),
-        power: view.getUint8(o++) * POWER_STEP,
+        cadence,
+        power,
+        speed: Math.round(steps * SPEED_STEP * 10) / 10,
       });
     }
     const slopes = unpackGrades(grades[i], length);

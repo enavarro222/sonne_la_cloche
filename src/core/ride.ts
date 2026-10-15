@@ -52,6 +52,8 @@ export interface RideSample {
   power: number;
   /** The slope ridden that second, in percent, when known. */
   gradePct?: number;
+  /** The virtual bike's speed, m/s, to a tenth (missing in older links). */
+  speed?: number;
 }
 
 export interface RideProgress {
@@ -123,6 +125,7 @@ export function stepRide(
         second: samples.length + 1,
         cadence,
         power,
+        speed: Math.round(speed * 10) / 10,
         ...(gradePct !== undefined && { gradePct: Math.round(gradePct * 10) / 10 }),
       },
     ];

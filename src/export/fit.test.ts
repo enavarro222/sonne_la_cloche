@@ -75,6 +75,33 @@ describe("buildFit", () => {
     expect(records[32]?.position_long).toBe(records[31]?.position_long);
   });
 
+  it("covers the ride's score, at the speed recorded each second", async () => {
+    // By distance: the speed comes from power, not from the pedal turns.
+    const recorded = samples(10, 90, 300).map((s) => ({ ...s, speed: s.second < 5 ? 8 : 10 }));
+    const fit = await parse(buildFit([{ startedAt: START, points: 91, samples: recorded }]));
+    expect(fit.sessions?.[0]?.total_distance).toBeCloseTo(91, 0);
+    // The shape kept: 4 s at 8 m/s, then 10 m/s, brought to 91 m in all.
+    const speeds = fit.records?.slice(1, 11).map((r) => r.speed ?? 0) ?? [];
+    expect((speeds[0] ?? 0) / (speeds[9] ?? 1)).toBeCloseTo(0.8, 1);
+  });
+
+  it("covers the score of an older link's ride, from its pedal turns", async () => {
+    const fit = await parse(
+      buildFit([{ startedAt: START, points: 150, samples: samples(30, 90, 70) }]),
+    );
+    expect(fit.sessions?.[0]?.total_distance).toBeCloseTo(150, 0);
+  });
+
+  it("records nothing after the session ends", async () => {
+    for (const center of [undefined, { lat: 43.9, lon: 1.9 }]) {
+      const fit = await parse(buildFit(rides, center));
+      const end = fit.sessions?.[0]?.timestamp?.getTime() ?? 0;
+      const last = fit.records?.at(-1)?.timestamp?.getTime() ?? Infinity;
+      expect(last).toBeLessThanOrEqual(end);
+      expect(fit.activity.timestamp?.getTime()).toBe(end);
+    }
+  });
+
   it("climbs the slope of each ride", async () => {
     const fit = await parse(buildFit(rides));
     const altitudes = fit.records?.map((r) => r.altitude ?? 0) ?? [];
