@@ -77,50 +77,107 @@
   }
 }
 
-/* The head tilts back around his neck: his face (on the left) goes up. */
-.glancing,
-.lookingUp {
+/*
+ * Drawn from the front, he looks somewhere by tilting his head that way and
+ * sliding his face, cap and pupils toward it (the --tilt, --face-*, --cap-*
+ * and --pupil-* set by Lifter).
+ */
+.head {
   transform-box: view-box;
   transform-origin: 1090px 500px;
 }
 
-.lookingUp {
-  transform: rotate(14deg);
-  transition: transform 0.2s ease-out;
+.head,
+.cap,
+.face,
+.pupils {
+  transition: transform 0.25s ease-out;
 }
 
-/* Now and then, a quick look up at the seconds falling on him. */
+/* Scared: he stares at the seconds coming. */
+.looking {
+  transform: rotate(var(--tilt));
+}
+
+.looking .cap {
+  transform: translate(var(--cap-x), var(--cap-y));
+}
+
+.looking .face {
+  transform: translate(var(--face-x), var(--face-y));
+}
+
+.looking .pupils {
+  transform: translate(var(--pupil-x), var(--pupil-y));
+}
+
+/* Now and then, a quick look at the seconds falling on him. */
 .glancing {
-  animation: glance 6.5s ease-in-out infinite;
+  animation: glance-head 6.5s ease-in-out infinite;
+}
+
+.glancing .cap {
+  animation: glance-cap 6.5s ease-in-out infinite;
+}
+
+.glancing .face {
+  animation: glance-face 6.5s ease-in-out infinite;
 }
 
 .glancing .pupils {
-  animation: glance-eyes 6.5s ease-in-out infinite;
+  animation: glance-pupils 6.5s ease-in-out infinite;
 }
 
-@keyframes glance {
+@keyframes glance-head {
+  73%,
+  85% {
+    transform: rotate(var(--tilt));
+  }
   0%,
   68%,
   90%,
   100% {
-    transform: rotate(0deg);
-  }
-  73%,
-  85% {
-    transform: rotate(14deg);
+    transform: none;
   }
 }
 
-@keyframes glance-eyes {
+@keyframes glance-cap {
+  73%,
+  85% {
+    transform: translate(var(--cap-x), var(--cap-y));
+  }
   0%,
   68%,
   90%,
   100% {
-    transform: translate(0, 0);
+    transform: none;
   }
+}
+
+@keyframes glance-face {
   73%,
   85% {
-    transform: translate(4px, -9px);
+    transform: translate(var(--face-x), var(--face-y));
+  }
+  0%,
+  68%,
+  90%,
+  100% {
+    transform: none;
+  }
+}
+
+/* The eyes go first, the head follows. */
+@keyframes glance-pupils {
+  70%,
+  85% {
+    transform: translate(var(--pupil-x), var(--pupil-y));
+  }
+  0%,
+  67%,
+  90%,
+  100% {
+    transform: none;
   }
 }
 
@@ -136,10 +193,10 @@
 
 @keyframes wave {
   from {
-    transform: rotate(-16deg);
+    transform: rotate(-10deg);
   }
   to {
-    transform: rotate(16deg);
+    transform: rotate(10deg);
   }
 }
 
@@ -208,6 +265,8 @@
   .running,
   .waving,
   .glancing,
+  .glancing .cap,
+  .glancing .face,
   .glancing .pupils,
   .dripping path,
   .alarm {

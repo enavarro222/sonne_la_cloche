@@ -39,6 +39,27 @@ const THUMB = "M-38 5 q 26 -12 54 -2 q 10 4 5 14";
 
 const SKIN = "#c8744e";
 
+/** Where he looks, as a unit vector: the seconds come down his column. */
+const GAZE = {
+  up: { x: 0, y: -1 },
+  // Run off to the right, he has them on his left, about level with his head.
+  back: { x: -0.93, y: -0.37 },
+};
+
+/** Drawn from the front, he looks somewhere by sliding his face that way. */
+function lookStyle(gaze: Point): CSSProperties {
+  const px = (k: number, v: number) => `${(k * v).toFixed(1)}px`;
+  return {
+    "--tilt": `${(gaze.x * 16).toFixed(1)}deg`,
+    "--face-x": px(30, gaze.x),
+    "--face-y": px(32, gaze.y),
+    "--cap-x": px(12, gaze.x),
+    "--cap-y": px(16, gaze.y),
+    "--pupil-x": px(12, gaze.x),
+    "--pupil-y": px(12, gaze.y),
+  } as CSSProperties;
+}
+
 /** A band from `a` (width `wa`) to `b` (width `wb`). */
 function band(a: Point, b: Point, wa: number, wb: number): string {
   const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
@@ -93,13 +114,14 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
     x: POLE_FOOT.x + Math.cos(angle) * d,
     y: POLE_FOOT.y + Math.sin(angle) * d,
   });
-  // On the pole, or up over his head when he runs away.
+  // On the pole, or up on both sides of his head when he runs away.
   const fists = fleeing
-    ? { upper: { x: 1030, y: 230 }, lower: { x: 1165, y: 240 } }
+    ? { upper: { x: 905, y: 250 }, lower: { x: 1250, y: 245 } }
     : { upper: along(UPPER_FIST_ALONG), lower: along(LOWER_FIST_ALONG) };
   const lowerArmFrom = fleeing ? OTHER_SHOULDER : SIDE;
-  // Scared, he looks up at the seconds coming down.
-  const pupilY = scared ? -9 : 0;
+  // Where he looks: straight up at the seconds falling on him, or back over
+  // his shoulder at them once he has run off to the right.
+  const gaze = fleeing ? GAZE.back : GAZE.up;
   const mouth = scared
     ? "M1086 458 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0"
     : straining
@@ -234,7 +256,10 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
           {/* Neck and head. */}
           <path d="M1070 482 L 1108 482 L 1112 548 L 1068 548 Z" fill="#d07a52" filter={crayon} />
           {/* Now and then he glances up at the time falling on him; scared, he stares at it. */}
-          <g className={scared ? styles.lookingUp : styles.glancing}>
+          <g
+            className={cx(styles.head, scared ? styles.looking : styles.glancing)}
+            style={lookStyle(gaze)}
+          >
             <circle
               cx={1095}
               cy={398}
@@ -242,33 +267,37 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
               fill={straining ? "#e0603f" : "#cf8058"}
               filter={crayon}
             />
-            {/* Red cap with its peak. */}
-            <path
-              d="M1015 350 C 1025 300, 1080 280, 1130 290 C 1170 298, 1185 325, 1180 350 Z"
-              fill="#f04a48"
-              filter={crayon}
-            />
-            <path
-              d="M1015 350 L 960 352 Q 955 336 975 332 L 1020 334"
-              fill="#c42f30"
-              filter={crayon}
-            />
-            <path d="M1015 350 L 1180 350" fill="none" strokeWidth={5} />
-            <path
-              d="M1060 292 l -6 -22 M1078 288 l -2 -24 M1096 288 l 2 -22"
-              fill="none"
-              strokeWidth={3}
-            />
-            {/* Big round eyes: looking up when something is coming. */}
-            <circle cx={1065} cy={405} r={26} fill="#f2ebe1" />
-            <circle cx={1125} cy={395} r={26} fill="#f2ebe1" />
-            <g className={styles.pupils}>
-              <circle cx={1065} cy={405 + pupilY} r={12} fill="none" strokeWidth={4} />
-              <circle cx={1065} cy={405 + pupilY} r={3} fill="#45403a" />
-              <circle cx={1125} cy={395 + pupilY} r={12} fill="none" strokeWidth={4} />
-              <circle cx={1125} cy={395 + pupilY} r={3} fill="#45403a" />
+            <g className={styles.cap}>
+              {/* Red cap with its peak. */}
+              <path
+                d="M1015 350 C 1025 300, 1080 280, 1130 290 C 1170 298, 1185 325, 1180 350 Z"
+                fill="#f04a48"
+                filter={crayon}
+              />
+              <path
+                d="M1015 350 L 960 352 Q 955 336 975 332 L 1020 334"
+                fill="#c42f30"
+                filter={crayon}
+              />
+              <path d="M1015 350 L 1180 350" fill="none" strokeWidth={5} />
+              <path
+                d="M1060 292 l -6 -22 M1078 288 l -2 -24 M1096 288 l 2 -22"
+                fill="none"
+                strokeWidth={3}
+              />
             </g>
-            <path d={mouth} fill="none" strokeWidth={4} />
+            {/* Big round eyes. */}
+            <g className={styles.face}>
+              <circle cx={1065} cy={405} r={26} fill="#f2ebe1" />
+              <circle cx={1125} cy={395} r={26} fill="#f2ebe1" />
+              <g className={styles.pupils}>
+                <circle cx={1065} cy={405} r={12} fill="none" strokeWidth={4} />
+                <circle cx={1065} cy={405} r={3} fill="#45403a" />
+                <circle cx={1125} cy={395} r={12} fill="none" strokeWidth={4} />
+                <circle cx={1125} cy={395} r={3} fill="#45403a" />
+              </g>
+              <path d={mouth} fill="none" strokeWidth={4} />
+            </g>
             {sweating && (
               <g className={cx(styles.sweat, scared && styles.dripping)} stroke="none">
                 <path d="M1196 330 q 12 26 0 34 q -12 -8 0 -34" />
