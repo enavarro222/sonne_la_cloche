@@ -169,6 +169,7 @@ function useRideLoop(
         dtSec,
         durationSec,
         course ? { ...course, gradePct: ridden() } : undefined,
+        ridden(),
       );
       if (course) {
         const raised = raiseCourse(course, rideStats(progress).avgPower, progress.elapsedSec);

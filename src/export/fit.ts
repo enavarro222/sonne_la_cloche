@@ -13,7 +13,7 @@ import { type LatLon, metresPerSecond, positionOnTrack } from "./virtualTrack";
 export interface ExportRide {
   /** Start of the ride, in milliseconds since the epoch. */
   startedAt: number;
-  /** The slope ridden, in percent: the virtual track climbs it. */
+  /** The slope ridden, in percent, for samples that do not carry theirs. */
   gradePct?: number;
   samples: readonly RideSample[];
 }
@@ -77,7 +77,6 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
     const rideEnd = startedAt + ride.samples.length * 1000;
     const lapStart = distance;
     const lapAscent = ascent;
-    const grade = (ride.gradePct ?? 0) / 100;
     if (index === 0) {
       fit.writeMessage("event", { timestamp: at(startedAt), event: "timer", event_type: "start" });
     }
@@ -110,7 +109,7 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
       const speed = metresPerSecond(sample.cadence);
       distance += speed;
       // Along the slope: the climb is the distance times the grade.
-      const climb = speed * grade;
+      const climb = (speed * (sample.gradePct ?? ride.gradePct ?? 0)) / 100;
       altitude += climb;
       ascent += Math.max(0, climb);
       record(startedAt + sample.second * 1000, sample.cadence, sample.power, speed);

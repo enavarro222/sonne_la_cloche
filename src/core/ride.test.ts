@@ -87,6 +87,22 @@ describe("ride samples", () => {
     ]);
   });
 
+  it("records the slope ridden each second, as it changes", () => {
+    let progress = startRide();
+    for (let i = 0; i < 60; i++) {
+      progress = stepRide(
+        progress,
+        effort(80),
+        "cadence",
+        1 / 30,
+        20,
+        undefined,
+        i < 30 ? 5 : 8.04,
+      );
+    }
+    expect(progress.samples.map((s) => s.gradePct)).toEqual([5, 8]);
+  });
+
   it("ends with one sample per second of the ride, despite rounding", () => {
     let progress = startRide();
     // 1/60 s frames do not add up exactly to whole seconds in floating point.

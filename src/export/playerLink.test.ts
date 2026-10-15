@@ -28,7 +28,9 @@ const activity = (rounds: number, seconds: number, sample: (i: number) => [numbe
     gradePct: r * 2.5,
     samples: Array.from({ length: seconds }, (_, s) => {
       const [cadence, power] = sample(r * seconds + s);
-      return { second: s + 1, cadence, power };
+      // The finale lifts the track for the last 5 seconds.
+      const gradePct = r * 2.5 + (s >= seconds - 5 ? 3 : 0);
+      return { second: s + 1, cadence, power, gradePct };
     }),
   })),
   summary: summary(6),
@@ -48,7 +50,14 @@ describe("player link", () => {
 
   it("reads links made before the slopes were added: flat", async () => {
     const original = activity(2, 5, () => [90, 100]);
-    const flat = { ...original, rides: original.rides.map((ride) => ({ ...ride, gradePct: 0 })) };
+    const flat = {
+      ...original,
+      rides: original.rides.map((ride) => ({
+        ...ride,
+        gradePct: 0,
+        samples: ride.samples.map(({ second, cadence, power }) => ({ second, cadence, power })),
+      })),
+    };
     expect(await decodePlayerActivity(await encodePlayerActivity(flat))).toEqual(flat);
   });
 

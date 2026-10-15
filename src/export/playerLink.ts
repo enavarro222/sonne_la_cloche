@@ -11,7 +11,7 @@ export interface PlayerRide {
   /** Milliseconds since the epoch (kept to the second). */
   startedAt: number;
   points: number;
-  /** The slope ridden, in percent (0 in older links). */
+  /** The slope at the start, in percent (0 in older links); samples carry its changes. */
   gradePct: number;
   samples: readonly RideSample[];
 }
@@ -78,6 +78,42 @@ function unpackSummary(packed: unknown): GameSummary | null {
 
 const clampByte = (value: number) => Math.min(255, Math.max(0, Math.round(value)));
 
+const tenth = (value: number) => Math.round(value * 10) / 10;
+
+/**
+ * A ride's slopes, short: the starting one, then [second, slope] each time it
+ * changes (a level raised mid-ride, the finale).
+ */
+function packGrades(ride: PlayerRide): number[] {
+  const packed = [tenth(ride.gradePct)];
+  let current = packed[0];
+  for (const sample of ride.samples) {
+    const grade = tenth(sample.gradePct ?? ride.gradePct);
+    if (grade !== current) packed.push(sample.second, grade);
+    current = grade;
+  }
+  return packed;
+}
+
+/** The starting slope and each sample's, from the packed changes; null if not valid. */
+function unpackGrades(packed: unknown, length: number): { start: number; grades: number[] } | null {
+  if (!Array.isArray(packed) || !packed.every((v) => typeof v === "number" && Number.isFinite(v))) {
+    return null;
+  }
+  const values = packed as number[];
+  const grades: number[] = [];
+  let grade = values[0] ?? 0;
+  let next = 1;
+  for (let second = 1; second <= length; second++) {
+    if (values[next] === second) {
+      grade = values[next + 1] ?? grade;
+      next += 2;
+    }
+    grades.push(grade);
+  }
+  return { start: values[0] ?? 0, grades };
+}
+
 function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
   const header = new TextEncoder().encode(
     JSON.stringify({
@@ -89,9 +125,9 @@ function pack(activity: PlayerActivity): Uint8Array<ArrayBuffer> {
       ...(activity.summary && { s: packSummary(activity.summary) }),
       ...(!activity.strava && { d: 1 }),
       // The slopes, to a tenth of a percent, if any.
-      ...(activity.rides.some((ride) => ride.gradePct !== 0) && {
-        g: activity.rides.map((ride) => Math.round(ride.gradePct * 10) / 10),
-      }),
+      ...(activity.rides.some(
+        (ride) => ride.gradePct !== 0 || ride.samples.some((s) => (s.gradePct ?? 0) !== 0),
+      ) && { g: activity.rides.map(packGrades) }),
     }),
   );
   const size =
@@ -153,12 +189,14 @@ function unpack(bytes: Uint8Array): PlayerActivity | null {
         power: view.getUint8(o++) * POWER_STEP,
       });
     }
-    const grade = grades[i];
+    const slopes = unpackGrades(grades[i], length);
     rides.push({
       startedAt,
       points,
-      gradePct: typeof grade === "number" && Number.isFinite(grade) ? grade : 0,
-      samples,
+      gradePct: slopes?.start ?? 0,
+      samples: slopes
+        ? samples.map((sample, s) => ({ ...sample, gradePct: slopes.grades[s] ?? slopes.start }))
+        : samples,
     });
   }
   return {

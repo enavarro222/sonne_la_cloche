@@ -68,6 +68,14 @@ describe("buildFit", () => {
     expect(fit.sessions?.[0]?.total_ascent).toBe(9);
   });
 
+  it("climbs the slope of each second: a finale lifts the last ones", async () => {
+    const lifted = samples(10, 90, 70).map((s) => ({ ...s, gradePct: s.second > 5 ? 8 : 5 }));
+    const fit = await parse(buildFit([{ startedAt: START, gradePct: 5, samples: lifted }]));
+    // 6 m/s: 5 s at 5 %, then 5 s at 8 %.
+    expect(fit.sessions?.[0]?.total_ascent).toBe(4);
+    expect(fit.records?.map((r) => r.altitude ?? 0).at(-1)).toBeCloseTo(100 + 1.5 + 2.4, 0);
+  });
+
   it("stands still at the start of each ride and at the end", async () => {
     const records = (await parse(buildFit(rides))).records ?? [];
     const times = (i: number) => records[i]?.timestamp?.toISOString();

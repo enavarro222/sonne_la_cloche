@@ -31,6 +31,8 @@ export interface RideSample {
   second: number;
   cadence: number;
   power: number;
+  /** The slope ridden that second, in percent, when known. */
+  gradePct?: number;
 }
 
 export interface RideProgress {
@@ -77,6 +79,8 @@ export function stepRide(
   durationSec: number,
   /** Required by distance. */
   course?: Course,
+  /** The slope ridden now, recorded with the samples. */
+  gradePct = course?.gradePct,
 ): RideProgress {
   const remaining = durationSec - progress.elapsedSec;
   const dt = Math.min(Math.max(0, dtSec), MAX_STEP_SEC, Math.max(0, remaining));
@@ -90,7 +94,15 @@ export function stepRide(
   // A sample each time a whole second is reached (a long frame may reach several).
   let samples = progress.samples;
   while (samples.length + 1 <= elapsedSec + SAMPLE_EPSILON) {
-    samples = [...samples, { second: samples.length + 1, cadence, power }];
+    samples = [
+      ...samples,
+      {
+        second: samples.length + 1,
+        cadence,
+        power,
+        ...(gradePct !== undefined && { gradePct: Math.round(gradePct * 10) / 10 }),
+      },
+    ];
   }
   return {
     elapsedSec,
