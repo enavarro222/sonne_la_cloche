@@ -41,7 +41,7 @@ test("each player takes their game to their phone, and to Strava", async ({ page
   await expect(phone.getByRole("button", { name: "Publier sur Strava" })).toBeVisible();
   await expect(phone.getByText(/^Importe-le ensuite/)).toBeHidden();
   await expect(phone.getByText("Léa", { exact: true })).toBeVisible();
-  await expect(phone.getByText(/^1er sur 2 · \d+ points$/)).toBeVisible();
+  await expect(phone.getByText(/^1er sur 2 · \d+ m$/)).toBeVisible();
   await expect(phone.getByRole("listitem")).toHaveCount(3);
 
   // The same results picture as the tablet's, redrawn from the link.
@@ -96,7 +96,7 @@ test("each player takes their game to their phone, and to Strava", async ({ page
     "https://www.strava.com/activities/99",
   );
   expect(sent.name).toBe("🔔 Sonne la cloche !");
-  expect(sent.description).toMatch(/^1er sur 2 avec \d+ points en 3 passages\. http/);
+  expect(sent.description).toMatch(/^1er sur 2 avec \d+ m en 3 passages\. http/);
   expect(sent.sportType).toBe("VirtualRide");
   expect(
     Buffer.from(sent.file ?? "", "base64")

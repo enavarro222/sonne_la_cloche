@@ -4,8 +4,27 @@ import type { Metric, Settings } from "./settings";
 // Scoring during a single ride. Pure functions: the UI loop feeds them time
 // steps and sensor values.
 
-/** Points per second = cadence / 3 (≈ 30 pts/s at 90 rpm); by distance, metres. */
-export const POINTS_DIVISOR = 3;
+/**
+ * Leg speed scores metres too, on a virtual bike in a low gear (a kid's
+ * bike): this many metres per crank turn, so 90 rpm is 6 m/s (21.6 km/h).
+ * Without watts the slope cannot count: the ranking is that of pedal turns.
+ */
+export const METRES_PER_CRANK_TURN = 4;
+/** The virtual bike picks up speed over this time (s)… */
+const SPEED_UP_SEC = 0.8;
+/** …and rolls on, slowing down over this one, when the legs stop. */
+const COAST_SEC = 2;
+
+/** The speed the legs drive the virtual bike at, m/s. */
+export const cadenceSpeed = (cadence: number): number =>
+  (Math.max(0, cadence) / 60) * METRES_PER_CRANK_TURN;
+
+/** The virtual bike's speed after `dt`, heading for what the legs drive. */
+export function stepCadenceSpeed(speed: number, cadence: number, dt: number): number {
+  const target = cadenceSpeed(cadence);
+  const time = target > speed ? SPEED_UP_SEC : COAST_SEC;
+  return speed + (target - speed) * (1 - Math.exp(-dt / time));
+}
 
 /**
  * Longest time step counted in one go. A backgrounded tab pauses animation
@@ -38,7 +57,7 @@ export interface RideSample {
 export interface RideProgress {
   elapsedSec: number;
   points: number;
-  /** Virtual speed, m/s: only by distance. */
+  /** Virtual speed, m/s: from power by distance, from the legs by leg speed. */
   speed: number;
   /** Time integrals, for the averages. */
   cadenceSum: number;
@@ -88,8 +107,12 @@ export function stepRide(
   const cadence = clean(effort.cadence);
   const power = clean(effort.power);
   const speed =
-    metric === "distance" && course ? stepSpeed(progress.speed, power, course.gradePct, dt) : 0;
-  const gained = metric === "distance" ? speed * dt : (cadence / POINTS_DIVISOR) * dt;
+    metric === "distance"
+      ? course
+        ? stepSpeed(progress.speed, power, course.gradePct, dt)
+        : 0
+      : stepCadenceSpeed(progress.speed, cadence, dt);
+  const gained = speed * dt;
   const elapsedSec = progress.elapsedSec + dt;
   // A sample each time a whole second is reached (a long frame may reach several).
   let samples = progress.samples;
@@ -156,7 +179,7 @@ export const REFERENCE_SPEED = 7;
 export const referencePoints = (settings: Settings): number =>
   settings.metric === "distance"
     ? REFERENCE_SPEED * settings.durationSec
-    : (REFERENCE_CADENCE * settings.durationSec) / POINTS_DIVISOR;
+    : cadenceSpeed(REFERENCE_CADENCE) * settings.durationSec;
 
 /**
  * What the bell marks: the record, or — when nobody has scored yet — a goal

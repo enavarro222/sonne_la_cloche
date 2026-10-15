@@ -59,7 +59,8 @@ test("plays a whole game and announces the winner", async ({ page, context }) =>
     await expect(page.getByText(`Au tour de Léa`)).toBeVisible();
     await expect(page.getByText(`Tour ${round}/3`)).toBeVisible();
     await ride(page, { durationSec: 20, pedal: true });
-    expect(await resultPoints(page)).toBeGreaterThan(400);
+    // 20 s of pedaling, 4 m per turn (slowed down by the test's own pace): over 50 m.
+    expect(await resultPoints(page)).toBeGreaterThan(50);
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
     // Ride details: ← → every 170 ms is about 95 rpm, 150 W in demo mode; a
     // little real time slips in between two key presses, slowing it down.
@@ -86,10 +87,16 @@ test("plays a whole game and announces the winner", async ({ page, context }) =>
 
   // Cumulative total: three rides of Léa.
   const leaTotal = Number(await ranking.first().locator("td").last().textContent());
-  expect(leaTotal).toBeGreaterThan(1200);
+  expect(leaTotal).toBeGreaterThan(150);
 
   // Per-round detail and end-of-game awards.
-  await expect(ranking.first().locator("td")).toHaveText([/1/, /\d{3}/, /\d{3}/, /\d{3}/, /\d{4}/]);
+  await expect(ranking.first().locator("td")).toHaveText([
+    /1/,
+    /\d{2,3}/,
+    /\d{2,3}/,
+    /\d{2,3}/,
+    /\d{3}/,
+  ]);
   await expect(ranking.last().locator("td")).toHaveText(["2", "0", "0", "0", "0"]);
   await expect(page.getByText("Meilleur passage")).toBeVisible();
   await expect(page.getByText("Jambes les plus rapides")).toBeVisible();

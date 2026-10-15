@@ -73,7 +73,7 @@ describe("shareContent", () => {
       DATE,
     );
     expect(content.awards).toEqual([
-      { label: "Best ride", value: "Léa: 300 points" },
+      { label: "Best ride", value: "Léa: 300 metres" },
       { label: "Fastest legs", value: "Zoé: 98 rpm" },
       { label: "Strongest", value: "Léa: 60 W" },
     ]);

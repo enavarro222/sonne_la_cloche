@@ -30,7 +30,7 @@ import { type Sensor, type SensorReading, ZERO_READING } from "../sensors/types"
 import { Bell } from "./Bell";
 import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
-import { advanceCrank, advanceWheel, GEAR_RATIO } from "./cyclist/geometry";
+import { advanceCrank, advanceWheel } from "./cyclist/geometry";
 import { FixedDigits } from "./FixedDigits";
 import { Lifter, SIZE as LIFTER_SIZE } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
@@ -188,11 +188,8 @@ function useRideLoop(
       }
       track = stepTrack(track, progress.points, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
-      // Without a speed (pedal turns), the wheels turn with the cranks.
-      wheelAngle =
-        metric === "distance"
-          ? advanceWheel(wheelAngle, progress.speed, dtSec)
-          : crankAngle * GEAR_RATIO;
+      // The wheels roll at the bike's speed, and on when the legs stop.
+      wheelAngle = advanceWheel(wheelAngle, progress.speed, dtSec);
       last = now;
       if (!rung && ringsBell(progress.points, mark)) {
         rung = true;
@@ -544,7 +541,6 @@ export function RideScreen({
   }).format(remainingSec(progress, settings.durationSec));
   const lane = (position: number) => `calc(2.5rem + ${position} * (100% - 5rem))`;
   const secondsLeft = remainingSec(progress, settings.durationSec);
-  const byDistance = settings.metric === "distance";
   // Before "Go", the speed the flying start will give.
   const speed = stage.name === "racing" ? progress.speed : (course?.startSpeed ?? 0);
 
@@ -579,17 +575,15 @@ export function RideScreen({
         ) : (
           <p className={styles.score} data-testid="ride-score">
             <FixedDigits>{Math.round(progress.points)}</FixedDigits>
-            {byDistance && <small>{t("ride.distanceUnit")}</small>}
+            <small>{t("ride.distanceUnit")}</small>
           </p>
         )}
       </div>
 
       <p className={styles.stats}>
-        {byDistance && (
-          <span data-testid="ride-speed">
-            <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
-          </span>
-        )}
+        <span data-testid="ride-speed">
+          <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
+        </span>
       </p>
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 
@@ -633,7 +627,7 @@ export function RideScreen({
                 crankAngle={crankAngle}
                 wheelAngle={wheelAngle}
                 // Rolling, even without pedaling: the air rushes past.
-                moving={byDistance ? progress.speed > 0.5 && racing : reading.cadence > 0}
+                moving={progress.speed > 0.5 && racing}
                 livery={liveryOf(player)}
               />
             </div>

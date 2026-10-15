@@ -67,7 +67,7 @@ export const fr: Translation = {
       label: "Ce qui compte",
       distance: "Distance",
       cadence: "Vitesse des jambes",
-      help: "« Distance » transforme les watts en mètres : il faut un home-trainer qui mesure la puissance. « Vitesse des jambes » compte les tours de pédale : marche avec tous les capteurs.",
+      help: "« Distance » transforme les watts en mètres : il faut un home-trainer qui mesure la puissance. « Vitesse des jambes » transforme les tours de pédale en mètres (4 m par tour) : marche avec tous les capteurs.",
     },
     duration: {
       label: "Durée d'un passage",
@@ -101,12 +101,12 @@ export const fr: Translation = {
   strava: {
     title: "Ta partie",
     invalid: "Ce lien ne contient pas de partie. Rescanne le QR code sur l'écran de fin de partie.",
-    summary: "{{rank}} sur {{players}} · {{total}} points",
+    summary: "{{rank}} sur {{players}} · {{total}} m",
     rank_ordinal_one: "{{count}}er",
     rank_ordinal_two: "{{count}}e",
     rank_ordinal_few: "{{count}}e",
     rank_ordinal_other: "{{count}}e",
-    ride: "Tour {{round}} : {{points}} points en {{seconds}} s",
+    ride: "Tour {{round}} : {{points}} m en {{seconds}} s",
     map: "Ajouter une carte : un circuit virtuel autour de la position du téléphone",
     mapHelp:
       "Le circuit montre où vous avez joué. Tes zones de confidentialité Strava s'appliquent.",
@@ -134,9 +134,9 @@ export const fr: Translation = {
       "La publication a échoué. Tu peux toujours télécharger le fichier et l'importer sur strava.com.",
     activityName: "🔔 Sonne la cloche !",
     activityDescription_one:
-      "{{rank}} sur {{players}} avec {{total}} points en {{count}} passage. {{url}}",
+      "{{rank}} sur {{players}} avec {{total}} m en {{count}} passage. {{url}}",
     activityDescription_other:
-      "{{rank}} sur {{players}} avec {{total}} points en {{count}} passages. {{url}}",
+      "{{rank}} sur {{players}} avec {{total}} m en {{count}} passages. {{url}}",
   },
   feedback: {
     title: "Un avis ?",
@@ -193,7 +193,6 @@ export const fr: Translation = {
   },
   result: {
     personalBest: "{{name}}, nouveau record perso !",
-    points: "points",
     metres: "mètres",
     upNext: "Au suivant : {{name}}",
     slope: "sur une pente de {{percent}}\u00a0%",

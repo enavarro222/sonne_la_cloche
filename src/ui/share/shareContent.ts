@@ -32,7 +32,7 @@ export function shareContent(
 
   const { bestRide, fastest, strongest } = summary.awards;
   const awards = [
-    { label: t("result.awards.bestRide"), feat: bestRide, unit: t("result.points") },
+    { label: t("result.awards.bestRide"), feat: bestRide, unit: t("result.metres") },
     { label: t("result.awards.fastest"), feat: fastest, unit: t("ride.cadenceUnit") },
     { label: t("result.awards.strongest"), feat: strongest, unit: t("ride.powerUnit") },
   ].flatMap(({ label, feat, unit }) =>

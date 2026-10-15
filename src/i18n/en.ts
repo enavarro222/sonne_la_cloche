@@ -66,7 +66,7 @@ export const en = {
       label: "What counts",
       distance: "Distance",
       cadence: "Leg speed",
-      help: "Distance turns watts into metres: it needs a trainer that measures power. Leg speed counts pedal turns: it works with any sensor.",
+      help: "Distance turns watts into metres: it needs a trainer that measures power. Leg speed turns pedal turns into metres (4 m per turn): it works with any sensor.",
     },
     duration: {
       label: "Ride length",
@@ -101,12 +101,12 @@ export const en = {
     title: "Your game",
     invalid:
       "This link does not contain a game. Scan the QR code again on the game's final screen.",
-    summary: "{{rank}} of {{players}} · {{total}} points",
+    summary: "{{rank}} of {{players}} · {{total}} m",
     rank_ordinal_one: "{{count}}st",
     rank_ordinal_two: "{{count}}nd",
     rank_ordinal_few: "{{count}}rd",
     rank_ordinal_other: "{{count}}th",
-    ride: "Round {{round}}: {{points}} points in {{seconds}} s",
+    ride: "Round {{round}}: {{points}} m in {{seconds}} s",
     map: "Add a map: a virtual track around this phone's position",
     mapHelp: "The track shows where you played. Your Strava privacy zones apply.",
     locating: "Finding your position…",
@@ -130,10 +130,9 @@ export const en = {
     duplicate: "This game is already on Strava.",
     failed: "Publishing failed. You can still download the file and import it on strava.com.",
     activityName: "🔔 Ring the Bell!",
-    activityDescription_one:
-      "{{rank}} of {{players}} with {{total}} points in {{count}} ride. {{url}}",
+    activityDescription_one: "{{rank}} of {{players}} with {{total}} m in {{count}} ride. {{url}}",
     activityDescription_other:
-      "{{rank}} of {{players}} with {{total}} points in {{count}} rides. {{url}}",
+      "{{rank}} of {{players}} with {{total}} m in {{count}} rides. {{url}}",
   },
   feedback: {
     title: "Your opinion?",
@@ -190,7 +189,6 @@ export const en = {
   },
   result: {
     personalBest: "{{name}}, new personal best!",
-    points: "points",
     metres: "metres",
     upNext: "Next: {{name}}",
     slope: "on a {{percent}}\u00a0% slope",

@@ -64,7 +64,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
       </StrictMode>,
     );
 
-  it("counts down, then scores value/3 per second and finishes exactly once", () => {
+  it("counts down, then scores metres at 4 m per pedal turn and finishes exactly once", () => {
     const onFinish = vi.fn();
     renderRide(steadySensor(90), onFinish);
     expect(screen.getByText("3")).toBeInTheDocument();
@@ -72,7 +72,8 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(screen.getByTestId("ride-score")).toBeInTheDocument();
     advance(25_000);
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(600, -1);
+    // 90 rpm is 6 m/s: 120 m in 20 s, less the first second picking up speed.
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(115, -1);
   });
 
   it("hands over the ride's trace: start time and one sample per second", () => {
@@ -104,7 +105,8 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     );
     advance(10_500);
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(600, -1);
+    // 90 rpm is 6 m/s: 120 m in 20 s, less the first second picking up speed.
+    expect((onFinish.mock.calls[0]?.[0] as FinishedRide | undefined)?.points).toBeCloseTo(115, -1);
   });
 
   it("rings the bell once the record is beaten", () => {
@@ -113,14 +115,14 @@ describe("RideScreen", { timeout: 20_000 }, () => {
         player={player}
         round={1}
         settings={settings}
-        record={{ player: { id: "tom", name: "Tom" }, points: 100 }}
+        record={{ player: { id: "tom", name: "Tom" }, points: 15 }}
         sensor={steadySensor(90)}
         onFinish={vi.fn()}
       />,
     );
     advance(COUNTDOWN_MS + 2_000);
     expect(screen.getByText("Record: Tom")).toBeInTheDocument();
-    // 90 rpm = 30 pts/s: 100 points after ~3.3 s.
+    // 90 rpm = 6 m/s: 15 m after ~3.3 s.
     advance(2_000);
     expect(screen.getByText("Record beaten!")).toBeInTheDocument();
     expect(screen.queryByText("Record: Tom")).not.toBeInTheDocument();
@@ -139,7 +141,7 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     );
     advance(COUNTDOWN_MS + 1_000);
     expect(screen.getByText("Goal")).toBeInTheDocument();
-    // Goal for 20 s = 80 rpm × 20 s / 3 ≈ 533 points; 90 rpm gets there in ~18 s.
+    // Goal for 20 s = 80 rpm × 4 m × 20 s ≈ 107 m; 90 rpm gets there in ~18.6 s.
     advance(18_000);
     expect(screen.getByText("Goal reached!")).toBeInTheDocument();
   });
@@ -161,11 +163,12 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(screen.getByTestId("ride-grade")).toHaveTextContent("2 % slope");
   });
 
-  it("on pedal turns: points only, no speed", () => {
+  it("by leg speed: metres too, at a speed worked out from the cadence", () => {
     renderRide(steadySensor(90), vi.fn());
-    advance(COUNTDOWN_MS + 2000);
-    expect(screen.getByTestId("ride-score")).toHaveTextContent(/^\d+$/);
-    expect(screen.queryByTestId("ride-speed")).not.toBeInTheDocument();
+    advance(COUNTDOWN_MS + 5000);
+    expect(screen.getByTestId("ride-score")).toHaveTextContent(/^\d+m$/);
+    // 90 rpm, 4 m per turn: 6 m/s.
+    expect(screen.getByTestId("ride-speed")).toHaveTextContent("22 km/h");
     expect(screen.getByTestId("ride-grade")).toHaveTextContent("2 % slope");
   });
 
@@ -202,13 +205,13 @@ describe("RideScreen", { timeout: 20_000 }, () => {
       fireEvent.keyDown(window, { code: "ArrowRight" });
       advance(350);
     }
-    expect(Number(screen.getByTestId("ride-score").textContent)).toBe(0);
-    // Alternating every 170 ms: about 95 rpm, 30 points per second.
+    expect(parseInt(screen.getByTestId("ride-score").textContent, 10)).toBe(0);
+    // Alternating every 170 ms: about 95 rpm, over 6 m/s.
     for (let i = 0; i < 20; i++) {
       fireEvent.keyDown(window, { code: i % 2 ? "ArrowRight" : "ArrowLeft" });
       advance(170);
     }
-    expect(Number(screen.getByTestId("ride-score").textContent)).toBeGreaterThan(80);
+    expect(parseInt(screen.getByTestId("ride-score").textContent, 10)).toBeGreaterThan(10);
     expect(screen.getByRole("button", { name: "← Left" })).toBeInTheDocument();
   });
 });

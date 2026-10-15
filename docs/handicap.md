@@ -9,7 +9,7 @@ Two choices in ⚙:
 | What counts        | Scores                     | Needs                     |
 | ------------------ | -------------------------- | ------------------------- |
 | Distance (default) | metres from measured power | a power meter             |
-| Leg speed          | pedal turns                | any sensor (CSC included) |
+| Leg speed          | metres from pedal turns    | any sensor (CSC included) |
 
 | Slope                    | Grade                                   |
 | ------------------------ | --------------------------------------- |

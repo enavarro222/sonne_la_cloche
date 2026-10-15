@@ -9,8 +9,11 @@ can for 20 to 45 seconds to ring the bell. It was born for a kids' birthday
 party and works just as well between adults: family gatherings, friends,
 a team afternoon.
 
-By default the score counts pedal turns rather than watts, so small legs stand
-a chance against big ones; switch to watts for a strength contest. On smart
+The score is a distance, in metres. By default each player rides on their own
+virtual slope, flat for the weakest and steeper for the stronger ones, so an
+8-year-old stands a chance against an adult (see
+[docs/handicap.md](docs/handicap.md)). That needs a trainer that measures
+power; without one, the game turns pedal turns into metres instead. On smart
 trainers the game also sets the resistance, from light to mega hard.
 
 It runs in the browser, reads the trainer over Bluetooth, and works in French
@@ -31,9 +34,10 @@ It is still a game: see _Without a bike_ below.
 
 Everyone rides once per round, for 3 to 5 rounds. The bell on the track marks
 the best ride so far; pass it and it rings. On the very first ride there is no
-record yet, so the bell marks a goal instead (80 rpm held for the whole ride).
+record yet, so the bell marks a goal instead: a good ride, 25 km/h held for
+the whole ride (80 rpm when the game counts pedal turns).
 
-After each ride you get the points, the average and peak cadence and power,
+After each ride you get the distance, the average and peak cadence and power,
 and a table of every round so far. At the end, the winner rings the bell, and
 three awards go to the best single ride, the fastest legs and the strongest
 rider.

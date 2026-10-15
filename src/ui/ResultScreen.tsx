@@ -47,15 +47,14 @@ function RideDetails({ stats }: { stats: RideStats }) {
   );
 }
 
-/** By distance, points are metres: say so. */
-const scoreUnit = (game: Game, t: TFunction) =>
-  game.settings.metric === "distance" ? t("result.metres") : t("result.points");
+/** Scores are metres, by distance or by leg speed. */
+const scoreUnit = (t: TFunction) => t("result.metres");
 
 function Awards({ game }: { game: Game }) {
   const { t } = useTranslation();
   const { bestRide, fastest, strongest } = highlights(game);
   const awards: { label: string; feat: Feat | null; unit: string }[] = [
-    { label: t("result.awards.bestRide"), feat: bestRide, unit: scoreUnit(game, t) },
+    { label: t("result.awards.bestRide"), feat: bestRide, unit: scoreUnit(t) },
     { label: t("result.awards.fastest"), feat: fastest, unit: t("ride.cadenceUnit") },
     { label: t("result.awards.strongest"), feat: strongest, unit: t("ride.powerUnit") },
   ];
@@ -142,7 +141,7 @@ export function ResultScreen({
           <span data-testid="result-points">
             <FixedDigits>{ride?.points ?? 0}</FixedDigits>
           </span>
-          <span className={styles.unit}>{scoreUnit(game, t)}</span>
+          <span className={styles.unit}>{scoreUnit(t)}</span>
         </p>
         {ride?.gradePct !== undefined && (
           <p className={styles.slope}>{t("result.slope", { percent: percent(ride.gradePct) })}</p>

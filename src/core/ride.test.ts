@@ -6,6 +6,7 @@ import {
   startRide,
   stepRide,
   bellMark,
+  cadenceSpeed,
   FINALE_LIFT,
   finaleFor,
   finaleGrade,
@@ -31,16 +32,31 @@ const steps = (value: number, dt: number, count: number, duration = 30) => {
 };
 
 describe("stepRide", () => {
-  it("scores value/3 points per second", () => {
+  it("scores metres: 4 m per pedal turn, once the bike is up to speed", () => {
+    expect(cadenceSpeed(90)).toBe(6);
     const progress = steps(90, 0.1, 100);
-    expect(progress.points).toBeCloseTo(300);
+    expect(progress.speed).toBeCloseTo(6);
+    // 60 m in 10 s at 6 m/s, less the first second picking up speed.
+    expect(progress.points).toBeGreaterThan(54);
+    expect(progress.points).toBeLessThan(57);
     expect(progress.elapsedSec).toBeCloseTo(10);
+  });
+
+  it("rolls on when the legs stop, slowing down", () => {
+    let progress = steps(90, 0.1, 100);
+    const before = progress.points;
+    for (let i = 0; i < 10; i++) {
+      progress = stepRide(progress, effort(0), "cadence", 0.1, 30);
+    }
+    expect(progress.speed).toBeGreaterThan(3);
+    expect(progress.speed).toBeLessThan(6);
+    expect(progress.points).toBeGreaterThan(before + 3);
   });
 
   it("never counts beyond the ride duration", () => {
     const progress = steps(90, 0.2, 200, 30);
     expect(progress.elapsedSec).toBe(30);
-    expect(progress.points).toBeCloseTo(900);
+    expect(progress.points).toBeCloseTo(175.8, 0);
     expect(isRideOver(progress, 30)).toBe(true);
     expect(remainingSec(progress, 30)).toBe(0);
   });
@@ -58,7 +74,8 @@ describe("stepRide", () => {
 
   it("scores pedal turns, whatever the power", () => {
     const ride = stepRide(startRide(), effort(90, 150), "cadence", 0.2, 30);
-    expect(ride.points).toBeCloseTo(6);
+    expect(ride.points).toBe(stepRide(startRide(), effort(90, 0), "cadence", 0.2, 30).points);
+    expect(ride.points).toBeGreaterThan(0);
   });
 
   it("averages cadence and power over the time ridden, and keeps the peaks", () => {
@@ -119,25 +136,25 @@ describe("track", () => {
   const goal = bellMark(null, settings);
 
   it("gives the first ride a goal worth a good ride", () => {
-    // 80 rpm for 30 s → 800 points.
+    // 80 rpm for 30 s, 4 m per turn → 160 m.
     expect(REFERENCE_CADENCE).toBe(80);
-    expect(goal).toEqual({ kind: "goal", points: 800 });
+    expect(goal).toEqual({ kind: "goal", points: 160 });
     expect(bellMark(0, settings)).toEqual(goal);
-    expect(bellMark(0, { ...settings, durationSec: 20 }).points).toBeCloseTo(533.3, 1);
+    expect(bellMark(0, { ...settings, durationSec: 20 }).points).toBeCloseTo(106.7, 1);
     // By distance: 7 m/s (25 km/h) for 30 s.
     expect(bellMark(0, { ...settings, metric: "distance" }).points).toBe(210);
     expect(bellMark(450, settings)).toEqual({ kind: "record", points: 450 });
   });
 
   it("puts the bell a bit before the end when it is the harder mark", () => {
-    expect(startTrack(goal, settings).target).toBe(840);
+    expect(startTrack(goal, settings).target).toBe(168);
     expect(startTrack({ kind: "record", points: 1000 }, settings).target).toBe(1050);
-    expect(startTrack({ kind: "record", points: 200 }, settings).target).toBe(800);
+    expect(startTrack({ kind: "record", points: 120 }, settings).target).toBe(160);
   });
 
   it("does not move while the bike is far from the end", () => {
     const track = startTrack(goal, settings);
-    expect(stepTrack(track, 600, 0.016)).toEqual(track);
+    expect(stepTrack(track, 100, 0.016)).toEqual(track);
   });
 
   it("stretches smoothly once the bike nears the end, never trapping it", () => {
@@ -145,7 +162,7 @@ describe("track", () => {
     let points = 0;
     const positions: number[] = [];
     let previousTarget = track.target;
-    // Pedaling far above the reference: 200 pts/s for 30 s at 60 fps.
+    // Far above the reference: 200 m/s for 30 s at 60 fps.
     for (let frame = 0; frame < 30 * 60; frame++) {
       points += 200 / 60;
       track = stepTrack(track, points, 1 / 60);
