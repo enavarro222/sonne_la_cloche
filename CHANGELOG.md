@@ -10,9 +10,10 @@ the whole game drawn by hand, its characters drawn by a young rider.
 
 ### Fairer: each player on their own slope
 
-- Distance is now the default score: the watts measured become metres
-  through a physics model, from a virtual flying start (the countdown is
-  the run-up). Pedal turns remain the choice for trainers without power.
+- Every score is now a distance, in metres. By default the watts measured
+  become metres through a physics model, from a virtual flying start (the
+  countdown is the run-up). Scored on leg speed, for trainers without
+  power, the pedal turns drive a virtual bike at 4 m per turn.
 - The new default road is "own slope each": round 1 measures everyone on
   a common slope, then each player rides their own slope, flat for the
   weakest, steeper for the stronger, so that everyone at their own level
@@ -22,8 +23,8 @@ the whole game drawn by hand, its characters drawn by a young rider.
   wall 10 %), sent to FTMS trainers as a simulated grade, or as a
   resistance level on the others.
 - During the ride, a gauge shows the player's power against their level.
-- Without a power meter (a CSC sensor, or power stuck at 0) the game counts
-  pedal turns instead, and the home screen says so.
+- Without a power meter (a CSC sensor, or power stuck at 0) the game scores
+  on leg speed instead, and the home screen says so.
 - Saved settings move to the new defaults, keeping ride length and rounds.
 
 ### A last-seconds twist
@@ -43,7 +44,7 @@ the whole game drawn by hand, its characters drawn by a young rider.
   on the cyclist, the player and the timer, and dodges the falling seconds.
 - The whole screen is a sheet of indigo construction paper: matt paper
   panels, fonts drawn by hand but readable from afar, the track and the
-  score sheet on kraft paper, a drawn bell.
+  score sheet on kraft paper, a crayoned hand bell hanging from the track.
 - The ride screen is laid out anew: the time left drains the background
   like an hourglass, the track leans with the slope written above it, the
   distance and speed are shown, and nothing moves at "Go".
@@ -59,6 +60,10 @@ the whole game drawn by hand, its characters drawn by a young rider.
 
 - The link preview, the app icon and the results picture to share now
   have the hand-drawn look.
+- On Strava, the activity climbs the slope actually ridden, second by
+  second, and its average speed counts only the time ridden. With a map,
+  the rides keep their real times and the rests between them show; without
+  one, they follow one another.
 
 ## 0.1.0 — 2026-10-03
 
