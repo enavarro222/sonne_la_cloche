@@ -59,6 +59,22 @@ describe("buildFit", () => {
     expect(session?.max_speed).toBeCloseTo(6, 1);
   });
 
+  it("with a track, keeps the real times: Strava tells the rests by the position", async () => {
+    const fit = await parse(buildFit(rides, { lat: 43.9, lon: 1.9 }));
+    expect(fit.laps?.map((l) => l.start_time?.toISOString())).toEqual([
+      "2026-09-29T15:00:00.000Z",
+      "2026-09-29T15:02:00.000Z",
+    ]);
+    expect(fit.sessions?.[0]?.total_elapsed_time).toBe(150);
+    expect(fit.sessions?.[0]?.total_timer_time).toBe(60);
+    // Still for the whole rest: the same position at its two ends.
+    const records = fit.records ?? [];
+    expect(records[31]?.timestamp?.toISOString()).toBe("2026-09-29T15:00:31.000Z");
+    expect(records[32]?.timestamp?.toISOString()).toBe("2026-09-29T15:02:00.000Z");
+    expect(records[32]?.position_lat).toBe(records[31]?.position_lat);
+    expect(records[32]?.position_long).toBe(records[31]?.position_long);
+  });
+
   it("climbs the slope of each ride", async () => {
     const fit = await parse(buildFit(rides));
     const altitudes = fit.records?.map((r) => r.altitude ?? 0) ?? [];

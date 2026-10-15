@@ -1,9 +1,13 @@
 // FIT activity file for one player: one lap per ride, a record per second
-// with cadence, power, distance and altitude. The rides follow one another
-// from the first one's start, without the waits between them: Strava counts
-// a trainer ride's time as moving time, waits included, which dragged its
-// average speed down. The sub-sport makes it a virtual ride, kept out of
-// segments and leaderboards.
+// with cadence, power, distance and altitude. The sub-sport makes it a
+// virtual ride, kept out of segments and leaderboards.
+//
+// Strava tells the waits between rides from the ride only by the position
+// standing still: it ignores the timer's pauses and zero speeds (checked by
+// hand on Strava). With a virtual GPS track, the rides keep their real time
+// and the rests between them show; without one, they follow one another, a
+// second apart, or the waits would count as moving time and drag the
+// average speed down.
 
 import { FitWriter } from "@markw65/fit-file-writer";
 import type { RideSample } from "../core/ride";
@@ -42,10 +46,11 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
   const fit = new FitWriter();
   const at = (ms: number) => fit.time(new Date(ms));
   const first = ordered[0]?.startedAt ?? 0;
-  // Back to back, a second apart: each ride starts where the last one stopped.
+  // Without a track, back to back, a second apart: each ride starts where the
+  // last one stopped.
   let next = first;
   const starts = ordered.map((ride) => {
-    const start = next;
+    const start = center ? ride.startedAt : next;
     next += (ride.samples.length + 1) * 1000;
     return start;
   });
@@ -77,7 +82,8 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
     const rideEnd = startedAt + ride.samples.length * 1000;
     const lapStart = distance;
     const lapAscent = ascent;
-    if (index === 0) {
+    // Back to back, the timer runs on; with real times, it stops between rides.
+    if (index === 0 || center) {
       fit.writeMessage("event", { timestamp: at(startedAt), event: "timer", event_type: "start" });
     }
     const record = (ms: number, cadence: number, power: number, speed: number, lastUse = false) => {
@@ -105,6 +111,7 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
     // Standing still at the start and end of each ride: the curves stay at
     // zero during the waits instead of joining the rides with a slope.
     record(startedAt, 0, 0, 0);
+    const last = index === ordered.length - 1;
     for (const sample of ride.samples) {
       const speed = metresPerSecond(sample.cadence);
       distance += speed;
@@ -114,10 +121,11 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
       ascent += Math.max(0, climb);
       record(startedAt + sample.second * 1000, sample.cadence, sample.power, speed);
     }
-    // Standing still for a second after the ride: the next one starts there.
-    if (index === ordered.length - 1) {
+    // Standing still for a second after the ride (back to back: the next
+    // one starts there).
+    if (last || center) {
       fit.writeMessage("event", { timestamp: at(rideEnd), event: "timer", event_type: "stop_all" });
-      record(rideEnd + 1000, 0, 0, 0, true);
+      record(rideEnd + 1000, 0, 0, 0, last);
     }
 
     const cadence = stats(ride.samples, (s) => s.cadence);
@@ -143,7 +151,7 @@ export function buildFit(rides: readonly ExportRide[], center?: LatLon): Uint8Ar
         event_type: "stop",
       },
       null,
-      index === ordered.length - 1,
+      last,
     );
   }
 
