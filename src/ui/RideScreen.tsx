@@ -474,12 +474,6 @@ export function RideScreen({
     // Only when the screen opens: before the run-up.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Again before each ride: another app may have changed it since.
-  const slopeSensor = useLatest(sensor);
-  const startGrade = course?.gradePct ?? SLOPE_PERCENT[settings.slope];
-  useEffect(() => {
-    void slopeSensor.current.setSlope?.(startGrade);
-  }, [slopeSensor, startGrade]);
   const ride = useRideLoop(
     stage.name === "racing",
     sensor,
@@ -493,6 +487,13 @@ export function RideScreen({
   const live = useLiveReading(stage.name !== "racing" && target !== null, sensor);
   const reading = stage.name === "racing" ? ride.reading : live;
   const { gradePct, finale } = ride;
+  // The trainer's slope, again before each ride (another app may have changed
+  // it since), and on a bike reconnected mid-ride: the slope ridden now, which
+  // a raised level or the twist may have changed since the start.
+  const ridden = useLatest(gradePct);
+  useEffect(() => {
+    void sensor.setSlope?.(ridden.current);
+  }, [sensor, ridden]);
   const [rideRef, sceneRef, layout] = useRideLayout();
   // The widest the seconds have been ("20,0 s" before "9,9 s"): the column,
   // and so the track, must not change size as digits drop.

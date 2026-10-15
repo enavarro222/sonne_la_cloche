@@ -37,17 +37,21 @@ export function App() {
     saveSettings(state.settings);
   }, [state.settings]);
   useWakeLock(sensor !== null);
-  // Right away on connection (the trainer may still be set up for an adult,
-  // or in ERG mode after another app), and whenever the setting changes.
   const course = useMemo(
     () =>
       game?.phase === "riding" && game.settings.metric === "distance" ? courseFor(game) : null,
     [game],
   );
-  const grade = course?.gradePct ?? SLOPE_PERCENT[state.settings.slope];
+  // Out of a ride, the trainer gets the common slope: right away on connection
+  // (it may still be set up for an adult, or in ERG mode after another app),
+  // and whenever the setting changes. That of the game once one started: the
+  // settings may differ from the home screen's (a bike without power). During
+  // a ride, the ride screen sets it.
+  const riding = game?.phase === "riding";
+  const grade = SLOPE_PERCENT[(game?.settings ?? state.settings).slope];
   useEffect(() => {
-    void sensor?.setSlope?.(grade);
-  }, [sensor, grade]);
+    if (!riding) void sensor?.setSlope?.(grade);
+  }, [sensor, grade, riding]);
   useHistoryGuard(game !== null);
   useLeaveWarning(game !== null && !isGameOver(game));
 

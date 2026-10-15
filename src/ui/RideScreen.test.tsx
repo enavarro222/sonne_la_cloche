@@ -187,6 +187,34 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(sensor.setSlope).toHaveBeenCalledWith(5);
   });
 
+  it("gives a bike reconnected mid-ride the slope ridden now, not the starting one", () => {
+    const slopeSensor = () => ({
+      ...steadySensor(90),
+      setSlope: vi.fn(() => Promise.resolve(true)),
+    });
+    const first = slopeSensor();
+    const ride = (sensor: Sensor) => (
+      <RideScreen
+        player={player}
+        round={1}
+        settings={{ ...settings, finale: "on" }}
+        // Far behind the bell: the twist lets the track fall 3 %.
+        record={{ player: { id: "tom", name: "Tom" }, points: 10_000 }}
+        sensor={sensor}
+        onFinish={vi.fn()}
+      />
+    );
+    const { rerender } = render(ride(first));
+    expect(first.setSlope).toHaveBeenCalledWith(2);
+    // 3 s before the end, in the twist.
+    advance(COUNTDOWN_MS + 17_000);
+    expect(first.setSlope).toHaveBeenLastCalledWith(-1);
+    const reconnected = slopeSensor();
+    rerender(ride(reconnected));
+    expect(reconnected.setSlope).toHaveBeenCalledWith(-1);
+    expect(reconnected.setSlope).not.toHaveBeenCalledWith(2);
+  });
+
   it("pedals in demo mode with ← and → in turn, not with one key", () => {
     const onFinish = vi.fn();
     render(
