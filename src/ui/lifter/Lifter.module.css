@@ -165,15 +165,20 @@
 
 /* The "!" he sees coming, garland yellow: it pops, then throbs. */
 .alarm {
-  stroke: var(--yellow);
-  stroke-width: 40;
-  stroke-linecap: round;
   fill: var(--yellow);
+  stroke: none;
   transform-box: fill-box;
-  transform-origin: 50% 100%;
+  transform-origin: 30% 100%;
   animation:
     pop 0.3s ease-out,
-    throb 0.5s ease-in-out 0.3s infinite;
+    throb 0.6s ease-in-out 0.3s infinite;
+}
+
+.shock {
+  fill: none;
+  stroke: var(--yellow);
+  stroke-width: 9;
+  stroke-linecap: round;
 }
 
 @keyframes pop {
@@ -182,9 +187,17 @@
   }
 }
 
+/* A small jolt rather than a pulse. */
 @keyframes throb {
-  50% {
-    transform: scale(1.2);
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg) scale(1.06);
+  }
+  75% {
+    transform: rotate(6deg) scale(1.06);
   }
 }
 

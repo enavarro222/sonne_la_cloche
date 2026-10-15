@@ -298,11 +298,15 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
         </g>
       </g>
 
-      {/* A big "!" by his head: something is coming. */}
+      {/* A crayoned "!" by his head, with two shock strokes: something is coming. */}
       {alarmed && (
-        <g className={styles.alarm}>
-          <line x1={1250} y1={200} x2={1238} y2={330} />
-          <circle cx={1234} cy={385} r={18} />
+        <g className={styles.alarm} filter={`url(#${ids.wobble})`}>
+          <path
+            d="M1226 232 Q 1246 224 1262 236 L 1240 332 Q 1234 338 1229 331 Z"
+            filter={crayon}
+          />
+          <circle cx={1230} cy={364} r={13} filter={crayon} />
+          <path className={styles.shock} d="M1284 268 l 34 -14 M1288 316 l 36 6" />
         </g>
       )}
     </svg>
