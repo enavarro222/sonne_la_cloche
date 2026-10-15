@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { Player } from "../core/players";
+import { MAX_PLAYERS, type Player } from "../core/players";
 import { DEFAULT_SETTINGS } from "../core/settings";
 import { REPOSITORY_URL } from "./credits";
 import { HomeScreen } from "./HomeScreen";
@@ -124,5 +124,16 @@ describe("HomeScreen start button", () => {
   it("names nobody until there are enough players", () => {
     renderHome({ kind: "demo" }, [{ id: "1", name: "Léa" }]);
     expect(screen.getByRole("button", { name: "Let's go!" })).toBeDisabled();
+  });
+});
+
+describe("HomeScreen players", () => {
+  it("takes no one past a full party, saying so in the field", () => {
+    const full = Array.from({ length: MAX_PLAYERS }, (_, i) => ({ id: `p${i}`, name: `P${i}` }));
+    renderHome({ kind: "demo" }, full);
+    const field = screen.getByRole("textbox", { name: "First name" });
+    expect(field).toBeDisabled();
+    expect(field).toHaveAttribute("placeholder", "8 players at most");
+    expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
   });
 });

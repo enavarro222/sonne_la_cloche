@@ -31,6 +31,7 @@ export const fr: Translation = {
       recolour_elided: "Changer les couleurs d'{{name}}",
       help: "Touche un cycliste pour changer ses couleurs, fais-le glisser pour changer l'ordre.",
       duplicate: "{{name}} joue déjà",
+      full: "{{count}} joueurs maximum",
     },
     bike: {
       title: "Le vélo",

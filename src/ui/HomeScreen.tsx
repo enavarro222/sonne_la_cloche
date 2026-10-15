@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   canStart,
   MAX_NAME_LENGTH,
+  MAX_PLAYERS,
   normalizeName,
   type Player,
   validateName,
@@ -156,6 +157,7 @@ export function HomeScreen({
     setName("");
   };
 
+  const full = roster.length >= MAX_PLAYERS;
   const enoughPlayers = canStart(roster);
   // The game always opens with the first player of the roster.
   const firstUp = enoughPlayers ? roster[0] : undefined;
@@ -188,13 +190,17 @@ export function HomeScreen({
               setName(e.target.value);
               setDuplicate(null);
             }}
-            placeholder={t("home.players.placeholder")}
+            // Full: said in the field itself, so the screen keeps its layout.
+            placeholder={
+              full ? t("home.players.full", { count: MAX_PLAYERS }) : t("home.players.placeholder")
+            }
             aria-label={t("home.players.placeholder")}
+            disabled={full}
             maxLength={MAX_NAME_LENGTH}
             autoComplete="off"
             enterKeyHint="done"
           />
-          <button type="submit" className="secondary">
+          <button type="submit" className="secondary" disabled={full}>
             {t("home.players.add")}
           </button>
         </form>

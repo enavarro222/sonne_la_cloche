@@ -30,6 +30,7 @@ export const en = {
       recolour_elided: "Change {{name}}'s colours",
       help: "Tap a rider to change their colours, drag them to change the order.",
       duplicate: "{{name}} is already playing",
+      full: "{{count}} players at most",
     },
     bike: {
       title: "The bike",

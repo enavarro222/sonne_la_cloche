@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { canStart, MAX_NAME_LENGTH, normalizeName, parseRoster, validateName } from "./players";
+import {
+  canStart,
+  MAX_NAME_LENGTH,
+  MAX_PLAYERS,
+  normalizeName,
+  parseRoster,
+  validateName,
+} from "./players";
 
 describe("players", () => {
   it("normalizes names", () => {
@@ -12,6 +19,14 @@ describe("players", () => {
     expect(validateName("", roster)).toBe("empty");
     expect(validateName("léa", roster)).toBe("duplicate");
     expect(validateName("Tom", roster)).toBeNull();
+  });
+
+  it("takes a full party at most", () => {
+    const full = Array.from({ length: MAX_PLAYERS }, (_, i) => ({ id: `p${i}`, name: `P${i}` }));
+    expect(validateName("Zoé", full.slice(1))).toBeNull();
+    expect(validateName("Zoé", full)).toBe("full");
+    // A stored roster too.
+    expect(parseRoster([...full, { id: "zoe", name: "Zoé" }])).toHaveLength(MAX_PLAYERS);
   });
 
   it("needs two players to start", () => {

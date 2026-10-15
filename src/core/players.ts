@@ -8,15 +8,21 @@ export interface Player {
 }
 
 export const MIN_PLAYERS = 2;
+/**
+ * A full party: as many as the screens are laid out (and tested) for, and as
+ * the riders' colours and the shared picture's rows.
+ */
+export const MAX_PLAYERS = 8;
 export const MAX_NAME_LENGTH = 14;
 
-export type NameError = "empty" | "duplicate";
+export type NameError = "empty" | "duplicate" | "full";
 
 export function normalizeName(raw: string): string {
   return raw.trim().replace(/\s+/g, " ").slice(0, MAX_NAME_LENGTH).trim();
 }
 
 export function validateName(name: string, roster: readonly Player[]): NameError | null {
+  if (roster.length >= MAX_PLAYERS) return "full";
   if (name === "") return "empty";
   const key = name.toLocaleLowerCase();
   return roster.some((p) => p.name.toLocaleLowerCase() === key) ? "duplicate" : null;
@@ -35,6 +41,7 @@ export function parseRoster(value: unknown): Player[] {
     const { id, name, livery } = item as Record<string, unknown>;
     if (typeof id !== "string" || typeof name !== "string") continue;
     const clean = normalizeName(name);
+    if (roster.length >= MAX_PLAYERS) break;
     if (validateName(clean, roster) === null && !roster.some((p) => p.id === id)) {
       const taken = roster.map((p) => p.livery);
       const own = isLivery(livery) && !taken.includes(livery) ? livery : freeLivery(taken);
