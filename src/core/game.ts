@@ -20,7 +20,7 @@ export interface RideResult {
   points: number;
   stats: RideStats;
   trace: RideTrace;
-  /** The slope ridden, in percent, when each player has their own. */
+  /** By distance, the slope of the ride's course in percent (own or common). */
   gradePct?: number;
 }
 

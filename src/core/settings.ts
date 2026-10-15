@@ -34,7 +34,7 @@ export const slopeAllowed = (slope: Slope, metric: Metric): boolean =>
   slope !== "own" || metric === "distance";
 
 export const FINALES = ["off", "on"] as const;
-/** The strongman's last-seconds twist, see `finaleFor` in ride.ts. */
+/** The pole bearer's last-seconds twist, see `finaleFor` in ride.ts. */
 export type Finale = (typeof FINALES)[number];
 
 export interface Settings {

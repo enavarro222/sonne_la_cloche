@@ -33,7 +33,7 @@ await open(icon, "view=icon");
 // The favicon: the icon's own markup, with ids a file can hold.
 const svg = await icon
   .locator("svg[data-icon]")
-  .evaluate((element) => element.outerHTML.replace(/[«»]/g, "").replace(/ data-icon="[^"]*"/, ""));
+  .evaluate((element) => element.outerHTML.replace(/ data-icon="[^"]*"/, ""));
 await writeFile(out("icon.svg"), `${svg}\n`);
 console.log(out("icon.svg"));
 // The bell alone, for the end-of-game image drawn on a canvas.
@@ -41,7 +41,6 @@ const bell = await icon
   .locator('svg[viewBox="400 440 780 950"]')
   .evaluate((element) =>
     element.outerHTML
-      .replace(/[«»]/g, "")
       .replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ')
       .replace('width="100%"', 'width="780" height="950"'),
   );

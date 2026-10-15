@@ -14,7 +14,8 @@ virtual slope, flat for the weakest and steeper for the stronger ones, so an
 8-year-old stands a chance against an adult (see
 [docs/handicap.md](docs/handicap.md)). That needs a trainer that measures
 power; without one, the game turns pedal turns into metres instead. On smart
-trainers the game also sets the resistance, from light to mega hard.
+trainers the game also sets the slope, as a simulated grade or a resistance
+level.
 
 It runs in the browser, reads the trainer over Bluetooth, and works in French
 (`/fr/`) and English (`/en/`).
@@ -73,9 +74,10 @@ on a real bike.
 - **Chrome or Edge**, on a computer or an Android tablet. Safari, Firefox and
   iOS don't support Web Bluetooth.
 - **HTTPS** (or `localhost`): browsers only allow Bluetooth on secure pages.
-- Resistance: the game sets it on FTMS trainers (light, normal, hard, mega
-  hard). With another sensor, use the bike's gears; for young kids, the lowest
-  gear, or their legs give up after ten seconds.
+- Slope: the game sets it on FTMS trainers (flat, gentle, hill, wall, or each
+  their own), as a simulated grade or a resistance level. With another
+  sensor, use the bike's gears; for young kids, the lowest gear, or their
+  legs give up after ten seconds.
 
 ## Run it
 
@@ -130,12 +132,12 @@ without a bike.
 
 ## Troubleshooting
 
-| Symptom                          | Most likely cause                                                |
-| -------------------------------- | ---------------------------------------------------------------- |
-| "Connect the bike" is greyed out | Browser without Web Bluetooth (Safari, Firefox, iOS) or no HTTPS |
-| The trainer is not in the list   | Still connected to another app, or asleep                        |
-| Connected but cadence stays at 0 | Power meter without crank data: switch the metric to "Strength"  |
-| Values look doubled or empty     | FTMS parsing: see the note on bit 0 in `CLAUDE.md`               |
+| Symptom                          | Most likely cause                                                 |
+| -------------------------------- | ----------------------------------------------------------------- |
+| "Connect the bike" is greyed out | Browser without Web Bluetooth (Safari, Firefox, iOS) or no HTTPS  |
+| The trainer is not in the list   | Still connected to another app, or asleep                         |
+| Connected but cadence stays at 0 | Power meter without crank data: score by "Distance" (the default) |
+| Values look doubled or empty     | FTMS parsing: see the note on bit 0 in `CLAUDE.md`                |
 
 ## License
 

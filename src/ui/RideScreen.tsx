@@ -41,7 +41,7 @@ export interface FinishedRide {
   points: number;
   stats: RideStats;
   trace: RideTrace;
-  /** The slope ridden, when each player has their own. */
+  /** By distance, the slope of the ride's course (own or common), raised mid-ride if it was. */
   gradePct?: number;
 }
 
@@ -55,7 +55,10 @@ interface Props {
   settings: Settings;
   record: { player: Player; points: number } | null;
   sensor: Sensor;
-  /** This player's own slope; only when each player has their own. */
+  /**
+   * By distance, the course ridden (each their own slope, or the common one):
+   * distance is scored on it. Null by leg speed.
+   */
   course?: Course | null;
   onFinish: (ride: FinishedRide) => void;
 }
@@ -110,7 +113,7 @@ interface Frame {
   course: Course | null;
   /** The slope ridden right now, in percent. */
   gradePct: number;
-  /** The strongman's move in the last seconds, once decided. */
+  /** The pole bearer's move in the last seconds, once decided. */
   finale: FinaleMove | null;
 }
 
@@ -338,7 +341,7 @@ function useWidth<T extends HTMLElement>({ widest = false } = {}): [RefObject<T 
 
 /**
  * The ride screen's geometry: the scene's width, the gap between the bottom
- * of the track's scene and the bottom of the screen, where the strongman
+ * of the track's scene and the bottom of the screen, where the pole bearer
  * stands, and the room on the right of the scene before the screen's edge.
  */
 function useRideLayout(): [
@@ -412,7 +415,7 @@ const HOURGLASS_LABEL_ROOM = "4.5rem";
 const MAIN_PADDING = "var(--main-padding-inline)";
 /**
  * The seconds of the hourglass come down a column on the right, as wide as
- * they are plus this margin (px); the strongman stands at its foot and the
+ * they are plus this margin (px); the pole bearer stands at its foot and the
  * track stops short of it, whatever the screen size.
  */
 const COLUMN_MARGIN = 8;
@@ -591,7 +594,7 @@ export function RideScreen({
       <div className={styles.scene} ref={sceneRef}>
         <div
           className={styles.road}
-          // Centred: the same margin on the left as the strongman's on the right.
+          // Centred: the same margin on the left as the pole bearer's on the right.
           style={{
             width: `calc(100% - ${2 * column}px)`,
             marginLeft: `${column}px`,

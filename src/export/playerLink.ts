@@ -11,7 +11,7 @@ export interface PlayerRide {
   /** Milliseconds since the epoch (kept to the second). */
   startedAt: number;
   points: number;
-  /** The slope at the start, in percent (0 in older links); samples carry its changes. */
+  /** The ride's slope, in percent (0 in older links); samples carry each second's. */
   gradePct: number;
   samples: readonly RideSample[];
 }

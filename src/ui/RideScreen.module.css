@@ -1,6 +1,6 @@
 .ride {
   /* Nothing in a ride may make the screen scroll, even for a frame. Sideways,
-     the strongman may run past it to the screen's edge (`main` clips there). */
+     the pole bearer may run past it to the screen's edge (`main` clips there). */
   overflow-x: visible;
   overflow-y: clip;
   display: flex;
@@ -90,7 +90,7 @@
   background: rgb(255 59 119 / 0.14);
 }
 
-/* Against the right edge, over the strongman's column: `right` is set in RideScreen.tsx. */
+/* Against the right edge, over the pole bearer's column: `right` is set in RideScreen.tsx. */
 .timer {
   position: absolute;
   bottom: calc(100% + 0.3rem);
@@ -150,7 +150,7 @@
   white-space: nowrap;
 }
 
-/* The track and, under its far end, the strongman who lifts it. */
+/* The track and, under its far end, the pole bearer who lifts it. */
 .scene {
   position: relative;
   width: 100%;

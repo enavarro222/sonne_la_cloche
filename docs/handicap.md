@@ -22,8 +22,9 @@ slope each: fair between a child's 50 W and an adult's 300 W.
 
 **Without power**, a game by distance is played by leg speed instead (the
 settings stay as chosen, for the next bike), and the home screen says so.
-A sensor measures power if it sends the field and pedaling ever moved it
-from 0: a CSC sensor, or a trainer stuck at 0 W, does not.
+A trainer speaking FTMS or Cycling Power is taken to measure power from the
+moment it connects, until pedaling shows its power stuck at 0; a CSC sensor
+never does. The home screen checks again every second.
 
 **Stored settings are versioned** (`version` in the stored JSON, see
 `migrateSettings` in `src/storage/storage.ts`). Settings are saved as soon
@@ -44,11 +45,12 @@ metres, big (the countdown takes the same box, so nothing moves at "Go");
 speed and slope; the gauge; the track; cadence and watts.
 
 - **Every ride**: the track leans with the slope ridden, held up at its far
-  end by a fairground strongman (striped singlet, curly moustache) with a
-  pole: sweating from 5 %, red and shaking from 8 %. Same for a common
-  slope, whatever counts.
+  end by a pole bearer drawn by a young rider: sweating from 5 %, red and
+  shaking from 8 %. He keeps an eye on the cyclist, the player and the
+  seconds, and stares at them just before they come for him. Same for a
+  common slope, whatever counts.
 - **Before "Go"**: the speed shown is the one the flying start will give.
-- **The strongman** stands at the bottom of the screen, at the foot of the
+- **The pole bearer** stands at the bottom of the screen, at the foot of the
   column the seconds come down (as wide as they are, so the track stops
   short of it on any screen), and holds the track's end up with a pole.
 - **Last 5 s**: as the seconds reach him, he steps left under the track and
@@ -179,8 +181,9 @@ The weakest, or a single player, gets θ = 0. Examples:
 | 50 / 300 W (child / adult)  | 19.8 km/h | 5.8 %             |
 | 50 / 400 W (child / adult)  | 19.8 km/h | 8.1 %             |
 
-Above 12 %, cap θ and flag the player on screen: the handicap is no
-longer exact.
+θ is capped at 12 % above the common slope (`MAX_EXTRA_GRADE`): past it,
+the handicap is no longer exact for that player. Nothing on screen says so;
+it takes a gap far beyond a child against an adult (50 / 400 W is 8.1 %).
 
 The slope is sent to the trainer when the ride screen opens, before the
 countdown: at "Go", every player is already on their slope. No ramp for
@@ -204,6 +207,10 @@ Riding round 1 easy lowers `P_ref`, and therefore the slope. Hence:
   trainer. Implemented with the ride's average so far instead of a moving
   average: simpler, same effect after 10 s.
 - Never lower `P_ref` or θ during a game: fatigue is not rewarded.
+- `v_c` and every slope come from the levels as the round started: rides
+  of the current round (a player who improves, a ride being retried) count
+  from the next round on, so the order of play changes nothing. Only the
+  rider's own mid-ride raise applies at once.
 
 ### Trainer
 
@@ -220,7 +227,8 @@ after _Request Control_:
 - **No trainer minimum grade** for now: the common slope setting plays
   that role (2 % by default).
 - Grade is sent as a percentage (`tan θ`), the model works in radians.
-- After a reconnection: _Request Control_ again, then resend the grade.
+- After a reconnection: _Request Control_ again, then resend the grade
+  ridden at that moment (raised or twisted, not the starting one).
 - The trainer computes resistance with its own model: only the feel comes
   from it. Score always comes from the game model and measured power.
 - Without simulation mode (Cycling Power only), the handicap stays in the
@@ -234,5 +242,5 @@ after _Request Control_:
 - `src/sensors/ble/ftmsControl.ts`: opcode `0x11`, with the model's Crr
   and air drag.
 - `src/ui/RideScreen.tsx`, `src/ui/lifter/`: flying start, gauge, leaning
-  track and its strongman.
+  track and its pole bearer.
 - `e2e/slope.spec.ts`: a whole game in demo mode.

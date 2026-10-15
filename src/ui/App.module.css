@@ -15,7 +15,7 @@
   width: 100%;
   min-height: 0;
   overflow-y: auto;
-  /* Nothing scrolls sideways: e.g. the strongman running off the screen. */
+  /* Nothing scrolls sideways: e.g. the pole bearer running off the screen. */
   overflow-x: hidden;
   padding: clamp(1rem, 3vmin, 2rem) var(--main-padding-inline);
 }
