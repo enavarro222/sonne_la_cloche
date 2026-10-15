@@ -37,7 +37,7 @@ const FIST =
 const KNUCKLES = "M-18 -43 l 2 18 M7 -51 l 1 20 M32 -47 l -1 18";
 const THUMB = "M-38 5 q 26 -12 54 -2 q 10 4 5 14";
 
-const SKIN = "#8b3d2b";
+const SKIN = "#c8744e";
 
 /** A band from `a` (width `wa`) to `b` (width `wb`). */
 function band(a: Point, b: Point, wa: number, wb: number): string {
@@ -131,7 +131,7 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
           <feColorMatrix
             in="n"
             type="matrix"
-            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.6 1.25"
+            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -0.9 1.4"
             result="grain"
           />
           <feComposite in="SourceGraphic" in2="grain" operator="in" />
@@ -159,10 +159,10 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
         </pattern>
         {/* Light on one side of the pole, dark on the other. */}
         <linearGradient id={ids.pole} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e3d84f" />
-          <stop offset="0.4" stopColor="#b8b346" />
-          <stop offset="0.75" stopColor="#55553a" />
-          <stop offset="1" stopColor="#2e2e28" />
+          <stop offset="0" stopColor="#f2e86a" />
+          <stop offset="0.4" stopColor="#d6cf5a" />
+          <stop offset="0.75" stopColor="#9a9650" />
+          <stop offset="1" stopColor="#6e6a40" />
         </linearGradient>
       </defs>
 
@@ -204,22 +204,22 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
           )}
         >
           {/* Legs. */}
-          <path d="M918 900 L 1002 900 L 998 1462 L 922 1468 Z" fill="#f28a1a" filter={crayon} />
+          <path d="M918 900 L 1002 900 L 998 1462 L 922 1468 Z" fill="#ff9a2a" filter={crayon} />
           <path
             d="M1088 900 L 1172 900 L 1176 1290 L 1150 1350 L 1166 1462 L 1092 1468 Z"
-            fill="#f28a1a"
+            fill="#ff9a2a"
             filter={crayon}
           />
           {/* Yellow-green shoes with rounds. */}
           <path
             d="M1000 1460 L 790 1458 Q 778 1490 792 1522 L 1004 1520 Z"
-            fill="#cfd03c"
+            fill="#e2e350"
             filter={crayon}
           />
           <circle cx={840} cy={1492} r={16} fill="none" stroke="#3a3a30" strokeWidth={5} />
           <path
             d="M1090 1462 L 1300 1460 Q 1314 1492 1300 1524 L 1092 1522 Z"
-            fill="#cfd03c"
+            fill="#e2e350"
             filter={crayon}
           />
           <circle cx={1240} cy={1494} r={16} fill="none" stroke="#3a3a30" strokeWidth={5} />
@@ -230,20 +230,20 @@ export function Lifter({ hold: holdPx, gradePct, alarmed = false, fleeing = fals
             filter={crayon}
           />
           <path d="M930 860 L 1162 860" fill="none" strokeWidth={3} />
-          <path d="M928 655 L 1160 650 L 1162 695 L 926 700 Z" fill="#7a3122" filter={crayon} />
+          <path d="M928 655 L 1160 650 L 1162 695 L 926 700 Z" fill="#b5523a" filter={crayon} />
           {/* Neck and head. */}
-          <path d="M1070 482 L 1108 482 L 1112 548 L 1068 548 Z" fill="#a24a2c" filter={crayon} />
+          <path d="M1070 482 L 1108 482 L 1112 548 L 1068 548 Z" fill="#d07a52" filter={crayon} />
           <circle
             cx={1095}
             cy={398}
             r={86}
-            fill={straining ? "#b8402c" : "#8f4630"}
+            fill={straining ? "#e0603f" : "#cf8058"}
             filter={crayon}
           />
           {/* Red cap with its peak. */}
           <path
             d="M1015 350 C 1025 300, 1080 280, 1130 290 C 1170 298, 1185 325, 1180 350 Z"
-            fill="#d8383a"
+            fill="#f04a48"
             filter={crayon}
           />
           <path
