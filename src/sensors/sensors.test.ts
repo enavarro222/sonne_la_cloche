@@ -63,6 +63,17 @@ describe("ReadingTracker.measuresPower", () => {
     expect(tracker.measuresPower()).toBe(true);
   });
 
+  it("says yes before any data when the protocol carries power", () => {
+    // Connected, and "Let's go" before the first notification.
+    const trainer = new ReadingTracker(true);
+    expect(trainer.measuresPower()).toBe(true);
+    // Until pedaling shows the power stuck at 0.
+    trainer.update({ cadence: 80, power: 0 }, 0);
+    expect(trainer.measuresPower()).toBe(false);
+    trainer.update({ cadence: 85, power: 150 }, 100);
+    expect(trainer.measuresPower()).toBe(true);
+  });
+
   it("says no for cadence alone, or a power stuck at 0 while pedaling", () => {
     const cadenceOnly = new ReadingTracker();
     cadenceOnly.update({ cadence: 80 }, 0);

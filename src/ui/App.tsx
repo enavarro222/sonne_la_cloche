@@ -13,6 +13,7 @@ import { SettingsScreen } from "./SettingsScreen";
 import { sounds } from "./sound";
 import { useHistoryGuard } from "./useHistoryGuard";
 import { useLeaveWarning } from "./useLeaveWarning";
+import { useMeasuresPower } from "./useMeasuresPower";
 import { useSensor } from "./useSensor";
 import { useWakeLock } from "./useWakeLock";
 
@@ -26,6 +27,8 @@ export function App() {
   const sensorState = useSensor();
   const { sensor } = sensorState;
   const { game } = state;
+  // Watched on the home screen, where it shows; read again at "Let's go".
+  const measuresPower = useMeasuresPower(sensor, !game && !settingsOpen);
 
   useEffect(() => {
     saveRoster(state.roster);
@@ -66,8 +69,7 @@ export function App() {
         roster={state.roster}
         settings={state.settings}
         sensor={sensorState}
-        // Read on each render: what the bike sends only shows once connected.
-        measuresPower={sensor?.measuresPower() ?? true}
+        measuresPower={measuresPower}
         bluetoothSupported={isBluetoothSupported()}
         onAddPlayer={(name) => {
           dispatch({ type: "playerAdded", player: { id: crypto.randomUUID(), name } });
