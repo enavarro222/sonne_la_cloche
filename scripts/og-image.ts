@@ -1,5 +1,5 @@
 // Renders the link preview cards (public/og-fr.jpg, public/og-en.jpg) and the
-// app icons (public/icon.svg and its PNGs) from src/preview/, with the game's
+// app icons (public/icon.svg, its PNGs and favicon.ico) from src/preview/, with the game's
 // own drawings; also the bell of the end-of-game image (src/ui/share/bell.svg). Run after changing a drawing: pnpm og-image
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -53,7 +53,8 @@ const sizes: [string, number, boolean][] = [
   ["apple-touch-icon.png", 180, true],
   ["icon-maskable-512.png", 512, true],
 ];
-for (const [name, size, maskable] of sizes) {
+/** The icon drawn `size` pixels wide, as a PNG. */
+const iconPng = async (size: number, maskable: boolean): Promise<Buffer> => {
   await icon.setViewportSize({ width: 512, height: 512 });
   await open(icon, maskable ? "view=icon&maskable" : "view=icon");
   const target = icon.locator("svg[data-icon]");
@@ -61,9 +62,36 @@ for (const [name, size, maskable] of sizes) {
     element.setAttribute("width", String(px));
     element.setAttribute("height", String(px));
   }, size);
-  await target.screenshot({ path: out(name), omitBackground: true });
+  return target.screenshot({ omitBackground: true });
+};
+for (const [name, size, maskable] of sizes) {
+  await writeFile(out(name), await iconPng(size, maskable));
   console.log(out(name));
 }
+
+// favicon.ico, for what still asks for it (bookmarks, some link previews):
+// PNG images in an ICO container, 16, 32 and 48 px.
+const icoSizes = [16, 32, 48];
+const pngs: Buffer[] = [];
+// One after the other: they share the page.
+for (const size of icoSizes) pngs.push(await iconPng(size, false));
+const header = Buffer.alloc(6 + 16 * pngs.length);
+header.writeUInt16LE(0, 0);
+header.writeUInt16LE(1, 2); // an icon
+header.writeUInt16LE(pngs.length, 4);
+let offset = header.length;
+for (const [i, png] of pngs.entries()) {
+  const entry = 6 + 16 * i;
+  header.writeUInt8(icoSizes[i] ?? 0, entry);
+  header.writeUInt8(icoSizes[i] ?? 0, entry + 1);
+  header.writeUInt16LE(1, entry + 4); // colour planes
+  header.writeUInt16LE(32, entry + 6); // bits per pixel
+  header.writeUInt32LE(png.length, entry + 8);
+  header.writeUInt32LE(offset, entry + 12);
+  offset += png.length;
+}
+await writeFile(out("favicon.ico"), Buffer.concat([header, ...pngs]));
+console.log(out("favicon.ico"));
 
 await browser.close();
 await server.close();
