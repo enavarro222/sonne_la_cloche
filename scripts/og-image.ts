@@ -1,6 +1,10 @@
 // Renders the link preview cards (public/og-fr.jpg, public/og-en.jpg) and the
-// app icons (public/icon.svg, its PNGs and favicon.ico) from src/preview/, with the game's
-// own drawings; also the bell of the end-of-game image (src/ui/share/bell.svg). Run after changing a drawing: pnpm og-image
+// app icons (public/icon.svg, its PNGs and favicon.ico) from src/preview/,
+// with the game's own drawings; also the bell of the end-of-game image
+// (src/ui/share/bell.svg). Run after changing a drawing: pnpm og-image
+//
+// Then bump the "?v=" of their addresses (the pages' <head>, the manifest):
+// browsers and link previews keep the old images otherwise.
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "@playwright/test";
