@@ -3,27 +3,27 @@ import { useTranslation } from "react-i18next";
 import type { Player } from "../core/players";
 import {
   bellMark,
-  isRideOver,
   remainingSec,
   type RideProgress,
   type RideStats,
-  rideStats,
-  ringsBell,
-  startRide,
-  startTrack,
-  stepRide,
-  stepTrack,
-  type Track,
   trackPosition,
   FINALE_SEC,
   type FinaleMove,
-  finaleFor,
-  finaleGrade,
+  type Track,
 } from "../core/ride";
 import type { RideTrace } from "../core/game";
-import { type Course, raiseCourse } from "../core/handicap";
+import type { Course } from "../core/handicap";
+import {
+  isRideStateOver,
+  riddenGrade,
+  rideOutcome,
+  type RideState,
+  startRideState,
+  stepRideState,
+  TICK_FROM_SEC,
+} from "../core/rideLoop";
 import { liveryOf } from "../core/livery";
-import { SLOPE_PERCENT, type Settings } from "../core/settings";
+import type { Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import {
   DemoSensor,
@@ -55,7 +55,6 @@ export interface FinishedRide {
 
 export const COUNTDOWN_STEP_MS = 800;
 export const GO_DISPLAY_MS = 450;
-const TICK_FROM_SEC = 5;
 
 interface Props {
   player: Player;
@@ -135,102 +134,41 @@ function useRideLoop(
   initialCourse: Course | null,
   onFinish: (ride: FinishedRide) => void,
 ): Frame {
-  const [frame, setFrame] = useState<Frame>(() => ({
-    progress: startRide(initialCourse?.startSpeed),
-    reading: ZERO_READING,
-    track: startTrack(bellMark(recordMetres, settings), settings),
-    rung: false,
-    crankAngle: 0,
-    wheelAngle: 0,
-    course: initialCourse,
-    gradePct: initialCourse?.gradePct ?? SLOPE_PERCENT[settings.slope],
-    finale: null,
-  }));
+  const [frame, setFrame] = useState<Frame>(() =>
+    toFrame(startRideState(settings, recordMetres, initialCourse), settings, ZERO_READING, 0, 0),
+  );
   const finish = useLatest(onFinish);
   // Read through a ref: reconnecting the bike mid-ride must not restart the ride.
   const currentSensor = useLatest(sensor);
 
   useEffect(() => {
     if (!running) return;
-    const { durationSec, metric } = settings;
-    // A flying start: the speed at "Go" is the one the player's level holds.
-    let progress = startRide(initialCourse?.startSpeed);
-    let course = initialCourse;
-    let finale: FinaleMove | null = null;
-    // The slope ridden: the player's, unless the finale changed it.
-    const ridden = () => {
-      const grade = course?.gradePct ?? SLOPE_PERCENT[settings.slope];
-      return finale ? finaleGrade(grade, finale) : grade;
-    };
-    const mark = bellMark(recordMetres, settings);
-    let track = startTrack(mark, settings);
-    let rung = false;
+    let state = startRideState(settings, recordMetres, initialCourse);
     let crankAngle = 0;
     let wheelAngle = 0;
     const startedAt = new Date().toISOString();
     let last = performance.now();
-    let lastTick = TICK_FROM_SEC + 1;
     let raf = 0;
 
     const step = (now: number) => {
       const reading = currentSensor.current.read(now);
       const dtSec = (now - last) / 1000;
-      progress = stepRide(
-        progress,
-        reading,
-        metric,
-        dtSec,
-        durationSec,
-        course ? { ...course, gradePct: ridden() } : undefined,
-        ridden(),
-      );
-      if (course) {
-        const raised = raiseCourse(course, rideStats(progress).avgPower, progress.elapsedSec);
-        if (raised !== course) {
-          course = raised;
-          void currentSensor.current.setSlope?.(ridden());
-        }
+      const result = stepRideState(state, reading, dtSec, settings);
+      state = result.state;
+      for (const event of result.events) {
+        if (event.type === "slope") void currentSensor.current.setSlope?.(event.gradePct);
+        else if (event.type === "bell") sounds.bell();
+        else sounds.tick();
       }
-      if (
-        settings.finale === "on" &&
-        !finale &&
-        remainingSec(progress, durationSec) <= FINALE_SEC
-      ) {
-        finale = finaleFor(progress.metres, mark, progress.elapsedSec, durationSec);
-        void currentSensor.current.setSlope?.(ridden());
-      }
-      track = stepTrack(track, progress.metres, dtSec);
       crankAngle = advanceCrank(crankAngle, reading.cadence, dtSec);
       // The wheels roll at the bike's speed, and on when the legs stop.
-      wheelAngle = advanceWheel(wheelAngle, progress.speed, dtSec);
+      wheelAngle = advanceWheel(wheelAngle, state.progress.speed, dtSec);
       last = now;
-      if (!rung && ringsBell(progress.metres, mark)) {
-        rung = true;
-        sounds.bell();
-      }
-      setFrame({
-        progress,
-        reading,
-        track,
-        rung,
-        crankAngle,
-        wheelAngle,
-        course,
-        gradePct: ridden(),
-        finale,
-      });
-
-      const secondsLeft = Math.ceil(remainingSec(progress, durationSec));
-      if (secondsLeft <= TICK_FROM_SEC && secondsLeft > 0 && secondsLeft < lastTick) {
-        lastTick = secondsLeft;
-        sounds.tick();
-      }
-      if (isRideOver(progress, durationSec)) {
+      setFrame(toFrame(state, settings, reading, crankAngle, wheelAngle));
+      if (isRideStateOver(state, settings)) {
         finish.current({
-          metres: progress.metres,
-          stats: rideStats(progress),
-          trace: { startedAt, samples: progress.samples },
-          ...(course && { gradePct: course.gradePct }),
+          ...rideOutcome(state),
+          trace: { startedAt, samples: state.progress.samples },
         });
       } else raf = requestAnimationFrame(step);
     };
@@ -242,6 +180,24 @@ function useRideLoop(
 
   return frame;
 }
+
+const toFrame = (
+  state: RideState,
+  settings: Settings,
+  reading: SensorReading,
+  crankAngle: number,
+  wheelAngle: number,
+): Frame => ({
+  progress: state.progress,
+  reading,
+  track: state.track,
+  rung: state.rung,
+  crankAngle,
+  wheelAngle,
+  course: state.course,
+  gradePct: riddenGrade(state, settings),
+  finale: state.finale,
+});
 
 const KEYS: Record<string, Foot> = { ArrowLeft: "left", ArrowRight: "right" };
 
