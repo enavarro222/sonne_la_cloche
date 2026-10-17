@@ -42,7 +42,7 @@ await writeFile(out("icon.svg"), `${svg}\n`);
 console.log(out("icon.svg"));
 // The bell alone, for the end-of-game image drawn on a canvas.
 const bell = await icon
-  .locator('svg[viewBox="400 440 780 950"]')
+  .locator('svg[viewBox="358 440 780 950"]')
   .evaluate((element) =>
     element.outerHTML
       .replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ')
