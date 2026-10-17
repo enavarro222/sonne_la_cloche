@@ -236,8 +236,9 @@ after _Request Control_:
 
 ## Where it lives
 
-- `src/core/handicap.ts`: model, slopes, reference powers, mid-ride raise.
-  Pure, unit-tested (fairness at the reference as a test case).
+- `src/core/handicap.ts`: physics model, courses, mid-ride raise.
+- `src/core/course.ts`: reference powers, each player's course in a game.
+  Both pure, unit-tested (fairness at the reference as a test case).
 - `src/core/ride.ts`: distance scoring on a slope.
 - `TRAINER_ROAD` in `src/core/handicap.ts`, given to `useSensor`: the
   model's Crr and air drag, sent by home-trainer-kit (opcode `0x11`).

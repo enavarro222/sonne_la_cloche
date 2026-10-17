@@ -1,15 +1,13 @@
 import { DEFAULT_ROAD, gearedSimulation } from "home-trainer-kit/gears";
 import { describe, expect, it } from "vitest";
 import { type Action, type Game, initialState, reducer } from "./game";
+import { courseFor, courseOf, referencePowers } from "./course";
 import {
   type Course,
-  courseFor,
-  courseOf,
   gradeFor,
   MAX_EXTRA_GRADE,
   raiseCourse,
   RAISE_AFTER_SEC,
-  referencePowers,
   steadySpeed,
   TRAINER_ROAD,
   stepSpeed,

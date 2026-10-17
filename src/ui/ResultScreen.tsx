@@ -12,7 +12,7 @@ import {
   summarize,
   upNext,
 } from "../core/game";
-import { courseOf } from "../core/handicap";
+import { courseOf } from "../core/course";
 import type { RideStats } from "../core/ride";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { PhoneDialog } from "./PhoneDialog";

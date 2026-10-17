@@ -6,7 +6,8 @@ import {
   useSensor,
   useZwiftController,
 } from "home-trainer-kit";
-import { TRAINER_ROAD, courseFor } from "../core/handicap";
+import { courseFor } from "../core/course";
+import { TRAINER_ROAD } from "../core/handicap";
 import { drivetrainOf, SLOPE_PERCENT } from "../core/settings";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
 import styles from "./App.module.css";
