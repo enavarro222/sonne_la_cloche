@@ -1,33 +1,32 @@
-/* Two columns in landscape so every setting fits without scrolling. */
 .settings {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: calc(var(--gap) * 1.2) calc(var(--gap) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gap) * 1.2);
   max-width: 72rem;
 }
 
-.settings > h1 {
-  justify-self: start;
+/* "Done" beside the title: the settings keep the whole screen below. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
 }
 
-/* "Done" shares the title's row: the settings keep every other row. */
-.settings > button {
-  grid-row: 1;
-  grid-column: 2;
-  justify-self: end;
-  align-self: center;
+/* Two columns in landscape, filled without holes, so every setting fits. */
+.fields {
+  columns: 2;
+  column-gap: calc(var(--gap) * 2);
+}
+
+.fields > fieldset {
+  break-inside: avoid;
+  margin-bottom: calc(var(--gap) * 1.2);
 }
 
 @media (orientation: portrait) {
-  .settings {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .settings > button {
-    grid-row: auto;
-    grid-column: auto;
-    justify-self: start;
+  .fields {
+    columns: 1;
   }
 }
 
@@ -80,8 +79,8 @@
 
 .drivetrain {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1rem;
+  align-items: center;
+  gap: 0.4rem 0.8rem;
   margin-top: 0.5rem;
 }
 
@@ -92,6 +91,7 @@
   color: var(--cream-dim);
 }
 
+.teeth select,
 .teeth input {
   width: 4.5rem;
   min-height: var(--tap);
@@ -101,6 +101,18 @@
   padding: 0 0.6rem;
   font-weight: 900;
   font-size: 1.1em;
+}
+
+.teeth:has(select) {
+  min-width: 0;
+}
+
+/* It shrinks before anything wraps: its options are short. */
+.teeth select {
+  width: auto;
+  min-width: 0;
+  font-family: inherit;
+  color: inherit;
 }
 
 .help {

@@ -56,7 +56,7 @@ test("with virtual gears too: settings and a full home screen fit", async ({ pag
   await addPlayers(page, ...PLAYERS);
   await expectFitsScreen(page);
   await page.getByRole("button", { name: /Réglages/ }).click();
-  await expect(page.getByRole("spinbutton", { name: "Pignon" })).toHaveValue("14");
+  await expect(page.getByRole("combobox", { name: "Pignon" })).toHaveValue("14");
   await expectFitsScreen(page);
 });
 

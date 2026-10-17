@@ -52,6 +52,9 @@ export const TEETH = {
   cog: { min: 9, max: 40 },
 } as const;
 
+/** Zwift Cog: 14 teeth, 18 on the version for Elite and Garmin trainers. */
+export const ZWIFT_COGS = [14, 18] as const;
+
 export interface Settings {
   metric: Metric;
   durationSec: DurationSec;

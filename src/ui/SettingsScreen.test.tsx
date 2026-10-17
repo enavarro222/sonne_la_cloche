@@ -69,13 +69,32 @@ describe("SettingsScreen gears", () => {
     expect(onChange).toHaveBeenLastCalledWith({ gears: "virtual" });
   });
 
-  it("takes the real chainring and cog, once in range", async () => {
+  it("keeps saying what virtual gears are for, once on", () => {
+    renderSettings(false, { ...DEFAULT_SETTINGS, gears: "virtual" });
+    expect(screen.getByText(/single cog \(Zwift Cog…\)/)).toBeInTheDocument();
+  });
+
+  it("picks a Zwift Cog from the list, counting teeth only for another cog", async () => {
     const onChange = renderSettings(false, { ...DEFAULT_SETTINGS, gears: "virtual" });
-    const cog = screen.getByRole("spinbutton", { name: "Cog" });
-    expect(cog).toHaveValue(14);
-    await userEvent.clear(cog);
-    await userEvent.type(cog, "15");
+    const cog = screen.getByRole("combobox", { name: "Cog" });
+    expect(cog).toHaveValue("14");
+    expect(screen.queryByRole("spinbutton", { name: "Cog teeth" })).not.toBeInTheDocument();
+    await userEvent.selectOptions(cog, "Zwift Cog Elite/Garmin (18)");
+    expect(onChange).toHaveBeenLastCalledWith({ cog: 18 });
+    await userEvent.selectOptions(cog, "Other");
+    const teeth = screen.getByRole("spinbutton", { name: "Cog teeth" });
+    onChange.mockClear();
+    await userEvent.clear(teeth);
+    await userEvent.type(teeth, "15");
     // "1" on the way is out of range: only 15 is taken.
     expect(onChange.mock.calls).toEqual([[{ cog: 15 }]]);
+  });
+
+  it("takes the real chainring once in range", async () => {
+    const onChange = renderSettings(false, { ...DEFAULT_SETTINGS, gears: "virtual" });
+    const chainring = screen.getByRole("spinbutton", { name: "Chainring" });
+    await userEvent.clear(chainring);
+    await userEvent.type(chainring, "36");
+    expect(onChange.mock.calls).toEqual([[{ chainring: 36 }]]);
   });
 });

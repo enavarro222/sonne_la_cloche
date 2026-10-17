@@ -43,7 +43,8 @@ the whole game drawn by hand, its characters drawn by a young rider.
 ### Virtual gears
 
 - For trainers with a single cog (Zwift Cog and the like), a "Gears:
-  virtual" setting with the real chainring and cog. The game then shifts 24
+  virtual" setting with the real chainring and cog (the Zwift Cog's 14 or
+  18 teeth from a list, or any other). The game then shifts 24
   gears on the trainer with + and − on a Zwift Click or Ride, a gamepad's
   shoulder buttons, or the keyboard; a derailleur's clic-clac sounds at each
   shift, and the ride shows the gear. Each ride starts on the gear closest
