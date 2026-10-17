@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { bestRide, currentPlayer, initialState, isGameOver, reducer } from "../core/game";
-import { isBluetoothSupported } from "home-trainer-kit";
+import { isBluetoothSupported, useSensor } from "home-trainer-kit";
 import { TRAINER_ROAD, courseFor } from "../core/handicap";
 import { SLOPE_PERCENT } from "../core/settings";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
@@ -14,7 +14,6 @@ import { sounds } from "./sound";
 import { useHistoryGuard } from "./useHistoryGuard";
 import { useLeaveWarning } from "./useLeaveWarning";
 import { useMeasuresPower } from "./useMeasuresPower";
-import { useSensor } from "home-trainer-kit";
 import { useWakeLock } from "./useWakeLock";
 
 export function App() {

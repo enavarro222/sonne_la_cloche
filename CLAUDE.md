@@ -32,7 +32,7 @@ on one screen. Born for a kids' birthday party. Rewrite of the
 - **Protocols**, in order of preference: FTMS (`0x1826`/`0x2AD2`), Cycling
   Power (`0x1818`/`0x2A63`), CSC (`0x1816`/`0x2A5B`). FTMS trap: **flag bit 0
   is "More Data" and inverted** — speed is present when it is 0. There are
-  tests for it in `src/sensors/ble/parsers.test.ts`; don't "fix" it.
+  tests for it in home-trainer-kit (`src/ble/parsers.test.ts`); don't "fix" it.
 - **Language lives in the URL** (`/fr/`, `/en/`, root redirects by browser
   language). Switching language must never reload the page: it would drop the
   Bluetooth connection mid-game.
@@ -41,7 +41,6 @@ on one screen. Born for a kids' birthday party. Rewrite of the
 
 ```
 src/core/      pure game rules (reducer, scoring, players, settings) — no React, no DOM
-src/sensors/   Sensor interface; ble/ (pure parsers + Web Bluetooth), demo/
 src/i18n/      en (source, typed) + fr, locale from URL path
 src/storage/   localStorage, always wrapped in try/catch
 src/ui/        React screens and hooks; the only layer that renders text
@@ -57,6 +56,10 @@ e2e/           Playwright, fake clock (page.clock) to fast-forward rides
   Rules belong in `core/` with unit tests, not in components.
 - `core/` never produces text, only data; the UI translates.
 - The ride loop polls `sensor.read(now)` each animation frame.
+- The trainer (Web Bluetooth, FTMS slope control, demo sensor, `useSensor`)
+  comes from `home-trainer-kit`, shared with contour and pinned to a git tag
+  in `package.json`. Fix its bugs there, tag, then bump the tag here. To work
+  on both at once, point the dependency to `link:../home-trainer-kit`.
 - A player's game reaches their phone inside the QR code's URL fragment
   (`#…`, never sent to a server). Keep it small: see `playerLink.ts`.
 - FIT files are written with `@markw65/fit-file-writer` (MIT). Do not use

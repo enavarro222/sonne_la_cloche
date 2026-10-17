@@ -2,8 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../core/settings";
-import { DemoSensor } from "home-trainer-kit";
-import type { Sensor } from "home-trainer-kit";
+import { DemoSensor, type Sensor } from "home-trainer-kit";
 import { COUNTDOWN_STEP_MS, type FinishedRide, GO_DISPLAY_MS, RideScreen } from "./RideScreen";
 
 const COUNTDOWN_MS = COUNTDOWN_STEP_MS * 3 + GO_DISPLAY_MS;

@@ -239,8 +239,8 @@ after _Request Control_:
 - `src/core/handicap.ts`: model, slopes, reference powers, mid-ride raise.
   Pure, unit-tested (fairness at the reference as a test case).
 - `src/core/ride.ts`: distance scoring on a slope.
-- `src/sensors/ble/ftmsControl.ts`: opcode `0x11`, with the model's Crr
-  and air drag.
+- `TRAINER_ROAD` in `src/core/handicap.ts`, given to `useSensor`: the
+  model's Crr and air drag, sent by home-trainer-kit (opcode `0x11`).
 - `src/ui/RideScreen.tsx`, `src/ui/lifter/`: flying start, gauge, leaning
   track and its pole bearer.
 - `e2e/slope.spec.ts`: a whole game in demo mode.

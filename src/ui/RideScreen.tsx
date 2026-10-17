@@ -25,8 +25,13 @@ import { type Course, raiseCourse } from "../core/handicap";
 import { liveryOf } from "../core/livery";
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
-import { DemoSensor, type Foot } from "home-trainer-kit";
-import { type Sensor, type SensorReading, ZERO_READING } from "home-trainer-kit";
+import {
+  DemoSensor,
+  type Foot,
+  type Sensor,
+  type SensorReading,
+  ZERO_READING,
+} from "home-trainer-kit";
 import { Bell } from "./Bell";
 import { cx } from "./cx";
 import { Cyclist } from "./cyclist/Cyclist";
