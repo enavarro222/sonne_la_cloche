@@ -16,7 +16,7 @@ export function Bell() {
   const clip = `${id}-clip`;
 
   return (
-    <svg viewBox="400 440 780 950" width="100%" overflow="visible" aria-hidden="true">
+    <svg viewBox="358 440 780 950" width="100%" overflow="visible" aria-hidden="true">
       <defs>
         {/* A slight tremble, like a pencil line. */}
         <filter id={pencil} x="-5%" y="-5%" width="110%" height="110%">
