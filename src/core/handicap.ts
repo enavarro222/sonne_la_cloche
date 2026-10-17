@@ -4,6 +4,7 @@
 // player's slope, steeper for the stronger, makes their power hold the same
 // speed as the weakest's. See docs/handicap.md.
 
+import type { Road } from "home-trainer-kit/gears";
 import { currentPlayer, type Game } from "./game";
 import { SLOPE_PERCENT } from "./settings";
 
@@ -15,7 +16,10 @@ export const ROLLING_RESISTANCE = 0.004;
 export const AIR_DRAG = 0.5 * 1.225 * 0.32;
 
 /** The road a trainer simulates: this model, so the legs feel what the game counts. */
-export const TRAINER_ROAD = { rolling: ROLLING_RESISTANCE, airDrag: AIR_DRAG } as const;
+export const TRAINER_ROAD = {
+  rolling: ROLLING_RESISTANCE,
+  airDrag: AIR_DRAG,
+} as const satisfies Road;
 
 /** Round 1 starts at the speed this power holds on the common slope. */
 export const CALIBRATION_POWER = 100;

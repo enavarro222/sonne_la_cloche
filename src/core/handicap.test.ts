@@ -1,3 +1,4 @@
+import { DEFAULT_ROAD, gearedSimulation } from "home-trainer-kit/gears";
 import { describe, expect, it } from "vitest";
 import { type Action, type Game, initialState, reducer } from "./game";
 import {
@@ -10,6 +11,7 @@ import {
   RAISE_AFTER_SEC,
   referencePowers,
   steadySpeed,
+  TRAINER_ROAD,
   stepSpeed,
 } from "./handicap";
 import { NO_STATS, startRide, stepRide } from "./ride";
@@ -195,5 +197,18 @@ describe("raiseCourse", () => {
     expect(raiseCourse(course, 370, RAISE_AFTER_SEC)).toBe(course);
     const calibration = courseFor(played([]));
     expect(raiseCourse(calibration, 400, 20)).toBe(calibration);
+  });
+});
+
+describe("TRAINER_ROAD", () => {
+  it("is what FTMS receives: Crr 40 × 0.0001, wind coefficient 20 × 0.01 kg/m", () => {
+    // Rounded as the kit's encodeSetSimulation does, without a virtual gear.
+    const sim = gearedSimulation(5, TRAINER_ROAD, 1);
+    expect(Math.round(sim.rolling * 10_000)).toBe(40);
+    expect(Math.round(sim.airDrag * 100)).toBe(20);
+  });
+
+  it("differs from the kit's default road, so useSensor must be given it", () => {
+    expect(Math.round(DEFAULT_ROAD.airDrag * 100)).not.toBe(Math.round(TRAINER_ROAD.airDrag * 100));
   });
 });
