@@ -84,45 +84,48 @@ phone and need no React.
 
 ## Layers
 
+One arrow per real import between folders. Everything points down: nothing
+imports the React app, and `core/` imports only from the kit. `i18n/` and
+`theme/` are used by all three pages and left out of the arrows.
+
 ```mermaid
 flowchart TD
-    subgraph react["React (src/ui/)"]
-        app["App.tsx<br/>useReducer + screen switch"]
-        screens["HomeScreen · SettingsScreen<br/>RideScreen · ResultScreen<br/>PhoneDialog · Header"]
-        hooks["hooks: useWakeLock, useHistoryGuard,<br/>useLeaveWarning, useMeasuresPower,<br/>useVirtualGear, useFullscreen"]
-        art["drawings: cyclist/, lifter/, Bell<br/>sound.ts, share/ (results picture)"]
+    subgraph pages["Pages"]
+        ui["<b>src/ui/</b> · the game, React<br/>App · screens · hooks<br/>cyclist/ · lifter/ · Bell · sound"]
+        phone["<b>src/strava/</b><br/>phone page, plain DOM"]
+        feedback["<b>src/feedback/</b><br/>form + /feedback/ page"]
     end
 
-    core["src/core/<br/>game · ride · handicap<br/>players · settings · livery<br/><i>pure TypeScript, no DOM</i>"]
-    i18n["src/i18n/<br/>en.ts (source) · fr.ts<br/>locale from URL"]
-    storage["src/storage/<br/>localStorage, try/catch"]
-    export["src/export/<br/>playerLink (QR codec)<br/>fit · virtualTrack · fromGame"]
-    phonepages["src/strava/ · src/feedback/<br/>plain DOM pages"]
-    kit["home-trainer-kit<br/>(git dependency)<br/>useSensor · DemoSensor · BLE<br/>FTMS control · gears · Zwift Click"]
+    subgraph shared["Shared by the pages"]
+        share["<b>src/share/</b><br/>results picture"]
+        export["<b>src/export/</b><br/>QR codec · FIT · GPS track"]
+        storage["<b>src/storage/</b><br/>localStorage"]
+    end
 
-    app --> screens --> art
-    app --> hooks
-    app --> core
-    screens --> core
-    app --> storage --> core
-    app --> kit
-    screens --> kit
-    screens --> i18n
-    screens --> export
-    export --> core
-    phonepages --> export
-    phonepages --> i18n
-    phonepages --> art
-    core --> kit
+    core["<b>src/core/</b> · pure rules, no DOM, no text<br/>game · ride · rideLoop · course<br/>handicap · players · settings · livery"]
+    kit["<b>home-trainer-kit</b><br/>Bluetooth · FTMS · demo sensor · gears"]
+    cross["<b>src/i18n/</b> · <b>src/theme/</b> · credits.ts<br/>used by every page"]
+
+    ui --> share & export & storage
+    phone --> feedback & share & export
+    ui --> core
+    ui --> kit
+    share & export & storage --> core
+    core -- "gears" --> kit
 ```
 
 Rules the arrows follow:
 
 - **`core/` is pure**: no React, no DOM, no text. It returns data (numbers,
   enums, error codes); only `ui/` and the phone pages turn it into words
-  through i18n. Its only import from outside is types and the road model of
-  `home-trainer-kit/gears`.
+  through i18n. Its only import from outside is a type and the default
+  drivetrain from `home-trainer-kit/gears`. Inside it there is no import
+  cycle: `handicap.ts` is the physics, `course.ts` picks each player's course
+  from the game, `rideLoop.ts` runs a ride frame by frame.
 - **Game rules live in `core/` with unit tests**, never in components.
+- **What is shared lives outside `ui/`**: the results picture (`share/`), the
+  theme and the plain pages' layout (`theme/`), the credits. The phone and
+  feedback pages never import the React app.
 - **`storage/` never throws**: storage may be missing or full (private
   browsing) and the game must still work. Everything read back goes through
   `parseRoster` / `parseSettings`, which treat it as untrusted.
@@ -229,9 +232,11 @@ connection.
 ## The ride loop
 
 A ride is the hot path. `RideScreen` runs a countdown (3, 2, 1, Go), then
-`useRideLoop` polls the sensor **once per animation frame** and feeds pure
-functions from `core/ride.ts` and `core/handicap.ts`. Nothing goes through
-React state except the frame to draw.
+`useRideLoop` polls the sensor **once per animation frame** and hands each
+reading to `stepRideState` ([src/core/rideLoop.ts](../src/core/rideLoop.ts)).
+That pure function makes every decision (score, raised slope, finale, bell,
+ticks) and returns the new state with **events**; the hook only carries them
+out (trainer, sounds) and draws the frame.
 
 ```mermaid
 sequenceDiagram
@@ -239,7 +244,7 @@ sequenceDiagram
     participant App as App.tsx
     participant RS as RideScreen<br/>useRideLoop
     participant S as Sensor<br/>(home-trainer-kit)
-    participant Core as core/ride + handicap
+    participant Core as core/rideLoop<br/>(pure)
     participant T as Trainer
 
     App->>RS: mount (key = rideId), course = courseFor(game)
@@ -248,20 +253,18 @@ sequenceDiagram
     loop every requestAnimationFrame
         RS->>S: read(now)
         S-->>RS: { cadence, power }
-        RS->>Core: stepRide(progress, reading, metric, dt, …)
-        Note right of Core: dt capped at 0.25 s:<br/>a hidden tab pauses the ride
-        RS->>Core: raiseCourse(course, avgPower, elapsed)
-        opt well above their reference (own slope)
-            RS->>T: setSlope(steeper)
+        RS->>Core: stepRideState(state, reading, dt, settings)
+        Note right of Core: stepRide (dt capped at 0.25 s)<br/>raiseCourse · finaleFor<br/>stepTrack · ringsBell · ticks
+        Core-->>RS: { state, events }
+        opt event "slope" (raised level, finale ± 3 %)
+            RS->>T: setSlope(gradePct)
         end
-        opt last 5 s, finale on
-            RS->>Core: finaleFor(metres, bell, …) → lift / flee
-            RS->>T: setSlope(± 3 %)
+        opt event "bell" / "tick"
+            RS->>RS: sounds.bell() / sounds.tick()
         end
-        RS->>Core: stepTrack, ringsBell
         RS->>RS: setFrame(…) → draw cyclist, track, bell, lifter
     end
-    RS->>App: onFinish({ metres, stats, trace, gradePct })
+    RS->>App: onFinish(rideOutcome(state) + trace)
     App->>App: dispatch rideFinished → ResultScreen
 ```
 
@@ -273,7 +276,7 @@ sequenceDiagram
   bike on the course's slope (`stepSpeed`, a physics model shared with the
   trainer's road settings, `TRAINER_ROAD`); by _leg speed_, cadence drives it
   at 4 m per crank turn. Either way the score is metres.
-- **Own slopes** (`courseFor` / `courseOf`): round 1 is on the common slope
+- **Own slopes** (`courseFor` / `courseOf` in `core/course.ts`): round 1 is on the common slope
   and measures everyone; from round 2 each player gets the slope on which
   their reference power holds the weakest player's speed. See
   [handicap.md](handicap.md).
@@ -400,12 +403,13 @@ test without the bike: never break it.
 | To change…                             | Go to                                                        |
 | -------------------------------------- | ------------------------------------------------------------ |
 | a game rule, turn order, ranking       | `src/core/game.ts` (+ `game.test.ts`)                        |
-| scoring during a ride, the bell, track | `src/core/ride.ts`                                           |
-| slopes, handicap, physics              | `src/core/handicap.ts`, `docs/handicap.md`                   |
+| scoring during a ride, the bell, track | `src/core/ride.ts`, `src/core/rideLoop.ts`                   |
+| slopes, handicap, physics              | `src/core/handicap.ts`, `course.ts`, `docs/handicap.md`      |
 | a setting or its default               | `src/core/settings.ts`, `src/storage/storage.ts` (migration) |
 | what the ride screen shows             | `src/ui/RideScreen.tsx`, `cyclist/`, `lifter/`               |
 | a text                                 | `src/i18n/en.ts` and `src/i18n/fr.ts`                        |
-| colours, fonts                         | tokens at the top of `src/ui/theme.css`                      |
+| colours, fonts                         | tokens at the top of `src/theme/theme.css`                   |
 | what the QR code carries               | `src/export/playerLink.ts`                                   |
 | the Strava activity                    | `src/export/fit.ts`, `activityText.ts`, `server/`            |
+| the results picture                    | `src/share/resultCard.ts`                                    |
 | Bluetooth, trainer control, gears      | `home-trainer-kit` (fix there, tag, bump here)               |
