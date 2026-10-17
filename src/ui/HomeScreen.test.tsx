@@ -59,6 +59,7 @@ describe("HomeScreen bike block", () => {
       deviceName: "KICKR",
       protocol: "FTMS",
       controllable: false,
+      slopeControl: null,
       lost: false,
     });
     expect(screen.getByRole("status")).toHaveTextContent("✓ KICKR connected (FTMS)");
@@ -71,6 +72,7 @@ describe("HomeScreen bike block", () => {
       deviceName: "SUITO",
       protocol: "FTMS",
       controllable: true,
+      slopeControl: "simulation",
       lost: false,
     });
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -84,6 +86,7 @@ describe("HomeScreen bike block", () => {
       deviceName: "KICKR",
       protocol: "FTMS",
       controllable: true,
+      slopeControl: "simulation",
       lost: true,
     });
     expect(screen.getByRole("status")).toHaveTextContent("Bike disconnected");

@@ -18,8 +18,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       home-trainer-kit:
-        specifier: link:../home-trainer-kit
-        version: link:../home-trainer-kit
+        specifier: github:enavarro222/home-trainer-kit#v0.1.0
+        version: https://codeload.github.com/enavarro222/home-trainer-kit/tar.gz/d8951a737ff43e4d34f0ed1edfe1a41dfcdc1320(react@19.3.0)
       i18next:
         specifier: ^26.4.2
         version: 26.4.2(typescript@6.0.3)
@@ -1157,6 +1157,12 @@ packages:
 
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
+
+  home-trainer-kit@https://codeload.github.com/enavarro222/home-trainer-kit/tar.gz/d8951a737ff43e4d34f0ed1edfe1a41dfcdc1320:
+    resolution: {tarball: https://codeload.github.com/enavarro222/home-trainer-kit/tar.gz/d8951a737ff43e4d34f0ed1edfe1a41dfcdc1320}
+    version: 0.1.0
+    peerDependencies:
+      react: ^19.0.0
 
   html-encoding-sniffer@7.0.0:
     resolution: {integrity: sha512-UikN5yr7xsCDAq87Or5or0PAlD3HJJOKVzM05az588WnpDJ4Ux7a2A53Qi6gofGg2/EtvF/H4hCi/TXfCW4Y6w==}
@@ -3257,6 +3263,10 @@ snapshots:
   hermes-parser@0.25.1:
     dependencies:
       hermes-estree: 0.25.1
+
+  home-trainer-kit@https://codeload.github.com/enavarro222/home-trainer-kit/tar.gz/d8951a737ff43e4d34f0ed1edfe1a41dfcdc1320(react@19.3.0):
+    dependencies:
+      react: 19.3.0
 
   html-encoding-sniffer@7.0.0:
     dependencies:
