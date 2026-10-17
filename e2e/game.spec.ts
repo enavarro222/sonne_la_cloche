@@ -1,5 +1,13 @@
 import { expect, test } from "./fixtures";
-import { addPlayers, chooseSettings, openGame, resultMetres, ride, startDemoGame } from "./helpers";
+import {
+  addPlayers,
+  budget,
+  chooseSettings,
+  openGame,
+  resultMetres,
+  ride,
+  startDemoGame,
+} from "./helpers";
 
 const start = (page: import("@playwright/test").Page) =>
   page.getByRole("button", { name: "C'est parti !" });
@@ -33,7 +41,7 @@ test("refuses the same name twice", async ({ page }) => {
 
 test("plays a whole game and announces the winner", async ({ page, context }) => {
   // Six simulated rides: each one runs ~1200 animation frames.
-  test.setTimeout(120_000);
+  test.setTimeout(budget(120_000));
   // Stand-in for the device's share menu: records what it is given.
   await page.addInitScript(() => {
     const w = window as unknown as { shared: unknown };
@@ -64,8 +72,17 @@ test("plays a whole game and announces the winner", async ({ page, context }) =>
     await expect(page.getByText("Au suivant : Tom")).toBeVisible();
     // Ride details: ← → every 170 ms is about 95 rpm, 150 W in demo mode; a
     // little real time slips in between two key presses, slowing it down.
-    await expect(page.getByText(/^en moyenne · max (8\d|9\d|10\d)$/)).toBeVisible();
-    await expect(page.getByText(/^en moyenne · max 1[2-7]\d$/)).toBeVisible();
+    // Under coverage more real time slips in (the fake clock keeps running):
+    // down to 60 rpm. Cadence first, then power.
+    const peaks = page.getByText(/^en moyenne · max \d+$/);
+    await expect(peaks).toHaveCount(2);
+    const [cadence, power] = (await peaks.allTextContents()).map((text) =>
+      Number(/\d+$/.exec(text)?.[0]),
+    );
+    expect(cadence).toBeGreaterThanOrEqual(60);
+    expect(cadence).toBeLessThan(110);
+    expect(power).toBeGreaterThanOrEqual(80);
+    expect(power).toBeLessThan(180);
     await page.getByRole("button", { name: "Au suivant : Tom" }).click();
 
     await expect(page.getByText(`Au tour de Tom`)).toBeVisible();

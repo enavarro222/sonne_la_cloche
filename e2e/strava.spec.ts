@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "./fixtures";
 import FitParser from "fit-file-parser";
-import { addPlayers, chooseSettings, openGame, ride, startDemoGame } from "./helpers";
+import { addPlayers, budget, chooseSettings, openGame, ride, startDemoGame } from "./helpers";
 
 test("each player takes their game to their phone, and to Strava", async ({ page, context }) => {
-  test.setTimeout(150_000);
+  test.setTimeout(budget(150_000));
   // Demo games offer Strava only in test mode.
   await openGame(page, "/fr/?dev");
   await chooseSettings(page, { duration: "20 s", rounds: "3 tours" });

@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { addPlayers, openGame, resultMetres, startDemoGame } from "./helpers";
+import { addPlayers, budget, openGame, resultMetres, startDemoGame } from "./helpers";
 
 // Mirrors the countdown in src/ui/RideScreen.tsx (3 × 800 ms + 450 ms).
 const COUNTDOWN_MS = 3 * 800 + 450;
@@ -27,7 +27,7 @@ test("by default, each their own slope: round 1 measures, then the stronger clim
   page,
 }) => {
   // Four 20 s rides with a key press every few frames.
-  test.setTimeout(120_000);
+  test.setTimeout(budget(120_000));
   await openGame(page, "/fr/", { defaults: true });
   await addPlayers(page, "Léa", "Tom");
   await page.getByRole("button", { name: "Réglages" }).click();

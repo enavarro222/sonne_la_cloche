@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { E2E_COVERAGE } from "./coverage";
 
 // Mirrors the countdown in src/ui/RideScreen.tsx (3 × 800 ms + 450 ms).
 const COUNTDOWN_MS = 3 * 800 + 450;
@@ -55,6 +56,12 @@ export async function startDemoGame(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Essayer sans vélo" }).click();
   await page.getByRole("button", { name: "C'est parti !" }).click();
 }
+
+/**
+ * A long test's time budget: twice as long when measuring coverage, which
+ * slows every page down (CI runs it so, on a shared runner).
+ */
+export const budget = (ms: number): number => (E2E_COVERAGE ? 2 * ms : ms);
 
 /** Time between two demo steps: one every 170 ms is ~95 rpm. */
 export const STEP_MS = 170;
