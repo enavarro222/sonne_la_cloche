@@ -3,7 +3,7 @@
 Each version is tagged `v<version>`; pushing the tag publishes its GitHub
 release with the notes below (see `.github/workflows/release.yml`).
 
-## Unreleased
+## 0.2.0 — 2026-10-17
 
 Fair between all sizes on any trainer that measures power, and a new look:
 the whole game drawn by hand, its characters drawn by a young rider.
