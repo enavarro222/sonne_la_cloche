@@ -2,6 +2,8 @@
 // server files them in a private GitHub repository, see server/feedback.py).
 // Plain DOM, like the phone page it also lives on.
 
+import "./feedback.css";
+
 import i18n from "i18next";
 import type { Locale } from "../i18n/locales";
 

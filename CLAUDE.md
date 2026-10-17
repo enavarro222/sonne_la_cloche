@@ -47,6 +47,8 @@ src/ui/        React screens and hooks; the only layer that renders text
 src/export/    per-player export: FIT file, virtual GPS track, QR link codec
 src/strava/    the page a player's QR code opens on their phone (/strava/)
 src/feedback/  "Your opinion?" form (phone page and /feedback/), plain DOM
+src/share/     the results picture, drawn on the tablet and on the phone page
+src/theme/     theme tokens (theme.css) and the plain pages' layout (page.css)
 server/        tiny service (Python stdlib): Strava upload (holds the OAuth
                secret) and feedback filed as issues in a private repository
 e2e/           Playwright, fake clock (page.clock) to fast-forward rides
@@ -75,7 +77,7 @@ e2e/           Playwright, fake clock (page.clock) to fast-forward rides
   `en.ts` and `fr.ts` (typed; a test checks parity and placeholders). For keys
   taking a first name, provide an `_elided` variant (French "d'Anne").
 - Fairground theme (indigo, garland yellow, pink): tokens at the top of
-  `src/ui/theme.css`. No new palette without a reason.
+  `src/theme/theme.css`. No new palette without a reason.
 - Touch targets ≥ 48 px (tested ≥ 44 px).
 - `pnpm check` runs format check, lint, typecheck, unit and e2e tests. A
   lefthook pre-commit runs Prettier, ESLint and tsc on staged files.

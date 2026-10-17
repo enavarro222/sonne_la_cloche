@@ -1,7 +1,7 @@
 import "@fontsource/luckiest-guy/400.css";
 import "@fontsource/mali/400.css";
 import "@fontsource/mali/700.css";
-import "./ui/theme.css";
+import "./theme/theme.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

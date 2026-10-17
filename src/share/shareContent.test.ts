@@ -1,8 +1,8 @@
 import i18n from "i18next";
 import { describe, expect, it } from "vitest";
-import { type Action, initialState, reducer, summarize } from "../../core/game";
-import { NO_STATS } from "../../core/ride";
-import { DEFAULT_SETTINGS } from "../../core/settings";
+import { type Action, initialState, reducer, summarize } from "../core/game";
+import { NO_STATS } from "../core/ride";
+import { DEFAULT_SETTINGS } from "../core/settings";
 import { wrapText } from "./resultCard";
 import { shareContent } from "./shareContent";
 

@@ -9,7 +9,7 @@ import {
   validateName,
 } from "../core/players";
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
-import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
+import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "../credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import { Roster } from "./Roster";

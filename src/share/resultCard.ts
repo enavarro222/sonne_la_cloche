@@ -201,7 +201,7 @@ async function loadBell(): Promise<HTMLImageElement | undefined> {
   }
 }
 
-/** The fine grain of the game's indigo paper (theme.css), as a tile. */
+/** The fine grain of the game's indigo paper (theme/theme.css), as a tile. */
 function paperGrain(ctx: CanvasRenderingContext2D): CanvasPattern | null {
   const tile = document.createElement("canvas");
   tile.width = 240;

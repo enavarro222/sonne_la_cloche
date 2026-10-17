@@ -18,9 +18,9 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { PhoneDialog } from "./PhoneDialog";
 import { cx } from "./cx";
 import { FixedDigits } from "./FixedDigits";
-import { renderResultCard } from "./share/resultCard";
-import { shareContent } from "./share/shareContent";
-import { shareResults } from "./share/shareResults";
+import { renderResultCard } from "../share/resultCard";
+import { shareContent } from "../share/shareContent";
+import { shareResults } from "../share/shareResults";
 import styles from "./ResultScreen.module.css";
 
 /** Average and peak of the ride; hidden when the sensor does not measure it. */

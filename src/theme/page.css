@@ -1,0 +1,55 @@
+/* The plain pages outside the game: the phone page (/strava/) and /feedback/. */
+
+/* Their own `display` must not show what is hidden (e.g. the picture before it is drawn). */
+#root [hidden] {
+  display: none !important;
+}
+
+#root {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+#root h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--yellow);
+  margin-bottom: 1rem;
+}
+
+#root section {
+  margin-top: 1.6rem;
+}
+
+#root h2 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 400;
+  font-size: 1.05em;
+  color: var(--yellow);
+  margin-bottom: 0.6rem;
+}
+
+#root .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+#root .help {
+  color: var(--cream-faint);
+  font-size: 0.9em;
+}
+
+#root .status {
+  color: var(--mint);
+  font-weight: 700;
+}
+
+#root .link {
+  color: var(--mint);
+  font-weight: 900;
+}

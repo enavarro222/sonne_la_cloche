@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { renderResultCard } from "../ui/share/resultCard";
-import type { ShareContent } from "../ui/share/shareContent";
+import { renderResultCard } from "../share/resultCard";
+import type { ShareContent } from "../share/shareContent";
 
 /** A full party, to check the end-of-game image without playing one. */
 const SAMPLE: ShareContent = {

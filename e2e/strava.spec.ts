@@ -49,7 +49,7 @@ test("each player takes their game to their phone, and to Strava", async ({ page
     name: "Résultats de la partie : classement et récompenses",
   });
   await expect(picture).toBeVisible();
-  expect(await picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(1080);
+  await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(1080);
   const [image] = await Promise.all([
     phone.waitForEvent("download"),
     phone.getByRole("button", { name: "Partager l'image" }).click(),

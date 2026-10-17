@@ -5,9 +5,9 @@
 
 import "@fontsource/luckiest-guy/400.css";
 import "@fontsource/mali/700.css";
-import "../ui/theme.css";
+import "../theme/theme.css";
+import "../theme/page.css";
 import "./strava.css";
-import "../feedback/feedback.css";
 
 import i18n from "i18next";
 import { activityText } from "../export/activityText";
@@ -17,9 +17,9 @@ import { decodePlayerActivity, type PlayerActivity } from "../export/playerLink"
 import type { LatLon } from "../export/virtualTrack";
 import { applyLocale, initI18n } from "../i18n/i18n";
 import { pickLocale } from "../i18n/locales";
-import { renderResultCard } from "../ui/share/resultCard";
-import { shareContent } from "../ui/share/shareContent";
-import { shareResults } from "../ui/share/shareResults";
+import { renderResultCard } from "../share/resultCard";
+import { shareContent } from "../share/shareContent";
+import { shareResults } from "../share/shareResults";
 import { fitFileName, fromState, toBase64, toState } from "./phonePage";
 
 type BannerState = "working" | "done" | "failed";

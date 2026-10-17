@@ -3,14 +3,13 @@
 
 import "@fontsource/luckiest-guy/400.css";
 import "@fontsource/mali/700.css";
-import "../ui/theme.css";
-import "../strava/strava.css";
-import "./feedback.css";
+import "../theme/theme.css";
+import "../theme/page.css";
 
 import i18n from "i18next";
 import { applyLocale, initI18n } from "../i18n/i18n";
 import { isLocale, type Locale, pathForLocale, pickLocale } from "../i18n/locales";
-import { REPOSITORY_URL } from "../ui/credits";
+import { REPOSITORY_URL } from "../credits";
 import { feedbackAvailable, feedbackForm } from "./form";
 
 /**

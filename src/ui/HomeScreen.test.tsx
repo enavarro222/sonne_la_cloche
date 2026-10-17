@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MAX_PLAYERS, type Player } from "../core/players";
 import { DEFAULT_SETTINGS, type Settings } from "../core/settings";
-import { REPOSITORY_URL } from "./credits";
+import { REPOSITORY_URL } from "../credits";
 import { HomeScreen } from "./HomeScreen";
 import type { Connection } from "home-trainer-kit";
 

@@ -1,6 +1,6 @@
 import "@fontsource/luckiest-guy/400.css";
 import "@fontsource/mali/700.css";
-import "../ui/theme.css";
+import "../theme/theme.css";
 
 import { createRoot } from "react-dom/client";
 import { Card, Icon } from "./Preview";

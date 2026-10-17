@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next";
-import type { GameSummary } from "../../core/game";
+import type { GameSummary } from "../core/game";
 
 export interface ShareContent {
   title: string;
