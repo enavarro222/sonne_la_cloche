@@ -8,6 +8,8 @@ const { version } = JSON.parse(readFileSync(page("package.json"), "utf8")) as { 
 
 export default defineConfig({
   plugins: [react()],
+  // home-trainer-kit, when linked, has its own dev copy of React: use the game's.
+  resolve: { dedupe: ["react", "react-dom"] },
   // package.json's version, shown discreetly on the home screen.
   define: { __APP_VERSION__: JSON.stringify(version) },
   // One static page per language (/fr/, /en/) plus a root page that redirects:

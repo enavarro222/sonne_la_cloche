@@ -5,7 +5,7 @@ import { MAX_PLAYERS, type Player } from "../core/players";
 import { DEFAULT_SETTINGS } from "../core/settings";
 import { REPOSITORY_URL } from "./credits";
 import { HomeScreen } from "./HomeScreen";
-import type { Connection } from "./useSensor";
+import type { Connection } from "home-trainer-kit";
 
 const noop = () => undefined;
 

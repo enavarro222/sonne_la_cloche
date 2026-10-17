@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Sensor } from "../sensors/types";
+import type { Sensor } from "home-trainer-kit";
 
 /** How often the home screen checks again, ms. */
 export const CHECK_EVERY_MS = 1000;

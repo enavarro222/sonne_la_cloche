@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Sensor } from "../sensors/types";
+import type { Sensor } from "home-trainer-kit";
 import { CHECK_EVERY_MS, useMeasuresPower } from "./useMeasuresPower";
 
 const sensor = (measures: () => boolean): Sensor => ({

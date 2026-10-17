@@ -13,7 +13,7 @@ import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import { Roster } from "./Roster";
-import type { SensorState } from "./useSensor";
+import type { SensorState } from "home-trainer-kit";
 
 type BikeCardSensor = Pick<
   SensorState,

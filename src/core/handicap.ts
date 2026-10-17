@@ -14,6 +14,9 @@ export const ROLLING_RESISTANCE = 0.004;
 /** ½·ρ·CdA of an adult on a road bike, in kg/m. */
 export const AIR_DRAG = 0.5 * 1.225 * 0.32;
 
+/** The road a trainer simulates: this model, so the legs feel what the game counts. */
+export const TRAINER_ROAD = { rolling: ROLLING_RESISTANCE, airDrag: AIR_DRAG } as const;
+
 /** Round 1 starts at the speed this power holds on the common slope. */
 export const CALIBRATION_POWER = 100;
 /** A player's handicap never goes above this, on top of the common slope. */

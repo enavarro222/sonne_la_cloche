@@ -17,6 +17,9 @@ importers:
       '@markw65/fit-file-writer':
         specifier: ^0.2.0
         version: 0.2.0
+      home-trainer-kit:
+        specifier: link:../home-trainer-kit
+        version: link:../home-trainer-kit
       i18next:
         specifier: ^26.4.2
         version: 26.4.2(typescript@6.0.3)

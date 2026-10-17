@@ -5,7 +5,7 @@ import { isLocale, LOCALE_LABELS, LOCALES, pathForLocale } from "../i18n/locales
 import { cx } from "./cx";
 import styles from "./Header.module.css";
 import { useFullscreen } from "./useFullscreen";
-import type { SensorState } from "./useSensor";
+import type { SensorState } from "home-trainer-kit";
 
 type Props = Pick<SensorState, "connection" | "connecting" | "error" | "reconnect">;
 
