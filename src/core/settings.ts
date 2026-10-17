@@ -1,3 +1,5 @@
+import { DEFAULT_DRIVETRAIN, type Drivetrain } from "home-trainer-kit/gears";
+
 /**
  * Pedal turns (any sensor), or the distance measured power takes a virtual
  * bike (needs a power meter: see handicap.ts).
@@ -37,12 +39,29 @@ export const FINALES = ["off", "on"] as const;
 /** The pole bearer's last-seconds twist, see `finaleFor` in ride.ts. */
 export type Finale = (typeof FINALES)[number];
 
+/**
+ * "virtual": the trainer has a single cog (Zwift Cog and the like) and the
+ * game shifts for it, from a handlebar remote. "bike": a real cassette.
+ */
+export const GEARS = ["bike", "virtual"] as const;
+export type Gears = (typeof GEARS)[number];
+
+/** Teeth the real chainring and cog may have, for virtual gears. */
+export const TEETH = {
+  chainring: { min: 20, max: 60 },
+  cog: { min: 9, max: 40 },
+} as const;
+
 export interface Settings {
   metric: Metric;
   durationSec: DurationSec;
   rounds: RoundCount;
   slope: Slope;
   finale: Finale;
+  gears: Gears;
+  /** The real drivetrain, which the virtual gears are set from. */
+  chainring: number;
+  cog: number;
 }
 
 // Each on their own slope by default: fair between an 8-year-old's 50 W and
@@ -54,7 +73,14 @@ export const DEFAULT_SETTINGS: Settings = {
   rounds: 4,
   slope: "own",
   finale: "on",
+  gears: "bike",
+  chainring: DEFAULT_DRIVETRAIN.chainring,
+  cog: DEFAULT_DRIVETRAIN.cog,
 };
+
+/** The real drivetrain when the game shifts virtual gears; null with the bike's own. */
+export const drivetrainOf = (settings: Settings): Drivetrain | null =>
+  settings.gears === "virtual" ? { chainring: settings.chainring, cog: settings.cog } : null;
 
 /** Where the slope goes when the metric no longer allows it. */
 const FALLBACK_SLOPE: Slope = "gentle";
@@ -66,6 +92,13 @@ export const consistent = (settings: Settings): Settings =>
 /** The settings a game actually uses: pedal turns when the bike measures no power. */
 export const forSensor = (settings: Settings, measuresPower: boolean): Settings =>
   measuresPower ? settings : consistent({ ...settings, metric: "cadence" });
+
+const teeth = (part: keyof typeof TEETH, value: unknown): number =>
+  Number.isInteger(value) &&
+  (value as number) >= TEETH[part].min &&
+  (value as number) <= TEETH[part].max
+    ? (value as number)
+    : DEFAULT_SETTINGS[part];
 
 const pick = <T>(allowed: readonly T[], value: unknown, fallback: T): T =>
   allowed.includes(value as T) ? (value as T) : fallback;
@@ -79,5 +112,8 @@ export function parseSettings(value: unknown): Settings {
     rounds: pick(ROUND_COUNTS, raw.rounds, DEFAULT_SETTINGS.rounds),
     slope: pick(SLOPES, raw.slope, DEFAULT_SETTINGS.slope),
     finale: pick(FINALES, raw.finale, DEFAULT_SETTINGS.finale),
+    gears: pick(GEARS, raw.gears, DEFAULT_SETTINGS.gears),
+    chainring: teeth("chainring", raw.chainring),
+    cog: teeth("cog", raw.cog),
   });
 }

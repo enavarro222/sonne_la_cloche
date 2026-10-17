@@ -2,14 +2,37 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MAX_PLAYERS, type Player } from "../core/players";
-import { DEFAULT_SETTINGS } from "../core/settings";
+import { DEFAULT_SETTINGS, type Settings } from "../core/settings";
 import { REPOSITORY_URL } from "./credits";
 import { HomeScreen } from "./HomeScreen";
 import type { Connection } from "home-trainer-kit";
 
 const noop = () => undefined;
 
-function renderHome(connection: Connection = { kind: "none" }, roster: Player[] = []) {
+const VIRTUAL: Settings = { ...DEFAULT_SETTINGS, gears: "virtual", chainring: 34, cog: 14 };
+
+const zwiftRemote = (state: { name?: string; lost?: boolean } = {}) => ({
+  supported: true,
+  connecting: false,
+  name: state.name ?? null,
+  lost: state.lost ?? false,
+  error: null,
+  connect: vi.fn(() => Promise.resolve()),
+});
+
+function renderHome(
+  connection: Connection = { kind: "none" },
+  roster: Player[] = [],
+  {
+    settings = DEFAULT_SETTINGS,
+    remote = zwiftRemote(),
+    onOpenSettings = noop,
+  }: {
+    settings?: Settings;
+    remote?: ReturnType<typeof zwiftRemote>;
+    onOpenSettings?: () => void;
+  } = {},
+) {
   const sensor = {
     connection,
     connecting: false,
@@ -22,15 +45,16 @@ function renderHome(connection: Connection = { kind: "none" }, roster: Player[] 
   render(
     <HomeScreen
       roster={roster}
-      settings={DEFAULT_SETTINGS}
+      settings={settings}
       sensor={sensor}
+      remote={remote}
       bluetoothSupported
       onAddPlayer={noop}
       onRemovePlayer={noop}
       onRecolourPlayer={noop}
       onMovePlayer={noop}
       onStart={noop}
-      onOpenSettings={noop}
+      onOpenSettings={onOpenSettings}
     />,
   );
   return sensor;
@@ -138,5 +162,60 @@ describe("HomeScreen players", () => {
     expect(field).toBeDisabled();
     expect(field).toHaveAttribute("placeholder", "8 players at most");
     expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
+  });
+});
+
+describe("HomeScreen gears", () => {
+  it("says the bike's own gears are used, and opens the settings on a tap", async () => {
+    const onOpenSettings = vi.fn();
+    renderHome({ kind: "none" }, [], { onOpenSettings });
+    const gears = screen.getByTestId("gears-mode");
+    expect(gears).toHaveTextContent("Bike's own gears");
+    expect(screen.queryByRole("button", { name: /Zwift remote/ })).not.toBeInTheDocument();
+    await userEvent.click(gears);
+    expect(onOpenSettings).toHaveBeenCalled();
+  });
+
+  it("says virtual gears are on, with the real drivetrain, and offers the remote", async () => {
+    const remote = zwiftRemote();
+    renderHome({ kind: "none" }, [], { settings: VIRTUAL, remote });
+    expect(screen.getByTestId("gears-mode")).toHaveTextContent(
+      "Virtual gearsSingle cog 34 × 14: shift with + and − on the handlebar.",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Connect a Zwift remote" }));
+    expect(remote.connect).toHaveBeenCalled();
+  });
+
+  it("shows a connected remote, and a lost one to reconnect", () => {
+    renderHome({ kind: "demo" }, [], {
+      settings: VIRTUAL,
+      remote: zwiftRemote({ name: "Zwift Click" }),
+    });
+    expect(screen.getByText("✓ Zwift Click connected: + and − shift")).toBeInTheDocument();
+  });
+
+  it("offers to reconnect a lost remote", () => {
+    renderHome({ kind: "demo" }, [], {
+      settings: VIRTUAL,
+      remote: zwiftRemote({ name: "Zwift Click", lost: true }),
+    });
+    expect(screen.getByText("Remote disconnected")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reconnect the remote" })).toBeInTheDocument();
+  });
+
+  it("warns when the trainer can't be controlled: virtual gears would change nothing", () => {
+    renderHome(
+      {
+        kind: "bluetooth",
+        deviceName: "Power meter",
+        protocol: "Cycling Power",
+        controllable: false,
+        slopeControl: null,
+        lost: false,
+      },
+      [],
+      { settings: VIRTUAL },
+    );
+    expect(screen.getByText(/virtual gears change nothing on it/)).toBeInTheDocument();
   });
 });

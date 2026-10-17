@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { bestRide, currentPlayer, initialState, isGameOver, reducer } from "../core/game";
-import { isBluetoothSupported, useSensor } from "home-trainer-kit";
+import {
+  isBluetoothSupported,
+  useGamepadControls,
+  useSensor,
+  useZwiftController,
+} from "home-trainer-kit";
 import { TRAINER_ROAD, courseFor } from "../core/handicap";
-import { SLOPE_PERCENT } from "../core/settings";
+import { drivetrainOf, SLOPE_PERCENT } from "../core/settings";
 import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/storage";
 import styles from "./App.module.css";
 import { Header } from "./Header";
@@ -16,6 +21,12 @@ import { useLeaveWarning } from "./useLeaveWarning";
 import { useMeasuresPower } from "./useMeasuresPower";
 import { useWakeLock } from "./useWakeLock";
 
+/** Polls gamepads every frame: mounted only when there are gears to shift. */
+function GamepadControls() {
+  useGamepadControls();
+  return null;
+}
+
 export function App() {
   const [state, dispatch] = useReducer(reducer, undefined, () =>
     initialState(loadRoster(), loadSettings()),
@@ -25,6 +36,8 @@ export function App() {
   const testMode = new URLSearchParams(location.search).has("dev");
   const sensorState = useSensor(TRAINER_ROAD);
   const { sensor } = sensorState;
+  // Handlebar + and − for virtual gears: a Zwift remote, or any gamepad.
+  const remote = useZwiftController();
   const { game } = state;
   // Watched on the home screen, where it shows; read again at "Let's go".
   const measuresPower = useMeasuresPower(sensor, !game && !settingsOpen);
@@ -72,6 +85,7 @@ export function App() {
         roster={state.roster}
         settings={state.settings}
         sensor={sensorState}
+        remote={remote}
         measuresPower={measuresPower}
         bluetoothSupported={isBluetoothSupported()}
         onAddPlayer={(name) => {
@@ -106,6 +120,7 @@ export function App() {
         record={bestRide(game)}
         sensor={sensor}
         course={course}
+        drivetrain={drivetrainOf(game.settings)}
         onFinish={(ride) => {
           sounds.fanfare();
           dispatch({ type: "rideFinished", ...ride });
@@ -137,6 +152,7 @@ export function App() {
 
   return (
     <div className={styles.app}>
+      {(game?.settings ?? state.settings).gears === "virtual" && <GamepadControls />}
       <Header {...sensorState} />
       <main className={styles.main}>{screen}</main>
     </div>

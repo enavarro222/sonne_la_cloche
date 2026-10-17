@@ -27,9 +27,11 @@ import { SLOPE_PERCENT, type Settings } from "../core/settings";
 import { elisionContext } from "../i18n/elision";
 import {
   DemoSensor,
+  type Drivetrain,
   type Foot,
   type Sensor,
   type SensorReading,
+  VIRTUAL_RATIOS,
   ZERO_READING,
 } from "home-trainer-kit";
 import { Bell } from "./Bell";
@@ -41,6 +43,7 @@ import { Lifter, SIZE as LIFTER_SIZE } from "./lifter/Lifter";
 import styles from "./RideScreen.module.css";
 import { sounds } from "./sound";
 import { useLatest } from "./useLatest";
+import { useVirtualGear } from "./useVirtualGear";
 
 export interface FinishedRide {
   metres: number;
@@ -60,6 +63,8 @@ interface Props {
   settings: Settings;
   record: { player: Player; metres: number } | null;
   sensor: Sensor;
+  /** The real drivetrain when the game shifts virtual gears; null with the bike's own. */
+  drivetrain?: Drivetrain | null;
   /**
    * By distance, the course ridden (each their own slope, or the common one):
    * distance is scored on it. Null by leg speed.
@@ -470,6 +475,7 @@ export function RideScreen({
   record,
   sensor,
   course = null,
+  drivetrain = null,
   onFinish,
 }: Props) {
   const { t, i18n } = useTranslation();
@@ -502,6 +508,7 @@ export function RideScreen({
   useEffect(() => {
     void sensor.setSlope?.(ridden.current);
   }, [sensor, ridden]);
+  const gear = useVirtualGear(sensor, drivetrain);
   const [rideRef, sceneRef, layout] = useRideLayout();
   // The widest the seconds have been ("20,0 s" before "9,9 s"): the column,
   // and so the track, must not change size as digits drop.
@@ -593,6 +600,11 @@ export function RideScreen({
         <span data-testid="ride-speed">
           <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
         </span>
+        {gear !== null && (
+          <span data-testid="ride-gear">
+            {t("ride.gear", { gear: gear + 1, gears: VIRTUAL_RATIOS.length })}
+          </span>
+        )}
       </p>
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 

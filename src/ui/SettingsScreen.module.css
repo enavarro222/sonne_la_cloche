@@ -8,19 +8,26 @@
 }
 
 .settings > h1 {
-  grid-column: 1 / -1;
   justify-self: start;
 }
 
-/* "Done" shares the last row with the last setting. */
+/* "Done" shares the title's row: the settings keep every other row. */
 .settings > button {
-  justify-self: start;
-  align-self: end;
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  align-self: center;
 }
 
 @media (orientation: portrait) {
   .settings {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings > button {
+    grid-row: auto;
+    grid-column: auto;
+    justify-self: start;
   }
 }
 
@@ -69,6 +76,31 @@
   color: var(--cream-faint);
   text-decoration: line-through;
   opacity: 0.6;
+}
+
+.drivetrain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.teeth {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--cream-dim);
+}
+
+.teeth input {
+  width: 4.5rem;
+  min-height: var(--tap);
+  background: var(--surface-dark);
+  border: 3px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 0.6rem;
+  font-weight: 900;
+  font-size: 1.1em;
 }
 
 .help {

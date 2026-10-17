@@ -147,3 +147,39 @@
 .stateKo {
   color: var(--pink);
 }
+
+.gearsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Which gears: a badge anyone can read from the bike, a tap to change. */
+.gears {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.7rem;
+  min-height: var(--tap);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius);
+  background: var(--surface-dark);
+  color: var(--cream-dim);
+  font-weight: 700;
+  text-align: left;
+}
+
+.gearsBadge {
+  padding: 0.15rem 0.7rem;
+  border: 2px solid var(--cream-faint);
+  border-radius: var(--radius-small);
+  color: var(--cream);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.gearsVirtual .gearsBadge {
+  border-color: var(--yellow);
+  background: var(--yellow);
+  color: var(--night);
+}

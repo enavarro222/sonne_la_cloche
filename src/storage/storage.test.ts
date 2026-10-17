@@ -9,15 +9,19 @@ describe("storage", () => {
 
   it("round-trips roster and settings", () => {
     saveRoster([{ id: "1", name: "Léa", livery: 3 }]);
-    saveSettings({ metric: "cadence", durationSec: 45, rounds: 3, slope: "hill", finale: "on" });
-    expect(loadRoster()).toEqual([{ id: "1", name: "Léa", livery: 3 }]);
-    expect(loadSettings()).toEqual({
+    const settings = {
       metric: "cadence",
       durationSec: 45,
       rounds: 3,
       slope: "hill",
       finale: "on",
-    });
+      gears: "virtual",
+      chainring: 36,
+      cog: 15,
+    } as const;
+    saveSettings(settings);
+    expect(loadRoster()).toEqual([{ id: "1", name: "Léa", livery: 3 }]);
+    expect(loadSettings()).toEqual(settings);
   });
 
   it("moves settings saved by 0.1 to the new default, keeping length and rounds", () => {

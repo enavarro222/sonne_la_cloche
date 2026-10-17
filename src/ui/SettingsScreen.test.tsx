@@ -1,14 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../core/settings";
+import { DEFAULT_SETTINGS, type Settings } from "../core/settings";
 import { SettingsScreen } from "./SettingsScreen";
 
-function renderSettings(testMode: boolean) {
+function renderSettings(testMode: boolean, settings: Settings = DEFAULT_SETTINGS) {
   const onChange = vi.fn();
   render(
     <SettingsScreen
-      settings={DEFAULT_SETTINGS}
+      settings={settings}
       testMode={testMode}
       onChange={onChange}
       onDone={() => undefined}
@@ -58,5 +58,24 @@ describe("SettingsScreen", () => {
     );
     expect(group("Slope").getByRole("button", { name: "Own slope each" })).toBeDisabled();
     expect(group("Slope").getByRole("button", { name: /^Wall/ })).toBeEnabled();
+  });
+});
+
+describe("SettingsScreen gears", () => {
+  it("switches to virtual gears, the drivetrain asked only then", async () => {
+    const onChange = renderSettings(false);
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+    await userEvent.click(group("Gears").getByRole("button", { name: "Virtual" }));
+    expect(onChange).toHaveBeenLastCalledWith({ gears: "virtual" });
+  });
+
+  it("takes the real chainring and cog, once in range", async () => {
+    const onChange = renderSettings(false, { ...DEFAULT_SETTINGS, gears: "virtual" });
+    const cog = screen.getByRole("spinbutton", { name: "Cog" });
+    expect(cog).toHaveValue(14);
+    await userEvent.clear(cog);
+    await userEvent.type(cog, "15");
+    // "1" on the way is out of range: only 15 is taken.
+    expect(onChange.mock.calls).toEqual([[{ cog: 15 }]]);
   });
 });

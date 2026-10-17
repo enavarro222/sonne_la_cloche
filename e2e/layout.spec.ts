@@ -46,6 +46,20 @@ test("the settings screen fits", async ({ page }) => {
   await expectFitsScreen(page);
 });
 
+test("with virtual gears too: settings and a full home screen fit", async ({ page }) => {
+  await page.addInitScript(() => {
+    const settings = { version: 2, gears: "virtual", chainring: 34, cog: 14 };
+    localStorage.setItem("sonne-la-cloche.settings", JSON.stringify(settings));
+  });
+  await openGame(page);
+  await expect(page.getByTestId("gears-mode")).toContainText("Vitesses virtuelles");
+  await addPlayers(page, ...PLAYERS);
+  await expectFitsScreen(page);
+  await page.getByRole("button", { name: /Réglages/ }).click();
+  await expect(page.getByRole("spinbutton", { name: "Pignon" })).toHaveValue("14");
+  await expectFitsScreen(page);
+});
+
 test("touch targets are at least 44px", async ({ page }) => {
   await openGame(page);
   await addPlayers(page, "Léa", "Tom");

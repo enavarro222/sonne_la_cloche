@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../core/settings";
-import { DemoSensor, type Sensor } from "home-trainer-kit";
+import { DemoSensor, gearFactor, neutralGear, type Sensor } from "home-trainer-kit";
 import { COUNTDOWN_STEP_MS, type FinishedRide, GO_DISPLAY_MS, RideScreen } from "./RideScreen";
 
 const COUNTDOWN_MS = COUNTDOWN_STEP_MS * 3 + GO_DISPLAY_MS;
@@ -62,6 +62,32 @@ describe("RideScreen", { timeout: 20_000 }, () => {
         />
       </StrictMode>,
     );
+
+  it("with virtual gears: shows the gear, + shifts it on the trainer", () => {
+    const setGear = vi.fn(() => Promise.resolve(true));
+    const drivetrain = { chainring: 34, cog: 14 };
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={null}
+        sensor={{ ...steadySensor(90), setGear }}
+        drivetrain={drivetrain}
+        onFinish={vi.fn()}
+      />,
+    );
+    const start = neutralGear(drivetrain);
+    expect(screen.getByTestId("ride-gear")).toHaveTextContent(`gear ${start + 1}/24`);
+    fireEvent.keyDown(window, { key: "+" });
+    expect(screen.getByTestId("ride-gear")).toHaveTextContent(`gear ${start + 2}/24`);
+    expect(setGear).toHaveBeenLastCalledWith(gearFactor(start + 1, drivetrain));
+  });
+
+  it("without virtual gears, says nothing about them", () => {
+    renderRide(steadySensor(90), vi.fn());
+    expect(screen.queryByTestId("ride-gear")).not.toBeInTheDocument();
+  });
 
   it("counts down, then scores metres at 4 m per pedal turn and finishes exactly once", () => {
     const onFinish = vi.fn();

@@ -13,12 +13,96 @@ import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "./credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import { Roster } from "./Roster";
-import type { SensorState } from "home-trainer-kit";
+import type { SensorState, ZwiftControllerState } from "home-trainer-kit";
 
 type BikeCardSensor = Pick<
   SensorState,
   "connection" | "connecting" | "error" | "ready" | "connect" | "reconnect" | "startDemo"
 >;
+
+type Remote = Pick<
+  ZwiftControllerState,
+  "supported" | "connecting" | "name" | "lost" | "error" | "connect"
+>;
+
+/**
+ * Which gears the ride uses, in plain sight: virtual gears change how the
+ * trainer feels, and need + and − on the handlebar. A tap opens the settings.
+ */
+function GearsCard({
+  settings,
+  connection,
+  remote,
+  onOpenSettings,
+}: {
+  settings: Settings;
+  connection: BikeCardSensor["connection"];
+  remote: Remote;
+  onOpenSettings: () => void;
+}) {
+  const { t } = useTranslation();
+  const virtual = settings.gears === "virtual";
+  const notControlled =
+    virtual && connection.kind === "bluetooth" && !connection.lost && !connection.controllable;
+  return (
+    <div className={styles.gearsBlock}>
+      <button
+        type="button"
+        className={cx(styles.gears, virtual && styles.gearsVirtual)}
+        onClick={onOpenSettings}
+        data-testid="gears-mode"
+      >
+        <span className={styles.gearsBadge}>
+          {virtual ? t("home.gears.virtual") : t("home.gears.bike")}
+        </span>
+        <span>
+          {virtual
+            ? t("home.gears.virtualDetail", { chainring: settings.chainring, cog: settings.cog })
+            : t("home.gears.bikeDetail")}
+        </span>
+      </button>
+      {notControlled && <p className={styles.error}>{t("home.gears.notControlled")}</p>}
+      {virtual && <RemoteRow remote={remote} />}
+    </div>
+  );
+}
+
+/** The Zwift remote that shifts: connected, lost, or a button to connect it. */
+function RemoteRow({ remote }: { remote: Remote }) {
+  const { t } = useTranslation();
+  if (!remote.supported) return <p className={styles.help}>{t("home.remote.help")}</p>;
+  return (
+    <>
+      {remote.name && !remote.lost ? (
+        <p className={cx(styles.state, styles.stateOk)} role="status">
+          {t("home.remote.connected", { name: remote.name })}
+        </p>
+      ) : (
+        <div className={styles.row}>
+          {remote.lost && (
+            <p className={cx(styles.state, styles.stateKo)} role="status">
+              {t("home.remote.lost")}
+            </p>
+          )}
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void remote.connect()}
+            disabled={remote.connecting}
+          >
+            {remote.lost ? t("home.remote.reconnect") : t("home.remote.connect")}
+          </button>
+        </div>
+      )}
+      {remote.error && (
+        <p className={styles.error} role="alert">
+          {t("home.remote.failed", { message: remote.error })}
+        </p>
+      )}
+      {!remote.name && <p className={styles.help}>{t("home.remote.help")}</p>}
+    </>
+  );
+}
 
 /** The bike block always says which state we are in, and offers the way out of it. */
 function BikeCard({
@@ -115,10 +199,21 @@ function BikeCard({
   );
 }
 
+const NO_REMOTE: Remote = {
+  supported: false,
+  connecting: false,
+  name: null,
+  lost: false,
+  error: null,
+  connect: () => Promise.resolve(),
+};
+
 interface Props {
   roster: readonly Player[];
   settings: Settings;
   sensor: BikeCardSensor;
+  /** The Zwift remote, for virtual gears. */
+  remote?: Remote;
   bluetoothSupported: boolean;
   /** Whether the connected bike measures power, as far as can be told. */
   measuresPower?: boolean;
@@ -134,6 +229,7 @@ export function HomeScreen({
   roster,
   settings,
   sensor,
+  remote = NO_REMOTE,
   bluetoothSupported,
   measuresPower = true,
   onAddPlayer,
@@ -220,6 +316,12 @@ export function HomeScreen({
 
       <section className={styles.side}>
         <BikeCard sensor={sensor} bluetoothSupported={bluetoothSupported} />
+        <GearsCard
+          settings={settings}
+          connection={sensor.connection}
+          remote={remote}
+          onOpenSettings={onOpenSettings}
+        />
 
         <div className={styles.start}>
           <button

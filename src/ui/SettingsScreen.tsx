@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   DURATIONS_SEC,
   FINALES,
+  GEARS,
   METRICS,
   ROUND_COUNTS,
   type Settings,
   SLOPE_PERCENT,
   slopeAllowed,
   SLOPES,
+  TEETH,
   TEST_ONLY,
 } from "../core/settings";
 import styles from "./SettingsScreen.module.css";
@@ -60,6 +63,43 @@ function Choice<T extends string | number>({
       </div>
       {help && <p className={styles.help}>{help}</p>}
     </fieldset>
+  );
+}
+
+/** Teeth of the real chainring or cog: taken as soon as typed in range, put back on leaving. */
+function Teeth({
+  part,
+  label,
+  value,
+  onChange,
+}: {
+  part: keyof typeof TEETH;
+  label: string;
+  value: number;
+  onChange: (teeth: number) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const { min, max } = TEETH[part];
+  return (
+    <label className={styles.teeth}>
+      <span>{label}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        step={1}
+        value={draft ?? value}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          const teeth = Number(event.target.value);
+          if (Number.isInteger(teeth) && teeth >= min && teeth <= max) onChange(teeth);
+        }}
+        onBlur={() => {
+          setDraft(null);
+        }}
+      />
+    </label>
   );
 }
 
@@ -127,6 +167,46 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
         }}
         help={t("settings.finale.help")}
       />
+      <fieldset className={styles.field}>
+        <legend>{t("settings.gears.label")}</legend>
+        <div className={styles.choice}>
+          {GEARS.map((gears) => (
+            <button
+              key={gears}
+              type="button"
+              aria-pressed={gears === settings.gears}
+              onClick={() => {
+                onChange({ gears });
+              }}
+            >
+              {t(`settings.gears.${gears}`)}
+            </button>
+          ))}
+        </div>
+        {/* The drivetrain takes the help's place: the screen has no room for both. */}
+        {settings.gears === "virtual" ? (
+          <div className={styles.drivetrain}>
+            <Teeth
+              part="chainring"
+              label={t("settings.gears.chainring")}
+              value={settings.chainring}
+              onChange={(chainring) => {
+                onChange({ chainring });
+              }}
+            />
+            <Teeth
+              part="cog"
+              label={t("settings.gears.cog")}
+              value={settings.cog}
+              onChange={(cog) => {
+                onChange({ cog });
+              }}
+            />
+          </div>
+        ) : (
+          <p className={styles.help}>{t("settings.gears.help")}</p>
+        )}
+      </fieldset>
       <button type="button" className="primary" onClick={onDone}>
         {t("settings.done")}
       </button>

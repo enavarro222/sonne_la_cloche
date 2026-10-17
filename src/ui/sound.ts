@@ -74,6 +74,12 @@ export const sounds = {
     beep(660, 90);
   },
   bell: ding,
+  /** A derailleur's clic-clac on a virtual gear change: rising to a harder gear. */
+  shift: (harder: boolean) => {
+    const [first, second] = harder ? [1600, 2200] : [2200, 1600];
+    beep(first, 20);
+    beep(second, 25, 45);
+  },
   fanfare: () => {
     [523, 659, 784, 1046].forEach((frequency, i) => {
       beep(frequency, 200, i * 130);

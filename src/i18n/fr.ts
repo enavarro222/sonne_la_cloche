@@ -45,6 +45,22 @@ export const fr: Translation = {
       help: "Le home-trainer doit être allumé et fermé dans toutes les autres applis (Zwift, Garmin…).",
       unsupported: "Ce navigateur ne gère pas le Bluetooth : ouvre le jeu dans Chrome ou Edge.",
     },
+    gears: {
+      bike: "Vitesses du vélo",
+      bikeDetail: "On change au dérailleur du vélo.",
+      virtual: "Vitesses virtuelles",
+      virtualDetail: "Pignon unique {{chainring}} × {{cog}} : on change avec + et − au guidon.",
+      notControlled:
+        "Le jeu ne pilote pas ce home-trainer : les vitesses virtuelles n'y changent rien.",
+    },
+    remote: {
+      connect: "Connecter une télécommande Zwift",
+      connected: "✓ {{name}} connectée : + et − changent de vitesse",
+      lost: "Télécommande déconnectée",
+      reconnect: "Reconnecter la télécommande",
+      failed: "La télécommande ne s'est pas connectée : {{message}}",
+      help: "Zwift Click ou Ride (ferme Zwift avant), ou une manette : ses gâchettes changent de vitesse.",
+    },
     errors: {
       cancelled: "Aucun vélo choisi",
       noData: "Connecté, mais le vélo n'envoie aucune donnée exploitable",
@@ -91,6 +107,14 @@ export const fr: Translation = {
       on: "Oui",
       short: "coup de théâtre",
       help: "Les 5 dernières secondes : en avance sur la cloche, la pente monte de 3 % ; en retard, elle descend de 3 %.",
+    },
+    gears: {
+      label: "Vitesses",
+      bike: "Celles du vélo",
+      virtual: "Virtuelles",
+      help: "Virtuelles : home-trainer à pignon unique (Zwift Cog…), + et − au guidon.",
+      chainring: "Plateau",
+      cog: "Pignon",
     },
     rounds: {
       label: "Nombre de tours",
@@ -187,6 +211,7 @@ export const fr: Translation = {
     secondsUnit: "s",
     distanceUnit: "m",
     speedUnit: "km/h",
+    gear: "vitesse {{gear}}/{{gears}}",
     slope: "{{percent}}\u00a0%",
     gauge: "Ta puissance par rapport à ton niveau",
     leftFoot: "← Gauche",

@@ -157,6 +157,7 @@ describe("starting a game", () => {
       { type: "gameStarted" },
     );
     expect(state.game?.settings).toEqual({
+      ...DEFAULT_SETTINGS,
       metric: "distance",
       durationSec: 20,
       rounds: 4,

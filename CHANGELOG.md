@@ -40,6 +40,18 @@ the whole game drawn by hand, its characters drawn by a young rider.
 - He sees it coming three seconds ahead: he stares at the timer, panics,
   and a "!" pops by his head.
 
+### Virtual gears
+
+- For trainers with a single cog (Zwift Cog and the like), a "Gears:
+  virtual" setting with the real chainring and cog. The game then shifts 24
+  gears on the trainer with + and − on a Zwift Click or Ride, a gamepad's
+  shoulder buttons, or the keyboard; a derailleur's clic-clac sounds at each
+  shift, and the ride shows the gear. Each ride starts on the gear closest
+  to the real one. The score doesn't change: it comes from the power.
+- The home screen always says which gears the ride uses, the bike's own or
+  virtual, connects the Zwift remote, and warns when the trainer can't be
+  controlled (virtual gears would change nothing).
+
 ### Drawn by hand
 
 - The cyclist and the pole bearer holding up the track come from a child's

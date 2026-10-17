@@ -78,6 +78,9 @@ on a real bike.
   their own), as a simulated grade or a resistance level. With another
   sensor, use the bike's gears; for young kids, the lowest gear, or their
   legs give up after ten seconds.
+- Virtual gears, for a trainer with a single cog (Zwift Cog…): turn them on
+  in the settings, with the real chainring and cog, and shift with a Zwift
+  Click or Ride, or a gamepad's shoulder buttons.
 
 ## Run it
 
