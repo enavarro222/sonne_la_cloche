@@ -16,7 +16,7 @@ const KEYS: Record<string, 1 | -1> = { "+": 1, "=": 1, "-": -1 };
 /**
  * Virtual gears for one ride, on a trainer with a single cog: each ride
  * starts on the gear closest to the real one. + and − shift (keyboard, Zwift
- * remote, gamepad shoulders), with a derailleur's clic-clac. Null with the
+ * remote, gamepad shoulders), B too shifts down, with a derailleur's clic-clac. Null with the
  * bike's own gears.
  */
 export function useVirtualGear(sensor: Sensor, drivetrain: Drivetrain | null): number | null {
@@ -56,6 +56,11 @@ export function useVirtualGear(sensor: Sensor, drivetrain: Drivetrain | null): n
       shiftBy(1);
     },
     gearDown: () => {
+      shiftBy(-1);
+    },
+    // B on a Click v2's right pod, the one that works alone: its − is on
+    // the left pod, which answers only once unlocked by Zwift's app.
+    b: () => {
       shiftBy(-1);
     },
   });

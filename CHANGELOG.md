@@ -3,6 +3,31 @@
 Each version is tagged `v<version>`; pushing the tag publishes its GitHub
 release with the notes below (see `.github/workflows/release.yml`).
 
+## Unreleased
+
+From a first game with friends.
+
+- A ride started too soon can be cancelled: "Cancel" at the bottom left
+  of the ride screen (or Escape), during the countdown or the ride.
+  Nothing is recorded; the same rider goes again when ready, after
+  changing the gears or the last-seconds twist if needed (the only
+  settings that change mid-game).
+- Zwift Click v2, measured on a real one (see home-trainer-kit's
+  `docs/zwift-click-v2.md`): its right pod works on its own, so "Connect
+  the Zwift remote" lists only right pods; + shifts up, **B shifts down**.
+  The left pod (−) can be added, but answers only once unlocked by Zwift's
+  app. The home screen shows the last button pressed on each, to check.
+- A remote sleeps after a minute without a press and drops the link:
+  the game now tries it again every 2 s, for as long as it stays picked.
+  The first press wakes it (that press is lost) and it is back within
+  seconds; the header says "Remote asleep: press a button" meanwhile.
+  A press relayed by the other pod counts once.
+- A remote forgotten can be connected mid-game: from the header (during a
+  ride too), the settings and the screen after a cancelled ride. The
+  header says when remotes are connected, next to the trainer.
+- With virtual gears, − and + buttons on the ride screen, should the
+  remote fail. Speed, cadence and watts now sit together under the score.
+
 ## 0.2.0 — 2026-10-17
 
 Fair between all sizes on any trainer that measures power, and a new look:

@@ -5,7 +5,7 @@
 import { freeLivery, nextLivery } from "./livery";
 import { canStart, normalizeName, type Player, validateName } from "./players";
 import { cleanStats, type RideSample, type RideStats } from "./ride";
-import { consistent, forSensor, type Settings } from "./settings";
+import { consistent, forSensor, inGame, type Settings } from "./settings";
 
 /** The ride as it happened, for the activity export. */
 export interface RideTrace {
@@ -31,7 +31,8 @@ export interface Game {
   round: number;
   /** Index in `players` of whoever rides now (or just rode). */
   turn: number;
-  phase: "riding" | "result";
+  /** "ready": a ride was cancelled, it starts again when asked. */
+  phase: "riding" | "ready" | "result";
   rides: readonly RideResult[];
   /** Changes on every new ride attempt, so the UI can remount the ride. */
   rideId: number;
@@ -61,6 +62,10 @@ export type Action =
       gradePct?: number;
     }
   | { type: "rideRetried" }
+  /** The ride is dropped, nothing recorded: back to "ready" for the same player. */
+  | { type: "rideCancelled" }
+  /** From "ready", the cancelled ride starts again. */
+  | { type: "rideResumed" }
   | { type: "nextTurn" }
   | { type: "gameQuit" };
 
@@ -115,9 +120,20 @@ export function reducer(state: AppState, action: Action): AppState {
       const index = Math.min(Math.max(0, action.index), rest.length);
       return { ...state, roster: [...rest.slice(0, index), player, ...rest.slice(index)] };
     }
-    case "settingsChanged":
-      if (game) return state;
-      return { ...state, settings: consistent({ ...state.settings, ...action.settings }) };
+    case "settingsChanged": {
+      if (!game) {
+        return { ...state, settings: consistent({ ...state.settings, ...action.settings }) };
+      }
+      // Between two attempts of a cancelled ride, how the bike is ridden may
+      // change, for this game and the next ones.
+      if (game.phase !== "ready") return state;
+      const changes = inGame(action.settings);
+      return {
+        ...state,
+        settings: consistent({ ...state.settings, ...changes }),
+        game: { ...game, settings: consistent({ ...game.settings, ...changes }) },
+      };
+    }
     case "gameStarted":
       if (!canStart(state.roster) || (game && !isGameOver(game))) return state;
       return { ...state, game: newGame(state, action.measuresPower ?? true) };
@@ -149,6 +165,13 @@ export function reducer(state: AppState, action: Action): AppState {
     }
     case "rideRetried":
       if (game?.phase !== "result") return state;
+      return { ...state, game: { ...game, phase: "riding", rideId: game.rideId + 1 } };
+    case "rideCancelled":
+      // An attempt being retried keeps the previous one: it is only replaced on finishing.
+      if (game?.phase !== "riding") return state;
+      return { ...state, game: { ...game, phase: "ready" } };
+    case "rideResumed":
+      if (game?.phase !== "ready") return state;
       return { ...state, game: { ...game, phase: "riding", rideId: game.rideId + 1 } };
     case "nextTurn": {
       if (game?.phase !== "result" || isGameOver(game)) return state;
@@ -225,10 +248,10 @@ export function standings(game: Game): Standing[] {
 
 /**
  * Best single ride so far: the mark to beat on the track. While a ride is
- * being retried, the attempt it will replace does not count.
+ * being retried (or about to be), the attempt it will replace does not count.
  */
 export function bestRide(game: Game): { player: Player; metres: number } | null {
-  const replaced = game.phase === "riding" ? currentPlayer(game).id : null;
+  const replaced = game.phase === "result" ? null : currentPlayer(game).id;
   let best: { player: Player; metres: number } | null = null;
   for (const ride of game.rides) {
     if (ride.playerId === replaced && ride.round === game.round) continue;

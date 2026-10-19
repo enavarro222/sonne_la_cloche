@@ -5,11 +5,23 @@ import { isLocale, LOCALE_LABELS, LOCALES, pathForLocale } from "../i18n/locales
 import { cx } from "./cx";
 import styles from "./Header.module.css";
 import { useFullscreen } from "./useFullscreen";
-import type { SensorState } from "home-trainer-kit";
+import { type SensorState, type ZwiftControllerState, ZWIFT_PRIMARY_TYPES } from "home-trainer-kit";
 
-type Props = Pick<SensorState, "connection" | "connecting" | "error" | "reconnect">;
+type Props = Pick<SensorState, "connection" | "connecting" | "error" | "reconnect"> & {
+  /** The Zwift remotes: shown when connected, or asleep (the kit reconnects them). */
+  remote?: Pick<
+    ZwiftControllerState,
+    "supported" | "controllers" | "name" | "lost" | "connecting" | "connect"
+  >;
+  /** Offers to connect a remote when none is: in a game with virtual gears, between rides. */
+  offerRemote?: boolean;
+};
 
-function useStatus({ connection, connecting, error }: Omit<Props, "reconnect">) {
+function useStatus({
+  connection,
+  connecting,
+  error,
+}: Pick<Props, "connection" | "connecting" | "error">) {
   const { t } = useTranslation();
   if (connecting) return { text: t("status.connecting"), tone: undefined };
   switch (connection.kind) {
@@ -36,7 +48,14 @@ function useStatus({ connection, connecting, error }: Omit<Props, "reconnect">) 
   }
 }
 
-export function Header({ connection, connecting, error, reconnect }: Props) {
+export function Header({
+  connection,
+  connecting,
+  error,
+  reconnect,
+  remote,
+  offerRemote = false,
+}: Props) {
   const { t, i18n } = useTranslation();
   const status = useStatus({ connection, connecting, error });
   const lost = connection.kind === "bluetooth" && connection.lost;
@@ -65,6 +84,31 @@ export function Header({ connection, connecting, error, reconnect }: Props) {
         >
           {t("status.reconnect")}
         </button>
+      )}
+      {remote && remote.controllers.length > 0 && !remote.lost && (
+        <span className={cx(styles.remote, styles.ok)} role="status">
+          {t("status.remote", { count: remote.controllers.length })}
+        </span>
+      )}
+      {remote?.lost ? (
+        // Asleep after a minute without a press, most of the time: a press
+        // wakes it, and the kit reconnects it on its own.
+        <span className={styles.remote} role="status">
+          {t("status.remoteAsleep")}
+        </span>
+      ) : (
+        offerRemote &&
+        remote?.supported &&
+        !remote.name && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void remote.connect(ZWIFT_PRIMARY_TYPES)}
+            disabled={remote.connecting}
+          >
+            {t("home.remote.connect")}
+          </button>
+        )
       )}
       <nav className={styles.languages} aria-label={t("language.label")}>
         {LOCALES.map((locale) => (

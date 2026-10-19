@@ -23,6 +23,11 @@
   color: var(--cream-faint);
 }
 
+.remote {
+  font-weight: 700;
+  font-size: 0.95em;
+}
+
 .ok {
   color: var(--mint);
 }

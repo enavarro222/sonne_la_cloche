@@ -13,6 +13,7 @@ import { loadRoster, loadSettings, saveRoster, saveSettings } from "../storage/s
 import styles from "./App.module.css";
 import { Header } from "./Header";
 import { HomeScreen } from "./HomeScreen";
+import { ReadyScreen } from "./ReadyScreen";
 import { ResultScreen } from "./ResultScreen";
 import { RideScreen } from "./RideScreen";
 import { SettingsScreen } from "./SettingsScreen";
@@ -126,6 +127,41 @@ export function App() {
           sounds.fanfare();
           dispatch({ type: "rideFinished", ...ride });
         }}
+        onCancel={() => {
+          dispatch({ type: "rideCancelled" });
+        }}
+      />
+    );
+  } else if (game.phase === "ready") {
+    screen = settingsOpen ? (
+      <SettingsScreen
+        settings={game.settings}
+        testMode={testMode}
+        inGame
+        remote={remote}
+        onChange={(settings) => {
+          dispatch({ type: "settingsChanged", settings });
+        }}
+        onDone={() => {
+          setSettingsOpen(false);
+        }}
+      />
+    ) : (
+      <ReadyScreen
+        player={currentPlayer(game)}
+        round={game.round}
+        rounds={game.settings.rounds}
+        bikeReady={sensorState.ready}
+        remote={game.settings.gears === "virtual" ? remote : undefined}
+        onStart={() => {
+          dispatch({ type: "rideResumed" });
+        }}
+        onOpenSettings={() => {
+          setSettingsOpen(true);
+        }}
+        onHome={() => {
+          dispatch({ type: "gameQuit" });
+        }}
       />
     );
   } else {
@@ -154,7 +190,12 @@ export function App() {
   return (
     <div className={styles.app}>
       {(game?.settings ?? state.settings).gears === "virtual" && <GamepadControls />}
-      <Header {...sensorState} />
+      <Header
+        {...sensorState}
+        remote={remote}
+        // Mid-ride too: a remote forgotten shows only once riding.
+        offerRemote={game?.settings.gears === "virtual"}
+      />
       <main className={styles.main}>{screen}</main>
     </div>
   );

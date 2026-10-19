@@ -69,6 +69,16 @@ describe("useVirtualGear", () => {
     expect(result.current).toBe(neutralGear(COG) + 1);
   });
 
+  it("shifts down with B too: the right pod of a Click v2 has no −", () => {
+    vi.spyOn(sounds, "shift").mockImplementation(() => undefined);
+    const { sensor } = trainer();
+    const { result } = renderHook(() => useVirtualGear(sensor, COG));
+    act(() => {
+      emitControl("b");
+    });
+    expect(result.current).toBe(neutralGear(COG) - 1);
+  });
+
   it("stays quiet at the end of the cassette", () => {
     const shift = vi.spyOn(sounds, "shift").mockImplementation(() => undefined);
     const { sensor } = trainer();

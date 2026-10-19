@@ -17,6 +17,9 @@ export const en = {
     demo: "Demo mode, no bike",
     lost: "Bike disconnected",
     reconnect: "Reconnect",
+    remote_one: "Remote connected",
+    remote_other: "{{count}} remotes connected",
+    remoteAsleep: "Remote asleep: press a button",
     unnamed: "Home trainer",
   },
   home: {
@@ -52,12 +55,17 @@ export const en = {
       notControlled: "The game can't control this trainer: virtual gears change nothing on it.",
     },
     remote: {
-      connect: "Connect a Zwift remote",
-      connected: "✓ {{name}} connected: + and − shift",
-      lost: "Remote disconnected",
+      connect: "Connect the Zwift remote",
+      device: "✓ {{name}} connected",
+      asleep: "{{name}} asleep: press a button",
+      pressed: "button {{button}}",
+      pressToTest: "press a button to test it",
+      addLeft: "Add the left pod (−)",
+      sleeps:
+        "After a minute without a press, the remote sleeps: the first press wakes it, back within seconds (that press doesn't count). The left pod (−) only answers once unlocked by Zwift's app.",
       reconnect: "Reconnect the remote",
       failed: "The remote did not connect: {{message}}",
-      help: "Zwift Click or Ride (close Zwift first), or a gamepad: its shoulder buttons shift.",
+      help: "Zwift Click v2: pick the right pod, the one with + (close Zwift first). + shifts up, B shifts down. A gamepad works too: its shoulder buttons shift.",
     },
     errors: {
       cancelled: "No bike selected",
@@ -78,6 +86,7 @@ export const en = {
   settings: {
     title: "Settings",
     done: "Done",
+    inGame: "During a game, only these settings can change: the others count in the scores.",
     metric: {
       label: "What counts",
       distance: "Distance",
@@ -195,6 +204,9 @@ export const en = {
     failed: "Sharing did not work",
   },
   ride: {
+    cancel: "Cancel",
+    gearUp: "Harder gear",
+    gearDown: "Easier gear",
     turn: "{{name}}'s turn",
     turn_elided: "{{name}}'s turn",
     round: "Round {{round}}/{{rounds}}",
@@ -215,6 +227,9 @@ export const en = {
     gauge: "Your power against your level",
     leftFoot: "← Left",
     rightFoot: "Right →",
+  },
+  ready: {
+    note: "Ride cancelled, nothing counted. Change the gears if needed, then go again.",
   },
   result: {
     personalBest: "{{name}}, new personal best!",

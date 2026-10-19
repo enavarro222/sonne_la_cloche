@@ -13,16 +13,12 @@ import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "../credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import { Roster } from "./Roster";
-import type { SensorState, ZwiftControllerState } from "home-trainer-kit";
+import type { SensorState } from "home-trainer-kit";
+import { type Remote, RemoteRow } from "./RemoteRow";
 
 type BikeCardSensor = Pick<
   SensorState,
   "connection" | "connecting" | "error" | "ready" | "connect" | "reconnect" | "startDemo"
->;
-
-type Remote = Pick<
-  ZwiftControllerState,
-  "supported" | "connecting" | "name" | "lost" | "error" | "connect"
 >;
 
 /**
@@ -64,43 +60,6 @@ function GearsCard({
       {notControlled && <p className={styles.error}>{t("home.gears.notControlled")}</p>}
       {virtual && <RemoteRow remote={remote} />}
     </div>
-  );
-}
-
-/** The Zwift remote that shifts: connected, lost, or a button to connect it. */
-function RemoteRow({ remote }: { remote: Remote }) {
-  const { t } = useTranslation();
-  if (!remote.supported) return <p className={styles.help}>{t("home.remote.help")}</p>;
-  return (
-    <>
-      {remote.name && !remote.lost ? (
-        <p className={cx(styles.state, styles.stateOk)} role="status">
-          {t("home.remote.connected", { name: remote.name })}
-        </p>
-      ) : (
-        <div className={styles.row}>
-          {remote.lost && (
-            <p className={cx(styles.state, styles.stateKo)} role="status">
-              {t("home.remote.lost")}
-            </p>
-          )}
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => void remote.connect()}
-            disabled={remote.connecting}
-          >
-            {remote.lost ? t("home.remote.reconnect") : t("home.remote.connect")}
-          </button>
-        </div>
-      )}
-      {remote.error && (
-        <p className={styles.error} role="alert">
-          {t("home.remote.failed", { message: remote.error })}
-        </p>
-      )}
-      {!remote.name && <p className={styles.help}>{t("home.remote.help")}</p>}
-    </>
   );
 }
 
@@ -202,10 +161,11 @@ function BikeCard({
 const NO_REMOTE: Remote = {
   supported: false,
   connecting: false,
-  name: null,
+  controllers: [],
   lost: false,
   error: null,
   connect: () => Promise.resolve(),
+  reconnect: () => Promise.resolve(),
 };
 
 interface Props {

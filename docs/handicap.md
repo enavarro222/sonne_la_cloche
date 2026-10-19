@@ -42,7 +42,8 @@ Little text, nothing hidden. The time left is the background: it drains
 like an hourglass (pink for the last 5 s), the seconds riding on its
 surface. The ride screen, top to bottom: who rides and the round; the distance in
 metres, big (the countdown takes the same box, so nothing moves at "Go");
-speed and slope; the gauge; the track; cadence and watts.
+speed, cadence and watts; the gauge; the track and its slope; virtual gears
+(− and +) and the demo's pedal buttons.
 
 - **Every ride**: the track leans with the slope ridden, held up at its far
   end by a pole bearer drawn by a young rider: sweating from 5 %, red and

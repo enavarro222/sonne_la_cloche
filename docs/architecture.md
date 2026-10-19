@@ -215,6 +215,8 @@ stateDiagram-v2
     state "In a game" as inGame {
         Riding --> Result : rideFinished
         Result --> Riding : rideRetried<br/>(replaces the attempt)
+        Riding --> Ready : rideCancelled<br/>(nothing recorded)
+        Ready --> Riding : rideResumed
         Result --> Riding : nextTurn<br/>(next player, or round + 1)
         Result --> GameOver : last player<br/>of last round
     }
@@ -225,6 +227,8 @@ stateDiagram-v2
 
 `Home` and `Settings` are `game === null` (with a local `settingsOpen` flag
 in `App`); `GameOver` is `phase === "result"` with `isGameOver(game)` true.
+In `Ready`, ⚙ opens the settings limited to `IN_GAME_SETTINGS` (gears and
+finale): what the scores compare stays as the game started.
 While a game exists, `useHistoryGuard` keeps the back button on the page and
 `useLeaveWarning` asks before closing it: leaving would drop the Bluetooth
 connection.

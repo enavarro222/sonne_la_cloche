@@ -241,6 +241,72 @@ describe("turn order", () => {
   });
 });
 
+describe("cancelling a ride", () => {
+  const cancel: Action = { type: "rideCancelled" };
+  const resume: Action = { type: "rideResumed" };
+
+  it("drops the ride and waits, same player and round", () => {
+    const game = started();
+    const state = run(withGame(game), cancel);
+    expect(state.game).toMatchObject({ phase: "ready", turn: 0, round: 1, rides: [] });
+  });
+
+  it("starts the ride again, as a new attempt", () => {
+    const game = started();
+    const state = run(withGame(game), cancel, resume);
+    expect(state.game).toMatchObject({ phase: "riding", turn: 0, round: 1 });
+    expect(state.game?.rideId).not.toBe(game.rideId);
+  });
+
+  it("keeps the attempt a cancelled retry would have replaced", () => {
+    const state = run(withGame(started()), finished(120), { type: "rideRetried" }, cancel);
+    expect(state.game?.rides.map((r) => r.metres)).toEqual([120]);
+    const back = run(state, resume, finished(150));
+    expect(back.game?.rides.map((r) => r.metres)).toEqual([150]);
+  });
+
+  it("does not count the attempt about to be retried as the record", () => {
+    const state = run(withGame(started()), finished(120), { type: "rideRetried" }, cancel);
+    if (!state.game) throw new Error("no game");
+    expect(bestRide(state.game)).toBeNull();
+  });
+
+  it("only cancels a ride under way, only resumes a cancelled one", () => {
+    const riding = withGame(started());
+    expect(run(riding, resume)).toBe(riding);
+    const done = run(riding, finished(5));
+    expect(run(done, cancel)).toBe(done);
+  });
+
+  it("lets the gears and the finale change while waiting, for the next games too", () => {
+    const state = run(withGame(started()), cancel, {
+      type: "settingsChanged",
+      settings: { gears: "virtual", cog: 18, finale: "off", rounds: 5, slope: "flat" },
+    });
+    expect(state.game?.settings).toMatchObject({
+      gears: "virtual",
+      cog: 18,
+      finale: "off",
+      rounds: 3,
+      slope: "own",
+    });
+    expect(state.settings).toMatchObject({ gears: "virtual", cog: 18, rounds: 3 });
+  });
+
+  it("keeps a game by pedal turns so when its settings change", () => {
+    const { game } = run(initialState([lea, tom], DEFAULT_SETTINGS), {
+      type: "gameStarted",
+      measuresPower: false,
+    });
+    if (!game) throw new Error("no game");
+    const state = run(withGame(game), cancel, {
+      type: "settingsChanged",
+      settings: { gears: "virtual" },
+    });
+    expect(state.game?.settings).toMatchObject({ metric: "cadence", gears: "virtual" });
+  });
+});
+
 describe("scores", () => {
   it("sums every ride over the rounds", () => {
     // Regression: the prototype subtracted the previous round's gain.

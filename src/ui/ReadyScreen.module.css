@@ -1,0 +1,48 @@
+.ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--gap) * 1.5);
+  height: 100%;
+  text-align: center;
+}
+
+.who {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 1.2rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(1.8rem, 6vmin, 3.4rem);
+  color: var(--yellow);
+}
+
+.round {
+  font-size: 0.6em;
+  color: var(--cream-dim);
+}
+
+.note {
+  max-width: 34rem;
+  font-size: clamp(1rem, 2.6vmin, 1.4rem);
+  color: var(--cream);
+}
+
+.remote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 40rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}

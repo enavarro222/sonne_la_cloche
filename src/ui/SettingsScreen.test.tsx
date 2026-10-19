@@ -98,3 +98,33 @@ describe("SettingsScreen gears", () => {
     expect(onChange.mock.calls).toEqual([[{ chainring: 36 }]]);
   });
 });
+
+describe("SettingsScreen during a game", () => {
+  const remote = () => ({
+    supported: true,
+    connecting: false,
+    controllers: [],
+    lost: false,
+    error: null,
+    connect: vi.fn(() => Promise.resolve()),
+    reconnect: vi.fn(() => Promise.resolve()),
+  });
+
+  it("only offers how the bike is ridden, and a remote forgotten", async () => {
+    const zwift = remote();
+    render(
+      <SettingsScreen
+        settings={{ ...DEFAULT_SETTINGS, gears: "virtual" }}
+        testMode={false}
+        inGame
+        remote={zwift}
+        onChange={vi.fn()}
+        onDone={() => undefined}
+      />,
+    );
+    expect(screen.queryByRole("group", { name: "Rounds" })).not.toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Gears" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Connect the Zwift remote" }));
+    expect(zwift.connect).toHaveBeenCalled();
+  });
+});

@@ -5,19 +5,35 @@ import { MAX_PLAYERS, type Player } from "../core/players";
 import { DEFAULT_SETTINGS, type Settings } from "../core/settings";
 import { REPOSITORY_URL } from "../credits";
 import { HomeScreen } from "./HomeScreen";
-import type { Connection } from "home-trainer-kit";
+import {
+  type Connection,
+  ZWIFT_PRIMARY_TYPES,
+  ZWIFT_SECONDARY_TYPES,
+  type ZwiftControllerInfo,
+} from "home-trainer-kit";
 
 const noop = () => undefined;
 
 const VIRTUAL: Settings = { ...DEFAULT_SETTINGS, gears: "virtual", chainring: 34, cog: 14 };
 
-const zwiftRemote = (state: { name?: string; lost?: boolean } = {}) => ({
+/** A connected side of a remote. */
+const side = (id: string, state: Partial<ZwiftControllerInfo> = {}): ZwiftControllerInfo => ({
+  id,
+  name: "Zwift Click",
+  lost: false,
+  lastButton: null,
+  presses: 0,
+  ...state,
+});
+
+const zwiftRemote = (controllers: ZwiftControllerInfo[] = []) => ({
   supported: true,
   connecting: false,
-  name: state.name ?? null,
-  lost: state.lost ?? false,
+  controllers,
+  lost: controllers.some((c) => c.lost),
   error: null,
   connect: vi.fn(() => Promise.resolve()),
+  reconnect: vi.fn(() => Promise.resolve()),
 });
 
 function renderHome(
@@ -182,25 +198,34 @@ describe("HomeScreen gears", () => {
     expect(screen.getByTestId("gears-mode")).toHaveTextContent(
       "Virtual gearsSingle cog 34 × 14: shift with + and − on the handlebar.",
     );
-    await userEvent.click(screen.getByRole("button", { name: "Connect a Zwift remote" }));
-    expect(remote.connect).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Connect the Zwift remote" }));
+    expect(remote.connect).toHaveBeenCalledWith(ZWIFT_PRIMARY_TYPES);
   });
 
-  it("shows a connected remote, and a lost one to reconnect", () => {
-    renderHome({ kind: "demo" }, [], {
-      settings: VIRTUAL,
-      remote: zwiftRemote({ name: "Zwift Click" }),
-    });
-    expect(screen.getByText("✓ Zwift Click connected: + and − shift")).toBeInTheDocument();
+  it("shows the remote and the last button pressed, and offers the left pod", async () => {
+    const remote = zwiftRemote([side("right", { lastButton: "plus", presses: 3 })]);
+    renderHome({ kind: "demo" }, [], { settings: VIRTUAL, remote });
+    expect(screen.getByTestId("remote")).toHaveTextContent("✓ Zwift Click connectedbutton +");
+    await userEvent.click(screen.getByRole("button", { name: "Add the left pod (−)" }));
+    expect(remote.connect).toHaveBeenCalledWith(ZWIFT_SECONDARY_TYPES);
   });
 
-  it("offers to reconnect a lost remote", () => {
-    renderHome({ kind: "demo" }, [], {
-      settings: VIRTUAL,
-      remote: zwiftRemote({ name: "Zwift Click", lost: true }),
-    });
-    expect(screen.getByText("Remote disconnected")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Reconnect the remote" })).toBeInTheDocument();
+  it("shows each side once both are there, and offers no third", () => {
+    const remote = zwiftRemote([side("right"), side("left", { lastButton: "minus", presses: 1 })]);
+    renderHome({ kind: "demo" }, [], { settings: VIRTUAL, remote });
+    const [right, left] = screen.getAllByTestId("remote");
+    expect(right).toHaveTextContent("✓ Zwift Click connectedpress a button to test it");
+    expect(left).toHaveTextContent("✓ Zwift Click connectedbutton −");
+    expect(screen.queryByRole("button", { name: /remote|left pod/ })).not.toBeInTheDocument();
+  });
+
+  it("says a remote asleep wakes with a press, and can be reconnected by hand", async () => {
+    const remote = zwiftRemote([side("right", { lost: true })]);
+    renderHome({ kind: "demo" }, [], { settings: VIRTUAL, remote });
+    expect(screen.getByText("Zwift Click asleep: press a button")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Reconnect the remote" }));
+    expect(remote.reconnect).toHaveBeenCalled();
+    expect(remote.connect).not.toHaveBeenCalled();
   });
 
   it("warns when the trainer can't be controlled: virtual gears would change nothing", () => {

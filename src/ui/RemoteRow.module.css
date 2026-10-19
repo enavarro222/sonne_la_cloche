@@ -1,0 +1,52 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.help {
+  font-size: 0.9em;
+  color: var(--cream-faint);
+}
+
+.error {
+  color: var(--pink);
+  font-weight: 700;
+}
+
+.state {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius);
+  font-weight: 900;
+  background: var(--surface);
+}
+
+.stateOk {
+  color: var(--mint);
+}
+
+.stateKo {
+  color: var(--pink);
+}
+
+/* The last remote button pressed: it lights up, then settles. */
+.pressed {
+  color: var(--night);
+  background: var(--yellow);
+  animation: pressed 0.6s ease-out;
+}
+
+@keyframes pressed {
+  from {
+    transform: scale(1.25);
+    background: var(--pink);
+    color: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressed {
+    animation: none;
+  }
+}

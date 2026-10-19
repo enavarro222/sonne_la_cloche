@@ -18,6 +18,9 @@ export const fr: Translation = {
     demo: "Mode démo, sans vélo",
     lost: "Home-trainer déconnecté",
     reconnect: "Reconnecter",
+    remote_one: "Télécommande connectée",
+    remote_other: "{{count}} télécommandes connectées",
+    remoteAsleep: "Télécommande en veille : appuie sur une touche",
     unnamed: "Home-trainer",
   },
   home: {
@@ -54,12 +57,17 @@ export const fr: Translation = {
         "Le jeu ne pilote pas ce home-trainer : les vitesses virtuelles n'y changent rien.",
     },
     remote: {
-      connect: "Connecter une télécommande Zwift",
-      connected: "✓ {{name}} connectée : + et − changent de vitesse",
-      lost: "Télécommande déconnectée",
+      connect: "Connecter la télécommande Zwift",
+      device: "✓ {{name}} connectée",
+      asleep: "{{name}} en veille : appuie sur une touche",
+      pressed: "touche {{button}}",
+      pressToTest: "appuie sur une touche pour tester",
+      addLeft: "Ajouter le boîtier gauche (−)",
+      sleeps:
+        "Après une minute sans appui, la télécommande s'endort : le premier appui la réveille, elle revient en quelques secondes (cet appui-là ne compte pas). Le boîtier gauche (−) ne répond que s'il a été débloqué par l'appli Zwift.",
       reconnect: "Reconnecter la télécommande",
       failed: "La télécommande ne s'est pas connectée : {{message}}",
-      help: "Zwift Click ou Ride (ferme Zwift avant), ou une manette : ses gâchettes changent de vitesse.",
+      help: "Zwift Click v2 : choisis le boîtier droit, celui du + (ferme Zwift avant). + monte, B descend. Une manette marche aussi : ses gâchettes changent de vitesse.",
     },
     errors: {
       cancelled: "Aucun vélo choisi",
@@ -80,6 +88,8 @@ export const fr: Translation = {
   settings: {
     title: "Réglages",
     done: "Terminé",
+    inGame:
+      "En cours de partie, seuls ces réglages peuvent changer : les autres comptent dans les scores.",
     metric: {
       label: "Ce qui compte",
       distance: "Distance",
@@ -200,6 +210,9 @@ export const fr: Translation = {
     failed: "Le partage n'a pas marché",
   },
   ride: {
+    cancel: "Annuler",
+    gearUp: "Vitesse plus dure",
+    gearDown: "Vitesse plus facile",
     turn: "Au tour de {{name}}",
     turn_elided: "Au tour d'{{name}}",
     round: "Tour {{round}}/{{rounds}}",
@@ -220,6 +233,9 @@ export const fr: Translation = {
     gauge: "Ta puissance par rapport à ton niveau",
     leftFoot: "← Gauche",
     rightFoot: "Droite →",
+  },
+  ready: {
+    note: "Passage annulé, rien n'est compté. Change les vitesses si besoin, puis repars.",
   },
   result: {
     personalBest: "{{name}}, nouveau record perso !",

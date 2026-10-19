@@ -84,6 +84,49 @@ describe("RideScreen", { timeout: 20_000 }, () => {
     expect(setGear).toHaveBeenLastCalledWith(gearFactor(start + 1, drivetrain));
   });
 
+  it("with virtual gears: shifts from the screen too, should the remote fail", () => {
+    const setGear = vi.fn(() => Promise.resolve(true));
+    const drivetrain = { chainring: 34, cog: 14 };
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={null}
+        sensor={{ ...steadySensor(90), setGear }}
+        drivetrain={drivetrain}
+        onFinish={vi.fn()}
+      />,
+    );
+    const start = neutralGear(drivetrain);
+    fireEvent.click(screen.getByRole("button", { name: "Easier gear" }));
+    fireEvent.click(screen.getByRole("button", { name: "Easier gear" }));
+    fireEvent.click(screen.getByRole("button", { name: "Harder gear" }));
+    expect(screen.getByTestId("ride-gear")).toHaveTextContent(`gear ${start}/24`);
+    expect(setGear).toHaveBeenLastCalledWith(gearFactor(start - 1, drivetrain));
+  });
+
+  it("can be cancelled, from its button or Escape, before or during the ride", () => {
+    const onCancel = vi.fn();
+    const onFinish = vi.fn();
+    render(
+      <RideScreen
+        player={player}
+        round={1}
+        settings={settings}
+        record={null}
+        sensor={steadySensor(90)}
+        onFinish={onFinish}
+        onCancel={onCancel}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    advance(COUNTDOWN_MS + 1000);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onCancel).toHaveBeenCalledTimes(2);
+    expect(onFinish).not.toHaveBeenCalled();
+  });
+
   it("without virtual gears, says nothing about them", () => {
     renderRide(steadySensor(90), vi.fn());
     expect(screen.queryByTestId("ride-gear")).not.toBeInTheDocument();

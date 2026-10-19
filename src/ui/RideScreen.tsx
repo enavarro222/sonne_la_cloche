@@ -28,6 +28,7 @@ import { elisionContext } from "../i18n/elision";
 import {
   DemoSensor,
   type Drivetrain,
+  emitControl,
   type Foot,
   type Sensor,
   type SensorReading,
@@ -70,6 +71,8 @@ interface Props {
    */
   course?: Course | null;
   onFinish: (ride: FinishedRide) => void;
+  /** Drops the ride (started too soon, wrong gear…): nothing is recorded. */
+  onCancel?: () => void;
 }
 
 type Stage = { name: "countdown"; count: number } | { name: "go" } | { name: "racing" };
@@ -198,6 +201,9 @@ const toFrame = (
   gradePct: riddenGrade(state, settings),
   finale: state.finale,
 });
+
+/** On the on-screen shift buttons; their names are in `ride.gearUp`, `ride.gearDown`. */
+const SHIFT_SIGNS = { up: "+", down: "−" } as const;
 
 const KEYS: Record<string, Foot> = { ArrowLeft: "left", ArrowRight: "right" };
 
@@ -433,6 +439,7 @@ export function RideScreen({
   course = null,
   drivetrain = null,
   onFinish,
+  onCancel = () => undefined,
 }: Props) {
   const { t, i18n } = useTranslation();
   const stage = useCountdown(() => {
@@ -465,6 +472,16 @@ export function RideScreen({
     void sensor.setSlope?.(ridden.current);
   }, [sensor, ridden]);
   const gear = useVirtualGear(sensor, drivetrain);
+  const cancel = useLatest(onCancel);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cancel.current();
+    };
+    addEventListener("keydown", onKey);
+    return () => {
+      removeEventListener("keydown", onKey);
+    };
+  }, [cancel]);
   const [rideRef, sceneRef, layout] = useRideLayout();
   // The widest the seconds have been ("20,0 s" before "9,9 s"): the column,
   // and so the track, must not change size as digits drop.
@@ -556,11 +573,12 @@ export function RideScreen({
         <span data-testid="ride-speed">
           <FixedDigits>{Math.round(speed * 3.6)}</FixedDigits> {t("ride.speedUnit")}
         </span>
-        {gear !== null && (
-          <span data-testid="ride-gear">
-            {t("ride.gear", { gear: gear + 1, gears: VIRTUAL_RATIOS.length })}
-          </span>
-        )}
+        <span>
+          <FixedDigits>{Math.round(reading.cadence)}</FixedDigits> {t("ride.cadenceUnit")}
+        </span>
+        <span>
+          <FixedDigits>{Math.round(reading.power)}</FixedDigits> {t("ride.powerUnit")}
+        </span>
       </p>
       {target !== null && <PowerGauge power={reading.power} target={target} />}
 
@@ -632,21 +650,41 @@ export function RideScreen({
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.sensors}>
-          <span>
-            <b>
-              <FixedDigits>{Math.round(reading.cadence)}</FixedDigits>
-            </b>{" "}
-            {t("ride.cadenceUnit")}
-          </span>
-          <span>
-            <b>
-              <FixedDigits>{Math.round(reading.power)}</FixedDigits>
-            </b>{" "}
-            {t("ride.powerUnit")}
-          </span>
-        </p>
-        {sensor instanceof DemoSensor && <PedalButtons sensor={sensor} />}
+        {/* Bottom left, away from the rider's eyes: for the adult at the screen. */}
+        <button type="button" className={cx("secondary", styles.cancel)} onClick={onCancel}>
+          {t("ride.cancel")}
+        </button>
+        <div className={styles.controls}>
+          {gear !== null && (
+            // On screen too, should the handlebar remote fail.
+            <span className={styles.gears}>
+              <button
+                type="button"
+                className={styles.shift}
+                aria-label={t("ride.gearDown")}
+                onClick={() => {
+                  emitControl("gearDown");
+                }}
+              >
+                {SHIFT_SIGNS.down}
+              </button>
+              <span data-testid="ride-gear">
+                {t("ride.gear", { gear: gear + 1, gears: VIRTUAL_RATIOS.length })}
+              </span>
+              <button
+                type="button"
+                className={styles.shift}
+                aria-label={t("ride.gearUp")}
+                onClick={() => {
+                  emitControl("gearUp");
+                }}
+              >
+                {SHIFT_SIGNS.up}
+              </button>
+            </span>
+          )}
+          {sensor instanceof DemoSensor && <PedalButtons sensor={sensor} />}
+        </div>
       </div>
       {/*
         An hourglass: the background drains as time runs out, the seconds

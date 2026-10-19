@@ -81,6 +81,19 @@ export const DEFAULT_SETTINGS: Settings = {
   cog: DEFAULT_DRIVETRAIN.cog,
 };
 
+/**
+ * What may change in the middle of a game, between two rides: how the bike
+ * is ridden, not what the scores compare (length, rounds, slope, metric).
+ */
+export const IN_GAME_SETTINGS = ["finale", "gears", "chainring", "cog"] as const;
+
+/** Only the settings that may change during a game. */
+export function inGame(settings: Partial<Settings>): Partial<Settings> {
+  const kept: Partial<Record<keyof Settings, unknown>> = {};
+  for (const key of IN_GAME_SETTINGS) if (key in settings) kept[key] = settings[key];
+  return kept as Partial<Settings>;
+}
+
 /** The real drivetrain when the game shifts virtual gears; null with the bike's own. */
 export const drivetrainOf = (settings: Settings): Drivetrain | null =>
   settings.gears === "virtual" ? { chainring: settings.chainring, cog: settings.cog } : null;

@@ -14,12 +14,17 @@ import {
   TEST_ONLY,
   ZWIFT_COGS,
 } from "../core/settings";
+import { type Remote, RemoteRow } from "./RemoteRow";
 import styles from "./SettingsScreen.module.css";
 
 interface Props {
   settings: Settings;
   /** Adds express games (5 s rides, 1 round) to try things out. */
   testMode: boolean;
+  /** During a game: only what may change between two rides (see IN_GAME_SETTINGS). */
+  inGame?: boolean;
+  /** During a game, the Zwift remotes: one forgotten can be connected here. */
+  remote?: Remote;
   onChange: (settings: Partial<Settings>) => void;
   onDone: () => void;
 }
@@ -144,7 +149,14 @@ function Cog({ cog, onChange }: { cog: number; onChange: (cog: number) => void }
   );
 }
 
-export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) {
+export function SettingsScreen({
+  settings,
+  testMode,
+  inGame = false,
+  remote,
+  onChange,
+  onDone,
+}: Props) {
   const durations = DURATIONS_SEC.filter((d) => testMode || d !== TEST_ONLY.durationSec);
   const rounds = ROUND_COUNTS.filter((r) => testMode || r !== TEST_ONLY.rounds);
   const { t } = useTranslation();
@@ -156,54 +168,59 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
           {t("settings.done")}
         </button>
       </header>
+      {inGame && <p className={styles.help}>{t("settings.inGame")}</p>}
       <div className={styles.fields}>
-        <Choice
-          label={t("settings.metric.label")}
-          options={METRICS}
-          value={settings.metric}
-          format={(metric) => t(`settings.metric.${metric}`)}
-          onSelect={(metric) => {
-            onChange({ metric });
-          }}
-          help={t("settings.metric.help")}
-        />
-        <Choice
-          label={t("settings.slope.label")}
-          options={SLOPES}
-          value={settings.slope}
-          format={(slope) =>
-            slope === "own"
-              ? t("settings.slope.own")
-              : t("settings.slope.option", {
-                  name: t(`settings.slope.${slope}`),
-                  percent: SLOPE_PERCENT[slope],
-                })
-          }
-          onSelect={(slope) => {
-            onChange({ slope });
-          }}
-          disabled={(slope) => !slopeAllowed(slope, settings.metric)}
-          help={t("settings.slope.help")}
-        />
-        <Choice
-          label={t("settings.duration.label")}
-          options={durations}
-          value={settings.durationSec}
-          format={(count) => t("settings.duration.value", { count })}
-          onSelect={(durationSec) => {
-            onChange({ durationSec });
-          }}
-        />
-        <Choice
-          label={t("settings.rounds.label")}
-          options={rounds}
-          value={settings.rounds}
-          format={(count) => t("settings.rounds.value", { count })}
-          onSelect={(rounds) => {
-            onChange({ rounds });
-          }}
-          help={t("settings.rounds.help")}
-        />
+        {!inGame && (
+          <>
+            <Choice
+              label={t("settings.metric.label")}
+              options={METRICS}
+              value={settings.metric}
+              format={(metric) => t(`settings.metric.${metric}`)}
+              onSelect={(metric) => {
+                onChange({ metric });
+              }}
+              help={t("settings.metric.help")}
+            />
+            <Choice
+              label={t("settings.slope.label")}
+              options={SLOPES}
+              value={settings.slope}
+              format={(slope) =>
+                slope === "own"
+                  ? t("settings.slope.own")
+                  : t("settings.slope.option", {
+                      name: t(`settings.slope.${slope}`),
+                      percent: SLOPE_PERCENT[slope],
+                    })
+              }
+              onSelect={(slope) => {
+                onChange({ slope });
+              }}
+              disabled={(slope) => !slopeAllowed(slope, settings.metric)}
+              help={t("settings.slope.help")}
+            />
+            <Choice
+              label={t("settings.duration.label")}
+              options={durations}
+              value={settings.durationSec}
+              format={(count) => t("settings.duration.value", { count })}
+              onSelect={(durationSec) => {
+                onChange({ durationSec });
+              }}
+            />
+            <Choice
+              label={t("settings.rounds.label")}
+              options={rounds}
+              value={settings.rounds}
+              format={(count) => t("settings.rounds.value", { count })}
+              onSelect={(rounds) => {
+                onChange({ rounds });
+              }}
+              help={t("settings.rounds.help")}
+            />
+          </>
+        )}
         <Choice
           label={t("settings.finale.label")}
           options={FINALES}
@@ -249,6 +266,7 @@ export function SettingsScreen({ settings, testMode, onChange, onDone }: Props) 
             </div>
           )}
           <p className={styles.help}>{t("settings.gears.help")}</p>
+          {settings.gears === "virtual" && remote && <RemoteRow remote={remote} />}
         </fieldset>
       </div>
     </div>
