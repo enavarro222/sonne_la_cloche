@@ -3,7 +3,7 @@
 Each version is tagged `v<version>`; pushing the tag publishes its GitHub
 release with the notes below (see `.github/workflows/release.yml`).
 
-## Unreleased
+## 0.2.1 — 2026-10-20
 
 From a first game with friends.
 
