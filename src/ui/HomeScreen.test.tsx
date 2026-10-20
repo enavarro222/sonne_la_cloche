@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MAX_PLAYERS, type Player } from "../core/players";
 import { DEFAULT_SETTINGS, type Settings } from "../core/settings";
-import { REPOSITORY_URL } from "../credits";
+import { KOFI_URL, REPOSITORY_URL } from "../credits";
 import { HomeScreen } from "./HomeScreen";
 import {
   type Connection,
@@ -143,6 +143,14 @@ describe("HomeScreen credits", () => {
     expect(link).toHaveAttribute("href", REPOSITORY_URL);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("links to Ko-fi in a new tab, saying what it pays for", () => {
+    renderHome();
+    const link = screen.getByRole("link", { name: "☕ Buy me a coffee" });
+    expect(link).toHaveAttribute("href", KOFI_URL);
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("title", expect.stringContaining("hosting"));
   });
 
   it("shows which version is running, linked to its release notes", () => {

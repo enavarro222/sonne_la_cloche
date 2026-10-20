@@ -83,6 +83,8 @@ export const fr: Translation = {
     madeBy: "Fait par {{author}}",
     source: "Code source sur GitHub",
     feedback: "Un avis ?",
+    support: "☕ M'offrir un café",
+    supportWhy: "Sur Ko-fi : ça paie l'hébergement, et d'autres jeux idiots comme celui-ci",
     version: "Version {{version}} : les nouveautés",
   },
   settings: {

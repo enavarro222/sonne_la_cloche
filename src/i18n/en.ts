@@ -81,6 +81,8 @@ export const en = {
     madeBy: "Made by {{author}}",
     source: "Source code on GitHub",
     feedback: "Your opinion?",
+    support: "☕ Buy me a coffee",
+    supportWhy: "On Ko-fi: it pays for the hosting, and for more silly games like this one",
     version: "Version {{version}}: what's new",
   },
   settings: {

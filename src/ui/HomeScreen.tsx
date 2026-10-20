@@ -9,7 +9,7 @@ import {
   validateName,
 } from "../core/players";
 import { SLOPE_PERCENT, type Settings } from "../core/settings";
-import { AUTHOR, RELEASE_URL, REPOSITORY_URL, VERSION } from "../credits";
+import { AUTHOR, KOFI_URL, RELEASE_URL, REPOSITORY_URL, VERSION } from "../credits";
 import { cx } from "./cx";
 import styles from "./HomeScreen.module.css";
 import { Roster } from "./Roster";
@@ -320,6 +320,16 @@ export function HomeScreen({
             {/* A new tab: leaving this page would drop the Bluetooth connection. */}
             <a href={feedbackUrl} target="_blank" rel="noopener">
               {t("home.feedback")}
+            </a>
+          </span>
+          <span>
+            <a
+              href={KOFI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("home.supportWhy")}
+            >
+              {t("home.support")}
             </a>
           </span>
           <a

@@ -27,6 +27,8 @@ From a first game with friends.
   header says when remotes are connected, next to the trainer.
 - With virtual gears, − and + buttons on the ride screen, should the
   remote fail. Speed, cadence and watts now sit together under the score.
+- "Buy me a coffee" on the home screen, next to the credits: a Ko-fi page
+  that pays for the hosting (and encourages more silly games).
 
 ## 0.2.0 — 2026-10-17
 
